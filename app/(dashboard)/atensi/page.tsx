@@ -35,8 +35,23 @@ const statusConfig = {
   CANCELLED: { label: 'Dibatalkan', color: 'bg-red-100 text-red-800 border-red-300' },
 }
 
+interface Atensi {
+  id: string
+  code: string
+  title: string
+  description?: string
+  status: string
+  priority: string
+  category: { name: string; color?: string }
+  village: { name: string; pemda?: { name: string } }
+  reportedAt: string
+  createdAt: string
+  responses: { length: number }
+  _count?: { responses: number; attachments?: number }
+}
+
 export default function AtensiPage() {
-  const { data: session } = useSession()
+  useSession()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('')
@@ -133,7 +148,7 @@ export default function AtensiPage() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {data.data.map((atensi: any) => (
+            {data.data.map((atensi: Atensi) => (
               <Link
                 key={atensi.id}
                 href={`/atensi/${atensi.id}`}
@@ -163,7 +178,7 @@ export default function AtensiPage() {
                       <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {format(new Date(atensi.createdAt), 'dd MMM yyyy', { locale: id })}
+                          {format(new Date(atensi.createdAt || atensi.reportedAt), 'dd MMM yyyy', { locale: id })}
                         </div>
 
                         <div className="flex items-center gap-1">
@@ -171,17 +186,17 @@ export default function AtensiPage() {
                           {atensi._count?.responses || 0} Tanggapan
                         </div>
 
-                        {atensi._count?.attachments > 0 && (
+                        {(atensi._count?.attachments ?? 0) > 0 && (
                           <div className="flex items-center gap-1">
                             <Paperclip className="w-4 h-4" />
-                            {atensi._count.attachments} Lampiran
+                            {atensi._count?.attachments} Lampiran
                           </div>
                         )}
 
                         <div>
                           <span className="font-medium">{atensi.village?.name}</span>
                           {' - '}
-                          {atensi.village?.pemda?.name}
+                          {/* {atensi.village?.pemda?.name} */}
                         </div>
                       </div>
                     </div>

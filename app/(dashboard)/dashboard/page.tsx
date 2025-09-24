@@ -7,8 +7,6 @@ import {
   AlertCircle,
   CheckCircle,
   Clock,
-  TrendingUp,
-  TrendingDown,
   Users,
   Building,
   Activity,

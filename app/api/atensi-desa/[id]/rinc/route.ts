@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
 // GET: List Atensi Desa Rinci (Detail items)
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -14,11 +14,12 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const params = await context.params
     const idAtensiDesa = params.id
     const searchParams = request.nextUrl.searchParams
     const jnsAtensi = searchParams.get('jnsAtensi')
 
-    const where: any = {
+    const where: Record<string, unknown> = {
       idAtensiDesa
     }
 
@@ -55,7 +56,7 @@ export async function GET(
 // POST: Create new Atensi Desa Rinci
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -63,6 +64,7 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const params = await context.params
     const idAtensiDesa = params.id
     const body = await request.json()
 
@@ -121,7 +123,7 @@ export async function POST(
 // PUT: Update Atensi Desa Rinci status
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -129,6 +131,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    const params = await context.params
     const body = await request.json()
     const { rinciId, statusTL, statusVer } = body
 
@@ -136,7 +139,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Rinci ID required' }, { status: 400 })
     }
 
-    const updateData: any = {}
+    const updateData: Record<string, unknown> = {}
     if (statusTL !== undefined) updateData.statusTL = statusTL
     if (statusVer !== undefined) updateData.statusVer = statusVer
 

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useSession, signOut } from 'next-auth/react'
 import {
@@ -15,13 +16,11 @@ import {
   LogOut,
   ChevronDown,
   ChevronRight,
-  Search,
   Building,
   ClipboardCheck,
   BarChart,
   User,
   Key,
-  UserCog,
   Landmark,
   Calendar,
   Printer,
@@ -39,7 +38,16 @@ const navigation = [
   { name: 'Desa', href: '/villages', icon: Building },
 ]
 
-const adminNavigation = [
+import { LucideIcon } from 'lucide-react'
+
+interface AdminNavigationItem {
+  name: string
+  icon: LucideIcon
+  href?: string
+  children?: Array<{ name: string; href: string; icon: LucideIcon }>
+}
+
+const adminNavigation: AdminNavigationItem[] = [
   {
     name: 'Pengaturan Umum',
     icon: Settings,
@@ -71,7 +79,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
+  const { data: session } = useSession()
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -114,7 +122,7 @@ export default function DashboardLayout({
               <span className="text-2xl font-bold text-blue-600">CACM</span>
             </div>
             <span className="text-white font-bold text-center text-sm">
-              {session?.pemdaName || 'Provinsi Jawa Barat'}
+              {session?.user?.pemdaName || 'Provinsi Jawa Barat'}
             </span>
           </div>
 
@@ -200,10 +208,10 @@ export default function DashboardLayout({
                   return (
                     <Link
                       key={item.name}
-                      href={item.href}
+                      href={item.href || '#'}
                       onClick={() => setSidebarOpen(false)}
                       className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                        isActive(item.href)
+                        item.href && isActive(item.href)
                           ? 'bg-blue-600 text-white'
                           : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                       }`}
@@ -234,10 +242,10 @@ export default function DashboardLayout({
 
             {/* Logo and Pemda Name (visible on mobile and desktop) */}
             <div className="flex items-center gap-4">
-              <img src="/logo-ssh.png" alt="Logo" className="h-8 hidden sm:block" />
+              <Image src="/logo-ssh.png" alt="Logo" width={32} height={32} className="hidden sm:block" />
               <div className="hidden lg:flex items-center gap-6 text-white">
                 <div className="text-sm font-medium">
-                  {session?.pemdaName || 'Provinsi Jawa Barat'}
+                  {session?.user?.pemdaName || 'Provinsi Jawa Barat'}
                 </div>
                 <div className="text-sm">
                   Tahun <span className="font-semibold">{session?.fiscalYear}</span>

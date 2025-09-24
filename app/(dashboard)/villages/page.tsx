@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 
 export default function VillagesPage() {
-  const { data: session } = useSession()
+  useSession()
   const [search, setSearch] = useState('')
   const [selectedPemda, setSelectedPemda] = useState('')
 

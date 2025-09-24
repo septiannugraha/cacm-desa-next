@@ -7,13 +7,9 @@ import {
   Settings,
   Database,
   Shield,
-  Globe,
-  Bell,
   Mail,
   Save,
   Server,
-  Key,
-  Users,
   FileText,
   AlertCircle,
   CheckCircle

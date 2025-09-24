@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 
 export default function ReportsPage() {
-  const { data: session } = useSession()
+  useSession()
   const [reportType, setReportType] = useState('monthly')
   const [selectedPeriod, setSelectedPeriod] = useState('')
 

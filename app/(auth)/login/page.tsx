@@ -8,15 +8,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Loader2, User, Lock, Calendar } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username harus diisi'),
   password: z.string().min(1, 'Password harus diisi'),
-  fiscalYear: z.number({
-    required_error: 'Tahun anggaran harus dipilih',
-    invalid_type_error: 'Tahun anggaran harus berupa angka',
-  }).int().min(2020).max(2030),
+  fiscalYear: z.number().int().min(2020, 'Tahun minimal 2020').max(2030, 'Tahun maksimal 2030'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>

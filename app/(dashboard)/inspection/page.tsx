@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 
 export default function InspectionPage() {
-  const { data: session } = useSession()
+  useSession()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
 

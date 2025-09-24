@@ -4,8 +4,6 @@ import { useState } from 'react'
 import { useSession } from 'next-auth/react'
 import {
   User,
-  Mail,
-  Phone,
   Building,
   Shield,
   Calendar,
@@ -57,7 +55,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                 <span className="flex items-center gap-1">
                   <Building className="w-4 h-4" />
-                  {session?.pemda || 'Provinsi Jawa Barat'}
+                  {session?.user?.pemdaName || 'Provinsi Jawa Barat'}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />

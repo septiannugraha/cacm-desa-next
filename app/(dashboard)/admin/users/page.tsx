@@ -1,25 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import {
   Users,
   Search,
-  Plus,
-  Edit,
   Trash2,
   Shield,
   CheckCircle,
   XCircle,
-  MoreVertical,
-  UserPlus,
-  Key,
-  Mail
+  Key
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
+
+// interface User {
+//   id: string
+//   username: string
+//   email: string | null
+//   name: string
+//   role: string
+//   active: boolean
+//   lastLogin: Date | null
+// }
 
 const roleConfig = {
   ADMIN: { label: 'Administrator', color: 'bg-purple-100 text-purple-800 border-purple-300', icon: Shield },
@@ -32,9 +36,8 @@ export default function UsersPage() {
   const [search, setSearch] = useState('')
   const [selectedRole, setSelectedRole] = useState('')
   const [selectedStatus, setSelectedStatus] = useState('')
-  const [page, setPage] = useState(1)
-  const [showUserModal, setShowUserModal] = useState(false)
-  const [selectedUser, setSelectedUser] = useState<any>(null)
+  // const [showUserModal] = useState(false) // For future use
+  // const [selectedUser] = useState<any>(null) // For future use
 
   // Check if user is admin
   if (session?.user?.roleCode !== 'ADMIN') {
@@ -102,7 +105,8 @@ export default function UsersPage() {
             Kelola pengguna dan hak akses sistem
           </p>
         </div>
-        <button 
+        {/* Button disabled - modal functionality not implemented yet
+        <button
           onClick={() => {
             setSelectedUser(null)
             setShowUserModal(true)
@@ -112,6 +116,7 @@ export default function UsersPage() {
           <UserPlus className="w-4 h-4" />
           Tambah Pengguna
         </button>
+        */}
       </div>
 
       {/* Stats Cards */}
@@ -259,7 +264,8 @@ export default function UsersPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end gap-2">
-                      <button 
+                      {/* Edit button disabled - modal functionality not implemented yet
+                      <button
                         onClick={() => {
                           setSelectedUser(user)
                           setShowUserModal(true)
@@ -268,6 +274,7 @@ export default function UsersPage() {
                       >
                         <Edit className="w-4 h-4" />
                       </button>
+                      */}
                       <button className="text-yellow-600 hover:text-yellow-900">
                         <Key className="w-4 h-4" />
                       </button>

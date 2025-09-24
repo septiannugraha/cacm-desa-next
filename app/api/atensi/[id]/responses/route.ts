@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -14,8 +14,9 @@ const createResponseSchema = z.object({
 // POST: Add response to Atensi
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -81,9 +82,7 @@ export async function POST(
       }
 
       // Update atensi status if needed
-      let newStatus = atensi.status
       if (validatedData.type === 'RESOLUTION' && atensi.status !== 'RESOLVED') {
-        newStatus = 'RESOLVED'
         await tx.atensi.update({
           where: { id: params.id },
           data: {
@@ -92,7 +91,6 @@ export async function POST(
           },
         })
       } else if (atensi.status === 'OPEN') {
-        newStatus = 'IN_PROGRESS'
         await tx.atensi.update({
           where: { id: params.id },
           data: { status: 'IN_PROGRESS' },
@@ -148,7 +146,7 @@ export async function POST(
     console.error('Error creating response:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: error.issues },
         { status: 400 }
       )
     }

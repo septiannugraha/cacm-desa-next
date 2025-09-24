@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -17,8 +17,9 @@ const updateAtensiSchema = z.object({
 // GET: Get single Atensi
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -139,8 +140,9 @@ export async function GET(
 // PUT: Update Atensi
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
@@ -178,7 +180,7 @@ export async function PUT(
     // Update with transaction
     const updatedAtensi = await prisma.$transaction(async (tx) => {
       // Track changes for activity log
-      const changes: any = {}
+      const changes: Record<string, { from: string | null; to: string | null }> = {}
       if (validatedData.status && validatedData.status !== currentAtensi.status) {
         changes.status = { from: currentAtensi.status, to: validatedData.status }
       }
@@ -190,7 +192,7 @@ export async function PUT(
       }
 
       // Prepare update data
-      const updateData: any = { ...validatedData }
+      const updateData: Record<string, unknown> = { ...validatedData }
 
       // Update resolved/closed timestamps
       if (validatedData.status === 'RESOLVED' && currentAtensi.status !== 'RESOLVED') {
@@ -268,7 +270,7 @@ export async function PUT(
     console.error('Error updating atensi:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: error.issues },
         { status: 400 }
       )
     }
@@ -282,8 +284,9 @@ export async function PUT(
 // DELETE: Delete Atensi (soft delete by changing status)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
+  const params = await context.params
   try {
     const session = await getServerSession(authOptions)
     if (!session) {

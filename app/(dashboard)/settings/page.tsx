@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react'
 import {
   Settings,
   Bell,
-  Globe,
   Shield,
   Database,
   Palette,
@@ -16,7 +15,7 @@ import {
 } from 'lucide-react'
 
 export default function SettingsPage() {
-  const { data: session } = useSession()
+  useSession()
   const [activeTab, setActiveTab] = useState('general')
   const [settings, setSettings] = useState({
     language: 'id',

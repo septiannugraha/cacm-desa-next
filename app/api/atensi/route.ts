@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
-import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     const query = querySchema.parse(Object.fromEntries(searchParams))
 
     // Build where clause
-    const where: any = {
+    const where: Record<string, unknown> = {
       fiscalYear: session.fiscalYear,
     }
 
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
     console.error('Error fetching atensi:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Invalid query parameters', details: error.errors },
+        { error: 'Invalid query parameters', details: error.issues },
         { status: 400 }
       )
     }
@@ -250,7 +250,7 @@ export async function POST(request: NextRequest) {
     console.error('Error creating atensi:', error)
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: 'Validation error', details: error.errors },
+        { error: 'Validation error', details: error.issues },
         { status: 400 }
       )
     }
