@@ -31,7 +31,9 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+.env
+.env.*
+!.env.example
 
 # vercel
 .vercel
@@ -48,3 +50,21 @@ MIGRATION_GUIDE.md
 
 # Screenshots
 /screenshots
+# Docker and database setup files
+docker-mssql-setup.sh
+docker-compose.yml
+DOCKER_COMMANDS.md
+setup-database.sh
+test-db-connection.js
+DATABASE_SETUP.md
+
+# Environment files
+.env
+.env.local
+.env.docker
+.env.production
+
+# Database files
+*.sql
+prisma/migrations/
+prisma/seed.ts
