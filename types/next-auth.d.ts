@@ -1,4 +1,4 @@
-import { DefaultSession } from 'next-auth'
+import 'next-auth'
 
 declare module 'next-auth' {
   interface User {
@@ -8,7 +8,7 @@ declare module 'next-auth' {
     name: string
     role: string
     roleCode: string
-    permissions: any
+    permissions: string[]
     pemdaId?: string
     pemdaName?: string
     fiscalYear: number
@@ -23,7 +23,7 @@ declare module 'next-auth' {
       name: string
       role: string
       roleCode: string
-      permissions: any
+      permissions: string[]
       pemdaId?: string
       pemdaName?: string
     }
@@ -38,7 +38,7 @@ declare module 'next-auth/jwt' {
     username: string
     role: string
     roleCode: string
-    permissions: any
+    permissions: string[]
     pemdaId?: string
     pemdaName?: string
     fiscalYear: number
