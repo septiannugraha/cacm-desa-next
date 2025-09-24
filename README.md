@@ -1,36 +1,122 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CACMDesa Next.js Migration
+
+This is the Next.js migration of CACMDesa (Continuous Audit Continuous Monitoring) for village financial management.
+
+## Tech Stack
+
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type safety
+- **Prisma** - ORM for SQL Server
+- **NextAuth.js** - Authentication
+- **Tailwind CSS** - Styling
+- **React Query** - Data fetching and caching
+- **React Hook Form + Zod** - Form handling and validation
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18+
+- SQL Server (local or remote)
+
+### Installation
+
+1. Install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Configure environment variables:
+Edit `.env.local` with your database credentials:
+```
+DATABASE_URL="sqlserver://localhost:1433;database=Siswaskeudes_Baru;user=sa;password=YourPassword;encrypt=false;trustServerCertificate=true"
+NEXTAUTH_SECRET="your-secret-key"
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up the database:
+```bash
+# Generate Prisma Client
+npm run prisma:generate
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Push schema to database
+npm run prisma:push
 
-## Learn More
+# Seed initial data (creates admin user)
+npm run prisma:seed
 
-To learn more about Next.js, take a look at the following resources:
+# Or run all at once:
+npm run db:setup
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+4. Run the development server:
+```bash
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Deploy on Vercel
+## Default Credentials
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+After running the seed script, you can login with:
+- Username: `admin`
+- Password: `admin123`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Project Structure
+
+```
+cacmdesa-next/
+├── app/
+│   ├── (auth)/          # Authentication pages (login, register)
+│   ├── (dashboard)/      # Protected dashboard pages
+│   │   ├── admin/        # Admin-only pages
+│   │   ├── atensi/       # Atensi module
+│   │   ├── dashboard/    # Main dashboard
+│   │   └── inspection/   # Inspection module
+│   ├── api/              # API routes
+│   │   ├── auth/         # NextAuth API
+│   │   ├── atensi/       # Atensi endpoints
+│   │   └── dashboard/    # Dashboard endpoints
+│   └── providers.tsx     # React Query & NextAuth providers
+├── components/           # Reusable components
+├── lib/                  # Utilities and helpers
+├── prisma/
+│   ├── schema.prisma     # Database schema
+│   └── seed.ts          # Seed script
+├── types/               # TypeScript type definitions
+└── middleware.ts        # Authentication middleware
+```
+
+## Available Scripts
+
+```bash
+# Development
+npm run dev           # Start development server
+
+# Build
+npm run build         # Build for production
+npm run start         # Start production server
+
+# Database
+npm run prisma:generate  # Generate Prisma Client
+npm run prisma:push      # Push schema changes to database
+npm run prisma:seed      # Seed database with initial data
+npm run db:setup         # Run all database setup commands
+
+# Code Quality
+npm run lint          # Run ESLint
+```
+
+## Features Implemented
+
+✅ Authentication with NextAuth.js
+✅ Role-based access control
+✅ Fiscal year selection
+✅ Protected routes with middleware
+✅ Prisma ORM setup for SQL Server
+✅ Basic dashboard structure
+✅ Login page
+✅ Session management
+
+## Migration Status
+
+This is a migration from ASP.NET Web Forms to Next.js. Original system: 42 ASPX pages, DevExpress UI, SQL Server database.
