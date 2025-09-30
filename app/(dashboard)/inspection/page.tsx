@@ -75,7 +75,7 @@ export default function InspectionPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">12</p>
+              <p className="text-2xl font-bold text-gray-900">12</p>
               <p className="text-sm text-gray-600">Total Inspeksi</p>
             </div>
             <ClipboardCheck className="w-8 h-8 text-blue-600" />
@@ -84,7 +84,7 @@ export default function InspectionPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">3</p>
+              <p className="text-2xl font-bold text-gray-900">3</p>
               <p className="text-sm text-gray-600">Sedang Berjalan</p>
             </div>
             <Clock className="w-8 h-8 text-yellow-600" />
@@ -93,7 +93,7 @@ export default function InspectionPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">8</p>
+              <p className="text-2xl font-bold text-gray-900">8</p>
               <p className="text-sm text-gray-600">Selesai</p>
             </div>
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -102,7 +102,7 @@ export default function InspectionPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">15</p>
+              <p className="text-2xl font-bold text-gray-900">15</p>
               <p className="text-sm text-gray-600">Temuan Kritis</p>
             </div>
             <AlertCircle className="w-8 h-8 text-red-600" />

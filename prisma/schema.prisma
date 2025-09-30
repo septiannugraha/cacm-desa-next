@@ -8,32 +8,29 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  username      String    @unique
-  email         String?   @unique
-  password      String
-  nip           String?   @unique
-  name          String
-  roleId        String
-  pemdaId       String?
-  active        Boolean   @default(true)
-  lastLogin     DateTime?
-
-  // Relations
-  role          Role      @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  pemda         Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  sessions      Session[]
-  reportedAtensi   Atensi[] @relation("AtensiReporter")
-  assignedAtensi   Atensi[] @relation("AtensiAssignee")
-  responses     Response[]
-  activities    Activity[]
-  notifications Notification[]
+  id             String         @id @default(cuid())
+  username       String         @unique
+  email          String?        @unique
+  password       String
+  nip            String?        @unique
+  name           String
+  roleId         String
+  pemdaId        String?
+  active         Boolean        @default(true)
+  lastLogin      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  activities     Activity[]
+  assignedAtensi Atensi[]       @relation("AtensiAssignee")
+  reportedAtensi Atensi[]       @relation("AtensiReporter")
+  attachments    Attachment[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+  responses      Response[]
+  sessions       Session[]
+  pemda          Pemda?         @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role           Role           @relation(fields: [roleId], references: [id], onUpdate: NoAction)
   userActivities UserActivity[]
-  auditLogs     AuditLog[]
-  attachments   Attachment[]
-
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
 
   @@index([username])
   @@index([email])
@@ -44,10 +41,10 @@ model Role {
   id          String   @id @default(cuid())
   name        String   @unique
   code        String   @unique
-  permissions String   @db.NVarChar(max) // Store as JSON string
-  users       User[]
+  permissions String   @db.NVarChar(Max)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  users       User[]
 }
 
 model Session {
@@ -56,137 +53,76 @@ model Session {
   userId       String
   fiscalYear   Int
   expires      DateTime
-
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([sessionToken])
   @@index([userId])
 }
 
 model Pemda {
-  id        String   @id @default(cuid())
-  kdPemda   String   @unique  // Added: Original code field
+  id        String    @id @default(cuid())
   name      String
-  code      String   @unique
-  level     String   // PROVINSI, KABUPATEN, KECAMATAN
+  code      String    @unique
+  level     String
   parentId  String?
-
-  parent    Pemda?   @relation("PemdaHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children  Pemda[]  @relation("PemdaHierarchy")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  atensi    Atensi[]
+  parent    Pemda?    @relation("PemdaHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Pemda[]   @relation("PemdaHierarchy")
   users     User[]
   villages  Village[]
-  atensi    Atensi[]
-  atensiDesa AtensiDesa[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([code])
-  @@index([kdPemda])
 }
 
 model Village {
   id        String   @id @default(cuid())
-  kdDesa    String   @unique  // Added: Original code field
   name      String
   code      String   @unique
   pemdaId   String
-  kdKec     String?  // Added: District code
-  hpKades   String?  // Added: Village head phone
-  alamat    String?  // Added: Address
-  ibukota   String?  // Added: Capital
-
-  pemda     Pemda    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  atensi    Atensi[]
-  atensiDesa AtensiDesa[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  atensi    Atensi[]
+  pemda     Pemda    @relation(fields: [pemdaId], references: [id], onUpdate: NoAction)
 
   @@index([code])
-  @@index([kdDesa])
-}
-
-// New: Status Tindak Lanjut (Follow-up Status)
-model StatusTL {
-  statusTL    Int      @id
-  keterangan  String
-
-  atensiRinc  AtensiDesaRinc[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-// New: Status Verifikasi (Verification Status)
-model StatusVerifikasi {
-  statusVer   Int      @id
-  keterangan  String
-
-  atensiRinc  AtensiDesaRinc[]
-
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model Atensi {
-  id              String          @id @default(cuid())
-  noAtensi        String?         // Added: Original atensi number
-  code            String          @unique
-  title           String
-  description     String          @db.NVarChar(max)
-  categoryId      String
-  priority        String          @default("MEDIUM")
-  status          String          @default("OPEN")
-
-  // Location data
-  villageId       String
-  pemdaId         String
-
-  // Financial data
-  fiscalYear      Int
-  amount          Float?
-  accountCode     String?
-
-  // New fields from original
-  tglAtensi       DateTime?       // Tanggal atensi
-  jlhRF           Int?            @default(0)  // Jumlah risk factor
-  jlhTL           Int?            @default(0)  // Jumlah tindak lanjut
-  isSent          Boolean         @default(false)
-  keterangan      String?         @db.NVarChar(max)
-
-  // Tracking
-  reportedById    String
-  assignedToId    String?
-  updateBy        String?
-  updateAt        DateTime?
-
-  // Timestamps
-  reportedAt      DateTime       @default(now())
-  dueDate         DateTime?
-  resolvedAt      DateTime?
-  closedAt        DateTime?
-
-  // Relations
-  category        AtensiCategory  @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  village         Village         @relation(fields: [villageId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  pemda           Pemda          @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  reportedBy      User           @relation("AtensiReporter", fields: [reportedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  assignedTo      User?          @relation("AtensiAssignee", fields: [assignedToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  responses       Response[]
-  attachments     Attachment[]
-  activities      Activity[]
-  notifications   Notification[]
-  atensiDesa      AtensiDesa[]
-
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id            String         @id @default(cuid())
+  code          String         @unique
+  title         String
+  description   String         @db.NVarChar(Max)
+  categoryId    String
+  priority      String         @default("MEDIUM")
+  status        String         @default("OPEN")
+  villageId     String
+  pemdaId       String
+  fiscalYear    Int
+  amount        Float?
+  accountCode   String?
+  reportedById  String
+  assignedToId  String?
+  reportedAt    DateTime       @default(now())
+  dueDate       DateTime?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activities    Activity[]
+  assignedTo    User?          @relation("AtensiAssignee", fields: [assignedToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category      AtensiCategory @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  pemda         Pemda          @relation(fields: [pemdaId], references: [id], onUpdate: NoAction)
+  reportedBy    User           @relation("AtensiReporter", fields: [reportedById], references: [id], onUpdate: NoAction)
+  village       Village        @relation(fields: [villageId], references: [id], onUpdate: NoAction)
+  attachments   Attachment[]
+  notifications Notification[]
+  responses     Response[]
 
   @@index([code])
-  @@index([noAtensi])
   @@index([status])
   @@index([priority])
   @@index([villageId])
@@ -195,111 +131,34 @@ model Atensi {
   @@index([fiscalYear])
 }
 
-// New: Atensi per Desa (Village-level Atensi)
-model AtensiDesa {
-  id            String   @id @default(cuid())
-  idAtensiDesa  String   @unique
-  tahun         Int
-  kdPemda       String
-  kdDesa        String
-  noAtensi      String?
-  atensiId      String?
-  jlhRF         Int      @default(0)
-  jlhTL         Int      @default(0)
-
-  // Relations
-  atensi        Atensi?  @relation(fields: [atensiId], references: [id])
-  village       Village  @relation(fields: [kdDesa], references: [kdDesa])
-  pemda         Pemda    @relation(fields: [kdPemda], references: [kdPemda])
-  rinciItems    AtensiDesaRinc[]
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@unique([tahun, kdPemda, kdDesa, noAtensi])
-  @@index([idAtensiDesa])
-  @@index([tahun])
-  @@index([kdPemda])
-  @@index([kdDesa])
-}
-
-// New: Atensi Desa Rinci (Detailed Items)
-model AtensiDesaRinc {
-  id            String   @id @default(cuid())
-  idAtensiDesa  String
-  tahun         Int
-  kdPemda       String
-  kdDesa        String
-  noAtensi      String?
-  jnsAtensi     String
-  noBukti       String
-  tglBukti      DateTime
-  ketBukti      String   @db.NVarChar(max)
-  nilai         Float?
-  satuan        String?
-  statusTL      Int?
-  statusVer     Int?
-
-  // Relations
-  atensiDesa    AtensiDesa  @relation(fields: [idAtensiDesa], references: [idAtensiDesa])
-  category      AtensiCategory @relation(fields: [jnsAtensi], references: [code])
-  status        StatusTL?   @relation(fields: [statusTL], references: [statusTL])
-  verifikasi    StatusVerifikasi? @relation(fields: [statusVer], references: [statusVer])
-
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([idAtensiDesa])
-  @@index([noBukti])
-  @@index([tahun])
-}
-
 model AtensiCategory {
-  id          String    @id @default(cuid())
-  jnsAtensi   Int?      // Added: Original jns_atensi number
-  code        String    @unique
+  id          String   @id @default(cuid())
+  code        String   @unique
   name        String
-  singkatan   String?   // Added: Abbreviation
-  tipe        String?   // Added: Type
   description String?
   color       String?
   icon        String?
-  order       Int       @default(0)
-  active      Boolean   @default(true)
-
-  // New fields from original
-  kriteriaJns    String?  // Criteria type
-  kriteriaNilai  Float?   // Criteria value
-  satuan         String?  // Unit
-  syntax         String?  @db.NVarChar(max)  // SQL syntax
-  stdCaption     String?  // Standard caption
-  realCaption    String?  // Real caption
-  difCaption     String?  // Difference caption
-
-  atensi         Atensi[]
-  atensiRinc     AtensiDesaRinc[]
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  atensi      Atensi[]
 
   @@index([code])
-  @@index([jnsAtensi])
 }
 
 model Response {
-  id          String         @id @default(cuid())
+  id          String       @id @default(cuid())
   atensiId    String
-  content     String         @db.NVarChar(max)
-  type        String         @default("COMMENT")
-  isInternal  Boolean        @default(false)
+  content     String       @db.NVarChar(Max)
+  type        String       @default("COMMENT")
+  isInternal  Boolean      @default(false)
   createdById String
-
-  atensi      Atensi         @relation(fields: [atensiId], references: [id], onDelete: Cascade)
-  createdBy   User           @relation(fields: [createdById], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   attachments Attachment[]
-
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  atensi      Atensi       @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation(fields: [createdById], references: [id], onUpdate: NoAction)
 
   @@index([atensiId])
   @@index([createdById])
@@ -315,47 +174,41 @@ model Attachment {
   atensiId     String?
   responseId   String?
   uploadedById String
-
+  createdAt    DateTime  @default(now())
   atensi       Atensi?   @relation(fields: [atensiId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   response     Response? @relation(fields: [responseId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  uploadedBy   User      @relation(fields: [uploadedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  createdAt    DateTime  @default(now())
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id], onUpdate: NoAction)
 
   @@index([atensiId])
   @@index([responseId])
 }
 
 model Activity {
-  id            String      @id @default(cuid())
+  id            String   @id @default(cuid())
   atensiId      String
   action        String
-  details       String?     @db.NVarChar(max) // Store JSON as string
+  details       String?  @db.NVarChar(Max)
   performedById String
-
-  atensi        Atensi      @relation(fields: [atensiId], references: [id], onDelete: Cascade)
-  performedBy   User        @relation(fields: [performedById], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime @default(now())
+  atensi        Atensi   @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  performedBy   User     @relation(fields: [performedById], references: [id], onUpdate: NoAction)
 
   @@index([atensiId])
   @@index([performedById])
 }
 
 model Notification {
-  id          String    @id @default(cuid())
-  type        String
-  title       String
-  message     String
-  data        String?   @db.NVarChar(max) // Store JSON as string
-  read        Boolean   @default(false)
-  atensiId    String?
-  userId      String
-
-  atensi      Atensi?   @relation(fields: [atensiId], references: [id], onDelete: Cascade)
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  data      String?  @db.NVarChar(Max)
+  read      Boolean  @default(false)
+  atensiId  String?
+  userId    String
+  createdAt DateTime @default(now())
+  atensi    Atensi?  @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([read])
@@ -363,18 +216,16 @@ model Notification {
 }
 
 model UserActivity {
-  id          String    @id @default(cuid())
-  userId      String
-  action      String
-  entity      String?
-  entityId    String?
-  metadata    String?   @db.NVarChar(max) // Store JSON as string
-  ipAddress   String?
-  userAgent   String?
-
-  user        User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  timestamp   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  String?  @db.NVarChar(Max)
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onUpdate: NoAction)
 
   @@index([userId])
   @@index([action])
@@ -382,18 +233,16 @@ model UserActivity {
 }
 
 model AuditLog {
-  id          String    @id @default(cuid())
-  userId      String
-  action      String
-  tableName   String
-  recordId    String
-  oldValues   String?   @db.NVarChar(max) // Store JSON as string
-  newValues   String?   @db.NVarChar(max) // Store JSON as string
-  ipAddress   String?
-
-  user        User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-
-  timestamp   DateTime  @default(now())
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  tableName String
+  recordId  String
+  oldValues String?  @db.NVarChar(Max)
+  newValues String?  @db.NVarChar(Max)
+  ipAddress String?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onUpdate: NoAction)
 
   @@index([userId])
   @@index([tableName])

@@ -97,7 +97,7 @@ export default function ReportsPage() {
 
       {/* Report Types */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Jenis Laporan</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Jenis Laporan</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button className="p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
             <BarChart className="w-8 h-8 text-blue-600 mb-2" />

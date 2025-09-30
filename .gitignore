@@ -68,3 +68,10 @@ DATABASE_SETUP.md
 *.sql
 prisma/migrations/
 prisma/seed.ts
+
+# Internal guides and learning materials
+building-crud-pages.*
+prisma-in-action.*
+
+# Test and utility scripts
+check-users.js
