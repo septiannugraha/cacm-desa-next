@@ -98,7 +98,7 @@ export default function VillagesPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">{villages.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{villages.length}</p>
               <p className="text-sm text-gray-600">Total Desa</p>
             </div>
             <Building className="w-8 h-8 text-blue-600" />
@@ -107,7 +107,7 @@ export default function VillagesPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-gray-900">
                 {villages.reduce((acc, v) => acc + v.population, 0).toLocaleString('id-ID')}
               </p>
               <p className="text-sm text-gray-600">Total Penduduk</p>
@@ -118,7 +118,7 @@ export default function VillagesPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-gray-900">
                 {villages.reduce((acc, v) => acc + v.atensiCount, 0)}
               </p>
               <p className="text-sm text-gray-600">Total Atensi</p>
@@ -129,7 +129,7 @@ export default function VillagesPage() {
         <div className="bg-white rounded-lg shadow p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold">{pemdaList.length}</p>
+              <p className="text-2xl font-bold text-gray-900">{pemdaList.length}</p>
               <p className="text-sm text-gray-600">Pemda</p>
             </div>
             <MapPin className="w-8 h-8 text-purple-600" />

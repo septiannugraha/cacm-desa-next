@@ -84,7 +84,7 @@ export default function SettingsPage() {
             {/* General Settings */}
             {activeTab === 'general' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-6">Pengaturan Umum</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Pengaturan Umum</h2>
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -136,7 +136,7 @@ export default function SettingsPage() {
             {/* Notifications Settings */}
             {activeTab === 'notifications' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-6">Pengaturan Notifikasi</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Pengaturan Notifikasi</h2>
                 <div className="space-y-4">
                   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                     <div>
@@ -201,7 +201,7 @@ export default function SettingsPage() {
             {/* Appearance Settings */}
             {activeTab === 'appearance' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-6">Pengaturan Tampilan</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Pengaturan Tampilan</h2>
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-4">
@@ -250,7 +250,7 @@ export default function SettingsPage() {
             {/* Security Settings */}
             {activeTab === 'security' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-6">Pengaturan Keamanan</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Pengaturan Keamanan</h2>
                 <div className="space-y-4">
                   <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-800">
@@ -272,7 +272,7 @@ export default function SettingsPage() {
             {/* Data Settings */}
             {activeTab === 'data' && (
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-6">Data & Backup</h2>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">Data & Backup</h2>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
                     <div>
