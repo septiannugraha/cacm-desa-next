@@ -50,8 +50,8 @@ export const authOptions: NextAuthOptions = {
             fiscalYear: credentials?.fiscalYear ? parseInt(credentials.fiscalYear as string) : new Date().getFullYear(),
           })
 
-          // Find user with role and pemda
-          const user = await prisma.user.findUnique({
+          // Find user in remote CACM_User table (Dian's database with bcrypt)
+          const user = await prisma.cACM_User.findUnique({
             where: { username },
             include: {
               role: true,
@@ -63,14 +63,14 @@ export const authOptions: NextAuthOptions = {
             throw new Error('User tidak ditemukan atau tidak aktif')
           }
 
-          // Verify password
+          // Verify password with bcrypt
           const isValidPassword = await bcrypt.compare(password, user.password)
           if (!isValidPassword) {
             throw new Error('Password salah')
           }
 
           // Update last login
-          await prisma.user.update({
+          await prisma.cACM_User.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
           })
@@ -83,8 +83,8 @@ export const authOptions: NextAuthOptions = {
             permissions = []
           }
 
-          // Create session with fiscal year
-          const session = await prisma.session.create({
+          // Create session with fiscal year in CACM_Session table
+          const session = await prisma.cACM_Session.create({
             data: {
               userId: user.id,
               fiscalYear,
