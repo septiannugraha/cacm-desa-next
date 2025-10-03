@@ -50,8 +50,8 @@ export const authOptions: NextAuthOptions = {
             fiscalYear: credentials?.fiscalYear ? parseInt(credentials.fiscalYear as string) : new Date().getFullYear(),
           })
 
-          // Find user in remote CACM_User table (Dian's database with bcrypt)
-          const user = await prisma.cACM_User.findUnique({
+          // Find user in local User table (use CACM_User when on Dian's network)
+          const user = await prisma.user.findUnique({
             where: { username },
             include: {
               role: true,
@@ -70,7 +70,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Update last login
-          await prisma.cACM_User.update({
+          await prisma.user.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
           })
@@ -83,8 +83,8 @@ export const authOptions: NextAuthOptions = {
             permissions = []
           }
 
-          // Create session with fiscal year in CACM_Session table
-          const session = await prisma.cACM_Session.create({
+          // Create session with fiscal year
+          const session = await prisma.session.create({
             data: {
               userId: user.id,
               fiscalYear,

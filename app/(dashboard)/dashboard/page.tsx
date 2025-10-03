@@ -2,6 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import {
   FileText,
   AlertCircle,
@@ -15,9 +16,48 @@ import {
   ArrowUpRight,
   ArrowDownRight
 } from 'lucide-react'
+import BarChartDashboard from '@/components/charts/BarChartDashboard'
+import LineChartDashboard from '@/components/charts/LineChartDashboard'
+import PieChartDashboard from '@/components/charts/PieChartDashboard'
+import AreaChartDashboard from '@/components/charts/AreaChartDashboard'
+
+interface ChartData {
+  Kategori1: string
+  Kategori2: string
+  Nilai1: number
+  Nilai2: number
+}
+
+interface DashboardChartData {
+  budgetRealizationByVillage: ChartData[]
+  budgetByAccountType: ChartData[]
+  monthlyTrend: ChartData[]
+}
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()
+  const [chartData, setChartData] = useState<DashboardChartData | null>(null)
+  const [loadingCharts, setLoadingCharts] = useState(true)
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      fetchChartData()
+    }
+  }, [status])
+
+  const fetchChartData = async () => {
+    try {
+      const response = await fetch('/api/dashboard/chart-data')
+      if (response.ok) {
+        const data = await response.json()
+        setChartData(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch chart data:', error)
+    } finally {
+      setLoadingCharts(false)
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -31,39 +71,35 @@ export default function DashboardPage() {
     redirect('/login')
   }
 
-  // Mock data - replace with actual API calls
-  const stats = [
+  // Financial summary data - replace with actual API calls
+  const financialStats = [
     {
-      title: 'Total Atensi',
-      value: '156',
-      change: '+12%',
-      trend: 'up',
-      icon: FileText,
-      color: 'blue'
+      title: 'PENDAPATAN DAERAH',
+      anggaran: 1259753655839,
+      realisasi: 659093758116.797,
+      percentage: 52.32,
+      color: 'bg-blue-500'
     },
     {
-      title: 'Atensi Terbuka',
-      value: '23',
-      change: '-8%',
-      trend: 'down',
-      icon: AlertCircle,
-      color: 'yellow'
+      title: 'BELANJA DAERAH',
+      anggaran: 1320798731355.694,
+      realisasi: 579382068213.787,
+      percentage: 43.87,
+      color: 'bg-green-500'
     },
     {
-      title: 'Atensi Selesai',
-      value: '89',
-      change: '+15%',
-      trend: 'up',
-      icon: CheckCircle,
-      color: 'green'
+      title: 'PENERIMAAN PEMBIAYAAN',
+      anggaran: 69079321337.618,
+      realisasi: 43373783005.546,
+      percentage: 63.50,
+      color: 'bg-red-500'
     },
     {
-      title: 'Rata-rata Waktu',
-      value: '4.2 hari',
-      change: '-20%',
-      trend: 'down',
-      icon: Clock,
-      color: 'purple'
+      title: 'PENGELUARAN PEMBIAYAAN',
+      anggaran: 8426019944193,
+      realisasi: 4623908264045,
+      percentage: 49.05,
+      color: 'bg-orange-500'
     }
   ]
 
@@ -115,6 +151,10 @@ export default function DashboardPage() {
     { name: 'Desa Mandiri', atensi: 12, resolved: 11 }
   ]
 
+  // Chart data is now fetched from API endpoint /api/dashboard/chart-data
+  // Data structure: Kategori1, Kategori2, Nilai1, Nilai2
+  // Kategori1 = NamaDesa/NamaRek2, Kategori2 = Category, Nilai1 = Anggaran, Nilai2 = Realisasi
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -125,54 +165,179 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon
+      {/* Financial Summary Cards */}
+      <div className="space-y-4">
+        {financialStats.map((stat, index) => {
+          const formatCurrency = (value: number) => {
+            return new Intl.NumberFormat('id-ID', {
+              style: 'currency',
+              currency: 'IDR',
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 0,
+            }).format(value)
+          }
+
           return (
-            <div key={index} className="bg-white rounded-lg shadow p-6">
-              <div className="flex items-center justify-between">
-                <div className={`p-3 rounded-lg bg-${stat.color}-100`}>
-                  <Icon className={`w-6 h-6 text-${stat.color}-600`} />
+            <div key={index} className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="flex items-center p-4">
+                {/* Percentage Box */}
+                <div className={`${stat.color} text-white w-20 h-20 flex items-center justify-center rounded-lg mr-4 flex-shrink-0`}>
+                  <span className="text-lg font-bold">{stat.percentage}%</span>
                 </div>
-                <div className={`flex items-center gap-1 text-sm ${
-                  stat.trend === 'up' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {stat.change}
-                  {stat.trend === 'up' ? (
-                    <ArrowUpRight className="w-4 h-4" />
-                  ) : (
-                    <ArrowDownRight className="w-4 h-4" />
-                  )}
+
+                {/* Content */}
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-2">{stat.title}</h3>
+
+                  <div className="grid grid-cols-2 gap-4 mb-2 text-xs">
+                    <div>
+                      <span className="text-gray-500">Anggaran:</span>
+                      <p className="font-medium text-gray-900">{formatCurrency(stat.anggaran)}</p>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Realisasi:</span>
+                      <p className="font-medium text-gray-900">{formatCurrency(stat.realisasi)}</p>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className={`${stat.color} h-2 rounded-full transition-all duration-300`}
+                      style={{ width: `${stat.percentage}%` }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="mt-4">
-                <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                <p className="text-sm text-gray-600 mt-1">{stat.title}</p>
               </div>
             </div>
           )
         })}
       </div>
 
-      {/* Quick Actions */}
+      {/* Filters */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Aksi Cepat</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Filter</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <button className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
-            <FileText className="w-5 h-5 text-blue-600" />
-            <span className="font-medium">Buat Atensi Baru</span>
-          </button>
-          <button className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all">
-            <BarChart3 className="w-5 h-5 text-green-600" />
-            <span className="font-medium">Lihat Laporan</span>
-          </button>
-          <button className="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all">
-            <Users className="w-5 h-5 text-purple-600" />
-            <span className="font-medium">Kelola Pengguna</span>
-          </button>
+          {/* Filter Kecamatan */}
+          <div>
+            <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
+              Kecamatan
+            </label>
+            <select
+              id="kecamatan"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Semua Kecamatan</option>
+              <option value="kec1">Kecamatan 1</option>
+              <option value="kec2">Kecamatan 2</option>
+              <option value="kec3">Kecamatan 3</option>
+            </select>
+          </div>
+
+          {/* Filter Desa */}
+          <div>
+            <label htmlFor="desa" className="block text-sm font-medium text-gray-700 mb-2">
+              Desa
+            </label>
+            <select
+              id="desa"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Semua Desa</option>
+              <option value="desa1">Desa Sukamaju</option>
+              <option value="desa2">Desa Mekar Jaya</option>
+              <option value="desa3">Desa Sejahtera</option>
+            </select>
+          </div>
+
+          {/* Filter Sumber Dana */}
+          <div>
+            <label htmlFor="sumber-dana" className="block text-sm font-medium text-gray-700 mb-2">
+              Sumber Dana
+            </label>
+            <select
+              id="sumber-dana"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">Semua Sumber Dana</option>
+              <option value="apbd">APBD</option>
+              <option value="apbn">APBN</option>
+              <option value="dak">DAK</option>
+              <option value="dau">DAU</option>
+            </select>
+          </div>
         </div>
       </div>
+
+      {/* Charts Section - Using Recharts with data from database */}
+      {loadingCharts ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-6">
+              <div className="animate-pulse">
+                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
+                <div className="h-64 bg-gray-100 rounded"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : chartData ? (
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Bar Chart - Budget vs Realization by Village */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <BarChartDashboard
+                data={chartData.budgetRealizationByVillage}
+                title="Anggaran vs Realisasi per Desa"
+                xAxisKey="Kategori1"
+                nilai1Label="Anggaran"
+                nilai2Label="Realisasi"
+              />
+            </div>
+
+            {/* Pie Chart - Budget Distribution by Account Type */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <PieChartDashboard
+                data={chartData.budgetByAccountType}
+                title="Distribusi Anggaran per Jenis Belanja"
+                dataKey="Nilai1"
+                nameKey="Kategori1"
+                label="Anggaran"
+              />
+            </div>
+          </div>
+
+          {/* Line and Area Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Line Chart - Monthly Trend */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <LineChartDashboard
+                data={chartData.monthlyTrend}
+                title="Tren Bulanan Anggaran & Realisasi"
+                xAxisKey="Kategori1"
+                nilai1Label="Anggaran"
+                nilai2Label="Realisasi"
+              />
+            </div>
+
+            {/* Area Chart - Cumulative Monthly */}
+            <div className="bg-white rounded-lg shadow p-6">
+              <AreaChartDashboard
+                data={chartData.monthlyTrend}
+                title="Akumulasi Realisasi per Bulan"
+                xAxisKey="Kategori1"
+                nilai1Label="Target"
+                nilai2Label="Capaian"
+                stacked={false}
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="text-center py-12">
+          <p className="text-gray-500">Gagal memuat data grafik</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Priority Distribution */}
