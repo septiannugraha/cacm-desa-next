@@ -166,7 +166,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Financial Summary Cards */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {financialStats.map((stat, index) => {
           const formatCurrency = (value: number) => {
             return new Intl.NumberFormat('id-ID', {

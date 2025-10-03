@@ -1,10 +1,11 @@
-import { NextAuthOptions, User } from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
-import { PrismaAdapter } from '@auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcryptjs'
-import { z } from 'zod'
+import { PrismaAdapter } from '@auth/prisma-adapter'
+import bcrypt from 'bcrypt'
+import { NextAuthOptions, User } from 'next-auth'
 import { Adapter } from 'next-auth/adapters'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import { z } from 'zod'
+
 
 interface CustomUser extends User {
   username: string
@@ -50,12 +51,15 @@ export const authOptions: NextAuthOptions = {
             fiscalYear: credentials?.fiscalYear ? parseInt(credentials.fiscalYear as string) : new Date().getFullYear(),
           })
 
-          // Find user in local User table (use CACM_User when on Dian's network)
-          const user = await prisma.user.findUnique({
+          console.log("Received credentials:", credentials);
+
+
+          // Find user with role and pemda
+          const user = await prisma.cACM_User.findUnique({
             where: { username },
             include: {
-              role: true,
-              pemda: true,
+              CACM_Role: true,
+              CACM_Pemda: true,
             },
           })
 
@@ -63,14 +67,14 @@ export const authOptions: NextAuthOptions = {
             throw new Error('User tidak ditemukan atau tidak aktif')
           }
 
-          // Verify password with bcrypt
-          const isValidPassword = await bcrypt.compare(password, user.password)
+          // Verify password
+          const isValidPassword =  await bcrypt.compare(password, user.password)
           if (!isValidPassword) {
             throw new Error('Password salah')
           }
 
           // Update last login
-          await prisma.user.update({
+          await prisma.cACM_User.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
           })
@@ -78,33 +82,55 @@ export const authOptions: NextAuthOptions = {
           // Parse permissions from JSON string
           let permissions = []
           try {
-            permissions = JSON.parse(user.role.permissions)
+            permissions = JSON.parse(user.CACM_Role.permissions)
           } catch {
             permissions = []
           }
 
           // Create session with fiscal year
-          const session = await prisma.session.create({
+          const session = await prisma.cACM_Session.create({
             data: {
-              userId: user.id,
-              fiscalYear,
+              id: crypto.randomUUID(), // tambahkan ini
+              userId: String(user.id),
+              fiscalYear: Number(fiscalYear),
               sessionToken: crypto.randomUUID(),
               expires: new Date(Date.now() + 8 * 60 * 60 * 1000),
+              updatedAt: new Date(),
             },
-          })
+          });
+          
 
           return {
             id: user.id,
             username: user.username,
             email: user.email || '',
             name: user.name,
-            role: user.role.name,
-            roleCode: user.role.code,
+            role: user.CACM_Role.name,
+            roleCode: user.CACM_Role.code,
             permissions,
             pemdaId: user.pemdaId || '',
-            pemdaName: user.pemda?.name || '',
+            pemdaName: user.CACM_Pemda?.name || '',
             fiscalYear,
             sessionId: session.id,
+
+
+        //    id: 'cmfw7ckv20004claf66v5rkbe',
+        //    username: 'admin',
+        //    email: 'admin@cacmdesa.id',
+        //    name: 'Administrator Dummy',
+        //    role: 'cmfw7ckrq0000clafijzpgaxr',
+         //   roleCode: 'ADMIN',
+        //    permissions: ["all"],
+        //    pemdaId: 'cmfw7ckx0000cclafpnj9ilg7',
+        //    pemdaName: 'Kabupaten Bandung',
+        //    fiscalYear: 2025,
+        //    sessionId: crypto.randomUUID(),
+          
+
+
+
+
+
           } as CustomUser
         } catch (error) {
           console.error('Login error:', error)
