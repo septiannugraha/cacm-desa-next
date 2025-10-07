@@ -1,39 +1,41 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { usePathname } from 'next/navigation'
-import { useSession, signOut } from 'next-auth/react'
 import {
-  LayoutDashboard,
-  FileText,
-  Users,
-  Settings,
+  BarChart,
   Bell,
-  Menu,
-  X,
-  LogOut,
+  Building,
+  Calendar,
   ChevronDown,
   ChevronRight,
-  Building,
   ClipboardCheck,
-  BarChart,
-  User,
+  Edit,
+  FileText,
   Key,
   Landmark,
-  Calendar,
-  Printer,
+  LayoutDashboard,
   LinkIcon,
-  Rocket,
-  Edit,
+  LogOut,
   Mail,
+  Menu,
+  Printer,
+  Rocket,
+  Settings,
+  User,
+  Users,
+  X,
 } from 'lucide-react'
+import { signOut, useSession } from 'next-auth/react'
+import Image from 'next/image'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useEffect, useRef, useState } from 'react'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Identifikasi', href: '/identifikasi', icon: FileText },
+  { name: 'Dokumentasi', href: '/dokumentasi', icon: FileText },
   { name: 'Atensi', href: '/atensi', icon: FileText },
-  { name: 'Inspeksi', href: '/inspection', icon: ClipboardCheck },
+  { name: 'Verifikasi', href: '/verifikasi', icon: ClipboardCheck },
   { name: 'Laporan', href: '/reports', icon: BarChart },
   { name: 'Desa', href: '/villages', icon: Building },
 ]
