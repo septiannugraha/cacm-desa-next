@@ -109,13 +109,12 @@ const adminNavigation: AdminNavigationItem[] = [
     icon: Settings,
     children: [
       { name: 'Pemerintah Daerah', href: '/admin/pemda', icon: Landmark },
-      { name: 'Pemerintah Desa', href: '/admin/villages', icon: Landmark },
-      { name: 'Jenis Atensi', href: '/admin/atensi-types', icon: Calendar },
-      { name: 'Laporan', href: '/admin/reports', icon: Printer },
-      { name: 'Koneksi Siskeudes', href: '/admin/connections', icon: LinkIcon },
-      { name: 'Status Tindak Lanjut', href: '/admin/status-tl', icon: Rocket },
-      { name: 'Status Verifikasi', href: '/admin/status-ver', icon: Edit },
-      { name: 'Template Pesan', href: '/admin/templates', icon: Mail },
+      { name: 'Desa', href: '/admin/desa', icon: Building },
+      { name: 'Koneksi', href: '/admin/koneksi', icon: LinkIcon },
+      { name: 'Status', href: '/admin/status', icon: Rocket },
+      { name: 'Atensi', href: '/admin/atensi', icon: AlertCircle },
+      { name: 'Pesan', href: '/admin/pesan', icon: Mail },
+      { name: 'Peran', href: '/admin/peran', icon: Key },
     ]
   },
   {
@@ -181,10 +180,10 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile sidebar backdrop */}
+      {/* Mobile sidebar backdrop - invisible but clickable */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+          className="fixed inset-0 z-40 bg-transparent lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -196,8 +195,8 @@ export default function DashboardLayout({
         <div className="flex flex-col h-screen">
           {/* Sidebar Header with Logo */}
           <div className="flex flex-col items-center justify-center px-6 py-6" style={{ backgroundColor: '#003554', borderBottom: '8px solid white' }}>
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3" style={{ boxShadow: '0px 0px 6px rgba(0,0,0,0.3)' }}>
-              <span className="text-2xl font-bold text-blue-600">CACM</span>
+            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3 p-2" style={{ boxShadow: '0px 0px 6px rgba(0,0,0,0.3)' }}>
+              <Image src="/cacm_logo.png" alt="CACM Logo" width={48} height={48} className="object-contain" />
             </div>
             <span className="text-white font-bold text-center text-sm">
               {session?.user?.pemdaName || 'Kabupaten/Kota'}
@@ -367,7 +366,7 @@ export default function DashboardLayout({
 
             {/* Logo and Pemda Name (visible on mobile and desktop) */}
             <div className="flex items-center gap-4">
-              <Image src="/logo-ssh.png" alt="Logo" width={32} height={32} className="hidden sm:block" />
+              <Image src="/cacm_logo.png" alt="CACM Logo" width={32} height={32} className="hidden sm:block" />
               <div className="hidden lg:flex items-center gap-6 text-white">
                 <div className="text-sm font-medium">
                   {session?.user?.pemdaName || 'Kabupaten/Kota'}
@@ -446,20 +445,12 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 w-full overflow-x-auto bg-gray-50">
-          <div className="w-full p-6">
+        <main className="flex-1 overflow-x-hidden bg-gray-50">
+          <div className="p-6 max-w-full">
             {children}
           </div>
         </main>
       </div>
-
-      {/* Overlay for mobile */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   )
 }

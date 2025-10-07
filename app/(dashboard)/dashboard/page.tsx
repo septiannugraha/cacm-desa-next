@@ -2,7 +2,8 @@
 
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import useEmblaCarousel from 'embla-carousel-react'
 import {
   FileText,
   AlertCircle,
@@ -14,7 +15,9 @@ import {
   Calendar,
   BarChart3,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
 import BarChartDashboard from '@/components/charts/BarChartDashboard'
 import LineChartDashboard from '@/components/charts/LineChartDashboard'
@@ -34,14 +37,55 @@ interface DashboardChartData {
   monthlyTrend: ChartData[]
 }
 
+interface FilterOption {
+  kecamatan: string
+  Kd_Kec: string
+}
+
+interface FilterOptionDesa {
+  desa: string
+  Kd_Desa: string
+}
+
+interface FilterOptionSumberDana {
+  sumberdana: string
+  Kode: string
+}
+
+interface FilterData {
+  kecamatan: FilterOption[]
+  desa: FilterOptionDesa[]
+  sumberDana: FilterOptionSumberDana[]
+}
+
 export default function DashboardPage() {
   const { data: session, status } = useSession()
   const [chartData, setChartData] = useState<DashboardChartData | null>(null)
   const [loadingCharts, setLoadingCharts] = useState(true)
+  const [filterData, setFilterData] = useState<FilterData | null>(null)
+  const [selectedKecamatan, setSelectedKecamatan] = useState<string>('')
+  const [selectedDesa, setSelectedDesa] = useState<string>('')
+  const [selectedSumberDana, setSelectedSumberDana] = useState<string>('')
+
+  // Embla Carousel setup
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    loop: false,
+    align: 'start',
+    slidesToScroll: 1,
+  })
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev()
+  }, [emblaApi])
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext()
+  }, [emblaApi])
 
   useEffect(() => {
     if (status === 'authenticated') {
       fetchChartData()
+      fetchFilterData()
     }
   }, [status])
 
@@ -56,6 +100,19 @@ export default function DashboardPage() {
       console.error('Failed to fetch chart data:', error)
     } finally {
       setLoadingCharts(false)
+    }
+  }
+
+  const fetchFilterData = async () => {
+    try {
+      const response = await fetch('/api/dashboard/filters')
+      if (response.ok) {
+        const data = await response.json()
+        setFilterData(data)
+        console.log('[Dashboard] Filter data loaded:', data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch filter data:', error)
     }
   }
 
@@ -156,7 +213,7 @@ export default function DashboardPage() {
   // Kategori1 = NamaDesa/NamaRek2, Kategori2 = Category, Nilai1 = Anggaran, Nilai2 = Realisasi
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -165,59 +222,10 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      {/* Financial Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {financialStats.map((stat, index) => {
-          const formatCurrency = (value: number) => {
-            return new Intl.NumberFormat('id-ID', {
-              style: 'currency',
-              currency: 'IDR',
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 0,
-            }).format(value)
-          }
-
-          return (
-            <div key={index} className="bg-white rounded-lg shadow overflow-hidden">
-              <div className="flex items-center p-4">
-                {/* Percentage Box */}
-                <div className={`${stat.color} text-white w-20 h-20 flex items-center justify-center rounded-lg mr-4 flex-shrink-0`}>
-                  <span className="text-lg font-bold">{stat.percentage}%</span>
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">{stat.title}</h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2 mb-2 text-xs">
-                    <div>
-                      <span className="text-gray-500">Anggaran:</span>
-                      <p className="font-medium text-gray-900">{formatCurrency(stat.anggaran)}</p>
-                    </div>
-                    <div>
-                      <span className="text-gray-500">Realisasi:</span>
-                      <p className="font-medium text-gray-900">{formatCurrency(stat.realisasi)}</p>
-                    </div>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`${stat.color} h-2 rounded-full transition-all duration-300`}
-                      style={{ width: `${stat.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6 max-w-full">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Filter</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-full">
           {/* Filter Kecamatan */}
           <div>
             <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
@@ -225,12 +233,16 @@ export default function DashboardPage() {
             </label>
             <select
               id="kecamatan"
+              value={selectedKecamatan}
+              onChange={(e) => setSelectedKecamatan(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Semua Kecamatan</option>
-              <option value="kec1">Kecamatan 1</option>
-              <option value="kec2">Kecamatan 2</option>
-              <option value="kec3">Kecamatan 3</option>
+              {filterData?.kecamatan.map((item) => (
+                <option key={item.Kd_Kec} value={item.Kd_Kec}>
+                  {item.kecamatan}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -241,12 +253,16 @@ export default function DashboardPage() {
             </label>
             <select
               id="desa"
+              value={selectedDesa}
+              onChange={(e) => setSelectedDesa(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Semua Desa</option>
-              <option value="desa1">Desa Sukamaju</option>
-              <option value="desa2">Desa Mekar Jaya</option>
-              <option value="desa3">Desa Sejahtera</option>
+              {filterData?.desa.map((item) => (
+                <option key={item.Kd_Desa} value={item.Kd_Desa}>
+                  {item.desa}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -257,21 +273,104 @@ export default function DashboardPage() {
             </label>
             <select
               id="sumber-dana"
+              value={selectedSumberDana}
+              onChange={(e) => setSelectedSumberDana(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Semua Sumber Dana</option>
-              <option value="apbd">APBD</option>
-              <option value="apbn">APBN</option>
-              <option value="dak">DAK</option>
-              <option value="dau">DAU</option>
+              {filterData?.sumberDana.map((item) => (
+                <option key={item.Kode} value={item.Kode}>
+                  {item.sumberdana}
+                </option>
+              ))}
             </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Financial Summary Cards - Carousel */}
+      <div className="relative bg-gray-50 px-6 py-6 rounded-lg max-w-full">
+        {/* Header with Navigation */}
+        <div className="flex items-center justify-between mb-4 max-w-full">
+          <h2 className="text-lg font-semibold text-gray-900">Ringkasan Keuangan</h2>
+          <div className="flex gap-2">
+            <button
+              onClick={scrollPrev}
+              className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors border border-gray-200"
+              aria-label="Previous slide"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
+            </button>
+            <button
+              onClick={scrollNext}
+              className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors border border-gray-200"
+              aria-label="Next slide"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
+        </div>
+
+        {/* Carousel Container */}
+        <div className="overflow-hidden max-w-full" ref={emblaRef}>
+          <div className="flex gap-4 max-w-full">
+            {financialStats.map((stat, index) => {
+              const formatCurrency = (value: number) => {
+                return new Intl.NumberFormat('id-ID', {
+                  style: 'currency',
+                  currency: 'IDR',
+                  minimumFractionDigits: 0,
+                  maximumFractionDigits: 0,
+                }).format(value)
+              }
+
+              return (
+                <div
+                  key={index}
+                  className="flex-[0_0_calc(100%-1rem)] min-w-0 sm:flex-[0_0_calc(50%-0.5rem)] lg:flex-[0_0_calc(33.333%-0.667rem)] xl:flex-[0_0_calc(25%-0.75rem)]"
+                >
+                  <div className="bg-white rounded-lg shadow overflow-hidden h-full">
+                    <div className="flex items-center p-4">
+                      {/* Percentage Box */}
+                      <div className={`${stat.color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}>
+                        <span className="text-base sm:text-lg font-bold">{stat.percentage}%</span>
+                      </div>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 leading-tight">{stat.title}</h3>
+
+                        <div className="space-y-1 mb-2 text-xs">
+                          <div>
+                            <span className="text-gray-500">Anggaran:</span>
+                            <p className="font-medium text-gray-900 truncate">{formatCurrency(stat.anggaran)}</p>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Realisasi:</span>
+                            <p className="font-medium text-gray-900 truncate">{formatCurrency(stat.realisasi)}</p>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`${stat.color} h-2 rounded-full transition-all duration-300`}
+                            style={{ width: `${stat.percentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>
 
       {/* Charts Section - Using Recharts with data from database */}
       {loadingCharts ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="bg-white rounded-lg shadow p-6">
               <div className="animate-pulse">
@@ -283,7 +382,7 @@ export default function DashboardPage() {
         </div>
       ) : chartData ? (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
             {/* Bar Chart - Budget vs Realization by Village */}
             <div className="bg-white rounded-lg shadow p-6">
               <BarChartDashboard
@@ -308,7 +407,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Line and Area Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
             {/* Line Chart - Monthly Trend */}
             <div className="bg-white rounded-lg shadow p-6">
               <LineChartDashboard
@@ -339,7 +438,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
         {/* Priority Distribution */}
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Prioritas Atensi</h2>
@@ -392,7 +491,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div className="bg-white rounded-lg shadow p-6 max-w-full">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Aktivitas Terkini</h2>
           <button className="text-sm text-blue-600 hover:text-blue-800">

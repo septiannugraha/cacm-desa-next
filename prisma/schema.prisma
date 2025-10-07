@@ -521,3 +521,132 @@ model AuditLog {
   @@index([timestamp])
 }
 
+// Village Data Table
+model TaDesa {
+  id               String?   @db.VarChar(36)
+  id_Pemda         String?   @db.VarChar(36)
+  Tahun            String    @db.VarChar(4)
+  Kd_Pemda         String    @db.VarChar(4)
+  Kd_Desa          String    @db.VarChar(12)
+  Kd_Kec           String?   @db.VarChar(7)
+  Nama_Desa        String?   @db.VarChar(50)
+  Nm_Kades         String?   @db.VarChar(50)
+  Jbt_Kades        String?   @db.VarChar(50)
+  Nm_Sekdes        String?   @db.VarChar(50)
+  NIP_Sekdes       String?   @db.VarChar(18)
+  Jbt_Sekdes       String?   @db.VarChar(50)
+  Nm_Kaur_Keu      String?   @db.VarChar(50)
+  Jbt_Kaur_Keu     String?   @db.VarChar(50)
+  Nm_Bendahara     String?   @db.VarChar(50)
+  Jbt_Bendahara    String?   @db.VarChar(50)
+  No_Perdes        String?   @db.VarChar(30)
+  Tgl_Perdes       DateTime?
+  No_Perdes_PB     String?   @db.VarChar(30)
+  Tgl_Perdes_PB    DateTime?
+  No_Perdes_PJ     String?   @db.VarChar(30)
+  Tgl_Perdes_PJ    DateTime?
+  No_Perkades      String?   @db.VarChar(30)
+  No_Perkades_PB   String?   @db.VarChar(30)
+  Alamat           String?   @db.VarChar(50)
+  Ibukota          String?   @db.VarChar(30)
+  HP_Kades         String?   @db.VarChar(30)
+  Status           String?   @db.VarChar(8)
+  NPWP             String?   @db.VarChar(30)
+  No_RKPDes        String?   @db.VarChar(30)
+  Tgl_RKPDes       DateTime?
+  No_RPJMDes       String?   @db.VarChar(30)
+  Tgl_RPJMDes      DateTime?
+  Visi             String?   @db.NVarChar(Max)
+  Misi             String?   @db.NVarChar(Max)
+  Tujuan           String?   @db.NVarChar(Max)
+  TahunA           String?   @db.NVarChar(4)
+  TahunN           String?   @db.NVarChar(4)
+  JlhPaket         Float?
+  NilaiPaket       Float?
+  JlhBukti         Float?
+  NilaiBukti       Float?
+  JlhManipulasi    Float?
+  PersenManipulasi Float?
+  create_at        DateTime?
+  create_by        String?   @db.VarChar(100)
+  update_at        DateTime?
+  update_by        String?   @db.VarChar(100)
+
+  @@id([Tahun, Kd_Pemda, Kd_Desa])
+  @@index([Tahun])
+  @@index([Kd_Desa])
+  @@map("Ta_Desa")
+}
+
+// APBDes Tables - Revenue (Pendapatan) Realization
+model TaAR3RealisasiPendapatan {
+  Tahun        Int
+  Kd_Pemda     String   @db.VarChar(5)
+  No_ST        String   @db.VarChar(20)
+  Kd_Desa      String   @db.VarChar(10)
+  Kd_Keg       String?  @db.VarChar(20)
+  Kd_Rincian   String?  @db.VarChar(20)
+  Nama_Obyek   String?  @db.VarChar(255)
+  JmlAnggaran  Float?
+  JmlRealisasi Float?
+  Persen       Float?
+
+  @@id([Tahun, Kd_Pemda, No_ST, Kd_Desa])
+  @@index([Tahun])
+  @@index([Kd_Desa])
+  @@map("Ta_AR3_RealisasiPendapatan")
+}
+
+// APBDes Realization Summary Table
+model TaAR1RealisasiAPBDes {
+  id            String    @db.VarChar(36)
+  id_Sample     String    @db.VarChar(36)
+  Tahun         String    @db.VarChar(4)
+  Kd_Pemda      String    @db.VarChar(4)
+  No_ST         String    @db.VarChar(50)
+  Kd_Desa       String    @db.VarChar(12)
+  NoLap         String    @db.VarChar(10)
+  Kelompok      String    @db.VarChar(20)
+  Akun          String    @db.VarChar(20)
+  Nama_Akun     String?   @db.VarChar(100)
+  Nama_Kelompok String?   @db.VarChar(100)
+  JmlAnggaran   Float?    @db.Money
+  JmlRealisasi  Float?    @db.Money
+  persen        Float?
+  create_at     DateTime?
+  create_by     String?   @db.VarChar(100)
+  update_at     DateTime?
+  update_by     String?   @db.VarChar(100)
+
+  @@id([Tahun, Kd_Pemda, No_ST, Kd_Desa, NoLap, Kelompok])
+  @@index([Tahun, Kd_Pemda])
+  @@index([Kd_Desa])
+  @@map("Ta_AR1_RealisasiAPBDes")
+}
+
+// Reference Tables for Filters
+model RefKecamatan {
+  Kd_Kec          String  @db.VarChar(20)
+  Nama_Kecamatan  String? @db.VarChar(100)
+
+  @@id([Kd_Kec])
+  @@map("Ref_Kecamatan")
+}
+
+model RefDesa {
+  Kd_Desa    String  @db.VarChar(20)
+  Nama_Desa  String? @db.VarChar(100)
+
+  @@id([Kd_Desa])
+  @@map("Ref_Desa")
+}
+
+model RefSumberDana {
+  Kode        String  @db.VarChar(10)
+  Nama_Sumber String? @db.VarChar(100)
+  Urut        Int?
+
+  @@id([Kode])
+  @@map("Ref_SumberDana")
+}
+

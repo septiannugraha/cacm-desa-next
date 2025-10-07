@@ -12,58 +12,175 @@ export async function GET() {
     }
 
     const fiscalYear = session.fiscalYear || new Date().getFullYear()
+    console.log('[Dashboard] FiscalYear:', fiscalYear)
+    console.log('[Dashboard] User PemdaId:', session.user.pemdaId)
 
-    // Example: Fetch budget and realization data by village
-    // This uses standardized structure: Kategori1, Kategori2, Nilai1, Nilai2
-    // You can replace this with actual SQL queries based on your database structure
+    // Test if ANY data exists in table
+    const testCount = await prisma.taAR1RealisasiAPBDes.count()
+    console.log('[Dashboard] Total records in TaAR1RealisasiAPBDes:', testCount)
 
-    // Sample query - adjust based on your actual database schema
-    const villages = await prisma.village.findMany({
+    // Get pemda code from user's CACM_Pemda
+    const pemda = await prisma.cACM_Pemda.findUnique({
+      where: { id: session.user.pemdaId },
+      select: { code: true },
+    })
+
+    if (!pemda) {
+      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
+    }
+
+    // Try to extract numeric code from pemda.code
+    // If code is already numeric (like "3513"), use it
+    // If code is text (like "BANDUNG"), we need to look up the actual code
+    let kdPemda = pemda.code
+    const numericMatch = pemda.code.match(/\d{4}/)
+    if (numericMatch) {
+      kdPemda = numericMatch[0]
+    } else {
+      // For now, we'll try first 4 chars, but log a warning
+      kdPemda = pemda.code.substring(0, 4)
+      console.warn('[Dashboard] Pemda code is not numeric:', pemda.code)
+    }
+    console.log('[Dashboard] Pemda Code (full):', pemda.code)
+    console.log('[Dashboard] Kd_Pemda for query:', kdPemda)
+
+    // Test data for this year
+    let activeFiscalYear = fiscalYear
+    const yearCount = await prisma.taAR1RealisasiAPBDes.count({
+      where: { Tahun: activeFiscalYear.toString() }
+    })
+    console.log('[Dashboard] Records for year', activeFiscalYear, ':', yearCount)
+
+    // If no data for this year, try to find what years are available
+    if (yearCount === 0) {
+      console.log('[Dashboard] No data for year', activeFiscalYear, ', checking available years...')
+      const availableYears = await prisma.taAR1RealisasiAPBDes.groupBy({
+        by: ['Tahun'],
+        _count: { Tahun: true },
+        orderBy: { Tahun: 'desc' }
+      })
+      console.log('[Dashboard] Available years in database:', availableYears)
+
+      // Use the most recent available year
+      if (availableYears.length > 0) {
+        activeFiscalYear = parseInt(availableYears[0].Tahun)
+        console.log('[Dashboard] Falling back to year:', activeFiscalYear)
+      }
+    }
+
+    // Test data for this pemda
+    const pemdaCount = await prisma.taAR1RealisasiAPBDes.count({
+      where: { Kd_Pemda: kdPemda }
+    })
+    console.log('[Dashboard] Records for pemda', kdPemda, ':', pemdaCount)
+
+    // If no data found with this pemda code, try to find what Kd_Pemda values exist
+    if (pemdaCount === 0) {
+      console.log('[Dashboard] No data for this pemda code, checking available Kd_Pemda values...')
+      const availablePemdas = await prisma.taAR1RealisasiAPBDes.groupBy({
+        by: ['Kd_Pemda'],
+        _count: { Kd_Pemda: true }
+      })
+      console.log('[Dashboard] Available Kd_Pemda in database:', availablePemdas)
+
+      // Use the first available Kd_Pemda if any exists
+      if (availablePemdas.length > 0) {
+        kdPemda = availablePemdas[0].Kd_Pemda
+        console.log('[Dashboard] Falling back to Kd_Pemda:', kdPemda)
+      }
+    }
+
+    // 1. Budget Realization by Village Chart
+    // Aggregate APBDes data grouped by village
+    const villageData = await prisma.taAR1RealisasiAPBDes.groupBy({
+      by: ['Kd_Desa'],
+      where: {
+        Tahun: activeFiscalYear.toString(),
+        Kd_Pemda: kdPemda,
+      },
+      _sum: {
+        JmlAnggaran: true,
+        JmlRealisasi: true,
+      },
+      orderBy: {
+        _sum: {
+          JmlAnggaran: 'desc',
+        },
+      },
       take: 5,
-      orderBy: { createdAt: 'desc' },
+    })
+
+    console.log('[Dashboard] Village Data Count:', villageData.length)
+    if (villageData.length > 0) {
+      console.log('[Dashboard] Sample Village Data:', villageData[0])
+    } else {
+      console.log('[Dashboard] No village data found, checking if any data exists...')
+      const anyData = await prisma.taAR1RealisasiAPBDes.findMany({ take: 5 })
+      console.log('[Dashboard] Sample raw data (first 5 records):', anyData.map(d => ({
+        Tahun: d.Tahun,
+        Kd_Pemda: d.Kd_Pemda,
+        Kd_Desa: d.Kd_Desa,
+        JmlAnggaran: d.JmlAnggaran
+      })))
+    }
+
+    // Get village names
+    const villageCodes = villageData.map(v => v.Kd_Desa)
+    const villages = await prisma.taDesa.findMany({
+      where: {
+        Tahun: activeFiscalYear.toString(),
+        Kd_Pemda: kdPemda,
+        Kd_Desa: { in: villageCodes },
+      },
       select: {
-        name: true,
-        code: true,
+        Kd_Desa: true,
+        Nama_Desa: true,
       },
     })
 
-    // Transform to chart data format
-    const budgetRealizationByVillage = villages.map((village, index) => ({
-      Kategori1: village.name,
-      Kategori2: 'Belanja Modal',
-      Nilai1: (index + 1) * 150000000, // Replace with actual budget query
-      Nilai2: (index + 1) * 135000000, // Replace with actual realization query
+    const villageMap = new Map(villages.map(v => [v.Kd_Desa, v.Nama_Desa || v.Kd_Desa]))
+
+    const budgetRealizationByVillage = villageData.map((village) => ({
+      Kategori1: villageMap.get(village.Kd_Desa) || village.Kd_Desa,
+      Kategori2: 'APBDes Desa',
+      Nilai1: village._sum.JmlAnggaran || 0,
+      Nilai2: village._sum.JmlRealisasi || 0,
     }))
 
-    // Account type distribution
-    const budgetByAccountType = [
-      {
-        Kategori1: 'Belanja Pegawai',
-        Kategori2: 'Kategori Belanja',
-        Nilai1: 1200000000,
-        Nilai2: 1150000000,
+    // 2. Budget by Account Type Chart
+    // Aggregate by Kelompok (account group)
+    const accountData = await prisma.taAR1RealisasiAPBDes.groupBy({
+      by: ['Kelompok', 'Nama_Kelompok'],
+      where: {
+        Tahun: activeFiscalYear.toString(),
+        Kd_Pemda: kdPemda,
       },
-      {
-        Kategori1: 'Belanja Barang & Jasa',
-        Kategori2: 'Kategori Belanja',
-        Nilai1: 2100000000,
-        Nilai2: 1980000000,
+      _sum: {
+        JmlAnggaran: true,
+        JmlRealisasi: true,
       },
-      {
-        Kategori1: 'Belanja Modal',
-        Kategori2: 'Kategori Belanja',
-        Nilai1: 3350000000,
-        Nilai2: 3120000000,
+      orderBy: {
+        _sum: {
+          JmlAnggaran: 'desc',
+        },
       },
-      {
-        Kategori1: 'Belanja Tidak Terduga',
-        Kategori2: 'Kategori Belanja',
-        Nilai1: 200000000,
-        Nilai2: 180000000,
-      },
-    ]
+      take: 5,
+    })
 
-    // Monthly trend - could be fetched from database aggregations
+    const budgetByAccountType = accountData.map((account) => ({
+      Kategori1: account.Nama_Kelompok || account.Kelompok,
+      Kategori2: 'Kategori APBDes',
+      Nilai1: account._sum.JmlAnggaran || 0,
+      Nilai2: account._sum.JmlRealisasi || 0,
+    }))
+
+    console.log('[Dashboard] Account Data Count:', accountData.length)
+    if (accountData.length > 0) {
+      console.log('[Dashboard] Sample Account Data:', accountData[0])
+    }
+
+    // 3. Monthly Trend - Keep dummy data for now as table doesn't have date breakdown
+    // TODO: Replace with actual monthly data if available
     const monthlyTrend = [
       {
         Kategori1: 'Januari',
@@ -102,6 +219,12 @@ export async function GET() {
         Nilai2: 1100000000,
       },
     ]
+
+    console.log('[Dashboard] Final Response:', {
+      villages: budgetRealizationByVillage.length,
+      accounts: budgetByAccountType.length,
+      monthly: monthlyTrend.length
+    })
 
     return NextResponse.json({
       budgetRealizationByVillage,

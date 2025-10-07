@@ -1,0 +1,571 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+// Legacy authentication table from Delphi system (actual structure from Dian's db pull)
+model Ta_UserID {
+  UserID     String  @id(map: "PK_Ta_UserID") @db.VarChar(50)
+  Nama       String? @db.VarChar(50)
+  Password   String? @db.VarChar(50)
+  Level      String? @db.VarChar(50)
+  Keterangan String? @db.VarChar(50)
+  IDLevel    String? @db.VarChar(50)
+  id         String? @db.VarChar(36)
+  Kd_Pemda   String? @db.VarChar(5)
+}
+
+// Remote database user table (Dian's CACM_Baru database - uses our schema with bcrypt)
+model CACM_User {
+  id             String         @id @default(cuid())
+  username       String         @unique
+  email          String?        @unique
+  password       String
+  nip            String?        @unique
+  name           String
+  roleId         String
+  pemdaId        String?
+  active         Boolean        @default(true)
+  lastLogin      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  activities     CACM_Activity[]
+  assignedAtensi CACM_Atensi[]       @relation("AtensiAssignee")
+  reportedAtensi CACM_Atensi[]       @relation("AtensiReporter")
+  attachments    CACM_Attachment[]
+  auditLogs      CACM_AuditLog[]
+  notifications  CACM_Notification[]
+  responses      CACM_Response[]
+  sessions       CACM_Session[]
+  pemda          CACM_Pemda?         @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role           CACM_Role           @relation(fields: [roleId], references: [id], onUpdate: NoAction)
+  userActivities CACM_UserActivity[]
+
+  @@index([username])
+  @@index([email])
+  @@index([nip])
+  @@map("CACM_User")
+}
+
+model CACM_Role {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  code        String       @unique
+  permissions String       @db.NVarChar(Max)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  users       CACM_User[]
+
+  @@map("CACM_Role")
+}
+
+model CACM_Session {
+  id           String      @id @default(cuid())
+  sessionToken String      @unique
+  userId       String
+  fiscalYear   Int
+  expires      DateTime
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  user         CACM_User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionToken])
+  @@index([userId])
+  @@map("CACM_Session")
+}
+
+model CACM_Pemda {
+  id        String       @id @default(cuid())
+  name      String
+  code      String       @unique
+  level     String
+  parentId  String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  atensi    CACM_Atensi[]
+  parent    CACM_Pemda?  @relation("PemdaHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  CACM_Pemda[] @relation("PemdaHierarchy")
+  users     CACM_User[]
+  villages  CACM_Village[]
+
+  @@index([code])
+  @@map("CACM_Pemda")
+}
+
+model CACM_Village {
+  id        String       @id @default(cuid())
+  name      String
+  code      String       @unique
+  pemdaId   String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  atensi    CACM_Atensi[]
+  pemda     CACM_Pemda   @relation(fields: [pemdaId], references: [id], onUpdate: NoAction)
+
+  @@index([code])
+  @@map("CACM_Village")
+}
+
+model CACM_Atensi {
+  id            String              @id @default(cuid())
+  code          String              @unique
+  title         String
+  description   String              @db.NVarChar(Max)
+  categoryId    String
+  priority      String              @default("MEDIUM")
+  status        String              @default("OPEN")
+  villageId     String
+  pemdaId       String
+  fiscalYear    Int
+  amount        Float?
+  accountCode   String?
+  reportedById  String
+  assignedToId  String?
+  reportedAt    DateTime            @default(now())
+  dueDate       DateTime?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  activities    CACM_Activity[]
+  assignedTo    CACM_User?          @relation("AtensiAssignee", fields: [assignedToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category      CACM_AtensiCategory @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  pemda         CACM_Pemda          @relation(fields: [pemdaId], references: [id], onUpdate: NoAction)
+  reportedBy    CACM_User           @relation("AtensiReporter", fields: [reportedById], references: [id], onUpdate: NoAction)
+  village       CACM_Village        @relation(fields: [villageId], references: [id], onUpdate: NoAction)
+  attachments   CACM_Attachment[]
+  notifications CACM_Notification[]
+  responses     CACM_Response[]
+
+  @@index([code])
+  @@index([status])
+  @@index([priority])
+  @@index([villageId])
+  @@index([reportedById])
+  @@index([assignedToId])
+  @@index([fiscalYear])
+  @@map("CACM_Atensi")
+}
+
+model CACM_AtensiCategory {
+  id          String        @id @default(cuid())
+  code        String        @unique
+  name        String
+  description String?
+  color       String?
+  icon        String?
+  order       Int           @default(0)
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  atensi      CACM_Atensi[]
+
+  @@index([code])
+  @@map("CACM_AtensiCategory")
+}
+
+model CACM_Response {
+  id          String             @id @default(cuid())
+  atensiId    String
+  content     String             @db.NVarChar(Max)
+  type        String             @default("COMMENT")
+  isInternal  Boolean            @default(false)
+  createdById String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  attachments CACM_Attachment[]
+  atensi      CACM_Atensi        @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  createdBy   CACM_User          @relation(fields: [createdById], references: [id], onUpdate: NoAction)
+
+  @@index([atensiId])
+  @@index([createdById])
+  @@map("CACM_Response")
+}
+
+model CACM_Attachment {
+  id           String         @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  atensiId     String?
+  responseId   String?
+  uploadedById String
+  createdAt    DateTime       @default(now())
+  atensi       CACM_Atensi?   @relation(fields: [atensiId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  response     CACM_Response? @relation(fields: [responseId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  uploadedBy   CACM_User      @relation(fields: [uploadedById], references: [id], onUpdate: NoAction)
+
+  @@index([atensiId])
+  @@index([responseId])
+  @@map("CACM_Attachment")
+}
+
+model CACM_Activity {
+  id            String      @id @default(cuid())
+  atensiId      String
+  action        String
+  details       String?     @db.NVarChar(Max)
+  performedById String
+  createdAt     DateTime    @default(now())
+  atensi        CACM_Atensi @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  performedBy   CACM_User   @relation(fields: [performedById], references: [id], onUpdate: NoAction)
+
+  @@index([atensiId])
+  @@index([performedById])
+  @@map("CACM_Activity")
+}
+
+model CACM_Notification {
+  id        String       @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  data      String?      @db.NVarChar(Max)
+  read      Boolean      @default(false)
+  atensiId  String?
+  userId    String
+  createdAt DateTime     @default(now())
+  atensi    CACM_Atensi? @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  user      CACM_User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([atensiId])
+  @@map("CACM_Notification")
+}
+
+model CACM_UserActivity {
+  id        String    @id @default(cuid())
+  userId    String
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  String?   @db.NVarChar(Max)
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime  @default(now())
+  user      CACM_User @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+  @@map("CACM_UserActivity")
+}
+
+model CACM_AuditLog {
+  id        String    @id @default(cuid())
+  userId    String
+  action    String
+  tableName String
+  recordId  String
+  oldValues String?   @db.NVarChar(Max)
+  newValues String?   @db.NVarChar(Max)
+  ipAddress String?
+  timestamp DateTime  @default(now())
+  user      CACM_User @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([tableName])
+  @@index([timestamp])
+  @@map("CACM_AuditLog")
+}
+
+model User {
+  id             String         @id @default(cuid())
+  username       String         @unique
+  email          String?        @unique
+  password       String
+  nip            String?        @unique
+  name           String
+  roleId         String
+  pemdaId        String?
+  active         Boolean        @default(true)
+  lastLogin      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  activities     Activity[]
+  assignedAtensi Atensi[]       @relation("AtensiAssignee")
+  reportedAtensi Atensi[]       @relation("AtensiReporter")
+  attachments    Attachment[]
+  auditLogs      AuditLog[]
+  notifications  Notification[]
+  responses      Response[]
+  sessions       Session[]
+  pemda          Pemda?         @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  role           Role           @relation(fields: [roleId], references: [id], onUpdate: NoAction)
+  userActivities UserActivity[]
+
+  @@index([username])
+  @@index([email])
+  @@index([nip])
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique
+  permissions String   @db.NVarChar(Max)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  users       User[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  fiscalYear   Int
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([sessionToken])
+  @@index([userId])
+}
+
+model Pemda {
+  id        String    @id @default(cuid())
+  name      String
+  code      String    @unique
+  level     String
+  parentId  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  atensi    Atensi[]
+  parent    Pemda?    @relation("PemdaHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  Pemda[]   @relation("PemdaHierarchy")
+  users     User[]
+  villages  Village[]
+
+  @@index([code])
+}
+
+model Village {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  pemdaId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  atensi    Atensi[]
+  pemda     Pemda    @relation(fields: [pemdaId], references: [id], onUpdate: NoAction)
+
+  @@index([code])
+}
+
+model Atensi {
+  id            String         @id @default(cuid())
+  code          String         @unique
+  title         String
+  description   String         @db.NVarChar(Max)
+  categoryId    String
+  priority      String         @default("MEDIUM")
+  status        String         @default("OPEN")
+  villageId     String
+  pemdaId       String
+  fiscalYear    Int
+  amount        Float?
+  accountCode   String?
+  reportedById  String
+  assignedToId  String?
+  reportedAt    DateTime       @default(now())
+  dueDate       DateTime?
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activities    Activity[]
+  assignedTo    User?          @relation("AtensiAssignee", fields: [assignedToId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  category      AtensiCategory @relation(fields: [categoryId], references: [id], onUpdate: NoAction)
+  pemda         Pemda          @relation(fields: [pemdaId], references: [id], onUpdate: NoAction)
+  reportedBy    User           @relation("AtensiReporter", fields: [reportedById], references: [id], onUpdate: NoAction)
+  village       Village        @relation(fields: [villageId], references: [id], onUpdate: NoAction)
+  attachments   Attachment[]
+  notifications Notification[]
+  responses     Response[]
+
+  @@index([code])
+  @@index([status])
+  @@index([priority])
+  @@index([villageId])
+  @@index([reportedById])
+  @@index([assignedToId])
+  @@index([fiscalYear])
+}
+
+model AtensiCategory {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  name        String
+  description String?
+  color       String?
+  icon        String?
+  order       Int      @default(0)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  atensi      Atensi[]
+
+  @@index([code])
+}
+
+model Response {
+  id          String       @id @default(cuid())
+  atensiId    String
+  content     String       @db.NVarChar(Max)
+  type        String       @default("COMMENT")
+  isInternal  Boolean      @default(false)
+  createdById String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  attachments Attachment[]
+  atensi      Atensi       @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  createdBy   User         @relation(fields: [createdById], references: [id], onUpdate: NoAction)
+
+  @@index([atensiId])
+  @@index([createdById])
+}
+
+model Attachment {
+  id           String    @id @default(cuid())
+  filename     String
+  originalName String
+  mimeType     String
+  size         Int
+  url          String
+  atensiId     String?
+  responseId   String?
+  uploadedById String
+  createdAt    DateTime  @default(now())
+  atensi       Atensi?   @relation(fields: [atensiId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  response     Response? @relation(fields: [responseId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  uploadedBy   User      @relation(fields: [uploadedById], references: [id], onUpdate: NoAction)
+
+  @@index([atensiId])
+  @@index([responseId])
+}
+
+model Activity {
+  id            String   @id @default(cuid())
+  atensiId      String
+  action        String
+  details       String?  @db.NVarChar(Max)
+  performedById String
+  createdAt     DateTime @default(now())
+  atensi        Atensi   @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  performedBy   User     @relation(fields: [performedById], references: [id], onUpdate: NoAction)
+
+  @@index([atensiId])
+  @@index([performedById])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  type      String
+  title     String
+  message   String
+  data      String?  @db.NVarChar(Max)
+  read      Boolean  @default(false)
+  atensiId  String?
+  userId    String
+  createdAt DateTime @default(now())
+  atensi    Atensi?  @relation(fields: [atensiId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([atensiId])
+}
+
+model UserActivity {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  String?  @db.NVarChar(Max)
+  ipAddress String?
+  userAgent String?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([action])
+  @@index([timestamp])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  tableName String
+  recordId  String
+  oldValues String?  @db.NVarChar(Max)
+  newValues String?  @db.NVarChar(Max)
+  ipAddress String?
+  timestamp DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onUpdate: NoAction)
+
+  @@index([userId])
+  @@index([tableName])
+  @@index([timestamp])
+}
+
+model CACM_Pemda {
+  id               String       @id(map: "Pemda_pkey")
+  name             String
+  code             String       @unique(map: "Pemda_code_key")
+  level            String
+  parentId         String?
+  createdAt        DateTime     @default(now(), map: "Pemda_createdAt_df")
+  updatedAt        DateTime
+  CACM_Pemda       CACM_Pemda?  @relation("CACM_PemdaToCACM_Pemda", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Pemda_parentId_fkey")
+  other_CACM_Pemda CACM_Pemda[] @relation("CACM_PemdaToCACM_Pemda")
+  CACM_User        CACM_User[]
+}
+
+model CACM_Role {
+  id          String      @id(map: "Role_pkey")
+  name        String      @unique(map: "Role_name_key")
+  code        String      @unique(map: "Role_code_key")
+  permissions String      @db.NVarChar(Max)
+  createdAt   DateTime    @default(now(), map: "Role_createdAt_df")
+  updatedAt   DateTime
+  CACM_User   CACM_User[]
+}
+
+model CACM_Session {
+  id           String    @id(map: "Session_pkey")
+  sessionToken String    @unique(map: "Session_sessionToken_key")
+  userId       String
+  fiscalYear   Int
+  expires      DateTime
+  createdAt    DateTime  @default(now(), map: "Session_createdAt_df")
+  updatedAt    DateTime
+  CACM_User    CACM_User @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+}
+
+model CACM_User {
+  id           String         @id(map: "User_pkey")
+  username     String         @unique(map: "User_username_key")
+  email        String?        @unique(map: "User_email_key")
+  password     String
+  nip          String?        @unique(map: "User_nip_key")
+  name         String
+  roleId       String
+  pemdaId      String?
+  active       Boolean        @default(true, map: "User_active_df")
+  lastLogin    DateTime?
+  createdAt    DateTime       @default(now(), map: "User_createdAt_df")
+  updatedAt    DateTime
+  CACM_Session CACM_Session[]
+  CACM_Pemda   CACM_Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_pemdaId_fkey")
+  CACM_Role    CACM_Role      @relation(fields: [roleId], references: [id], onUpdate: NoAction, map: "User_roleId_fkey")
+}
