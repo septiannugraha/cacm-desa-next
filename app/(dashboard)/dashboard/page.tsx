@@ -74,14 +74,14 @@ export default function DashboardPage() {
   // Financial summary data - replace with actual API calls
   const financialStats = [
     {
-      title: 'PENDAPATAN DAERAH',
+      title: 'PENDAPATAN DESA',
       anggaran: 1259753655839,
       realisasi: 659093758116.797,
       percentage: 52.32,
       color: 'bg-blue-500'
     },
     {
-      title: 'BELANJA DAERAH',
+      title: 'BELANJA DESA',
       anggaran: 1320798731355.694,
       realisasi: 579382068213.787,
       percentage: 43.87,

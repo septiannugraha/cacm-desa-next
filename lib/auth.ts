@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { PrismaAdapter } from '@auth/prisma-adapter'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import { NextAuthOptions, User } from 'next-auth'
 import { Adapter } from 'next-auth/adapters'
 import CredentialsProvider from 'next-auth/providers/credentials'
@@ -54,12 +54,12 @@ export const authOptions: NextAuthOptions = {
           console.log("Received credentials:", credentials);
 
 
-          // Find user with role and pemda
-          const user = await prisma.cACM_User.findUnique({
+          // Find user in local User table (use CACM_User when on Dian's network)
+          const user = await prisma.user.findUnique({
             where: { username },
             include: {
-              CACM_Role: true,
-              CACM_Pemda: true,
+              role: true,
+              pemda: true,
             },
           })
 
@@ -74,7 +74,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Update last login
-          await prisma.cACM_User.update({
+          await prisma.user.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
           })
@@ -82,22 +82,20 @@ export const authOptions: NextAuthOptions = {
           // Parse permissions from JSON string
           let permissions = []
           try {
-            permissions = JSON.parse(user.CACM_Role.permissions)
+            permissions = JSON.parse(user.role.permissions)
           } catch {
             permissions = []
           }
 
           // Create session with fiscal year
-          const session = await prisma.cACM_Session.create({
+          const session = await prisma.session.create({
             data: {
-              id: crypto.randomUUID(), // tambahkan ini
-              userId: String(user.id),
-              fiscalYear: Number(fiscalYear),
+              userId: user.id,
+              fiscalYear,
               sessionToken: crypto.randomUUID(),
               expires: new Date(Date.now() + 8 * 60 * 60 * 1000),
-              updatedAt: new Date(),
             },
-          });
+          })
           
 
           return {
@@ -105,11 +103,11 @@ export const authOptions: NextAuthOptions = {
             username: user.username,
             email: user.email || '',
             name: user.name,
-            role: user.CACM_Role.name,
-            roleCode: user.CACM_Role.code,
+            role: user.role.name,
+            roleCode: user.role.code,
             permissions,
             pemdaId: user.pemdaId || '',
-            pemdaName: user.CACM_Pemda?.name || '',
+            pemdaName: user.pemda?.name || '',
             fiscalYear,
             sessionId: session.id,
 

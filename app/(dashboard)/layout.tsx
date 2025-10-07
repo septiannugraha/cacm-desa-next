@@ -122,7 +122,7 @@ export default function DashboardLayout({
               <span className="text-2xl font-bold text-blue-600">CACM</span>
             </div>
             <span className="text-white font-bold text-center text-sm">
-              {session?.user?.pemdaName || 'Provinsi Jawa Barat'}
+              {session?.user?.pemdaName || 'Kabupaten/Kota'}
             </span>
           </div>
 
@@ -245,7 +245,7 @@ export default function DashboardLayout({
               <Image src="/logo-ssh.png" alt="Logo" width={32} height={32} className="hidden sm:block" />
               <div className="hidden lg:flex items-center gap-6 text-white">
                 <div className="text-sm font-medium">
-                  {session?.user?.pemdaName || 'Provinsi Jawa Barat'}
+                  {session?.user?.pemdaName || 'Kabupaten/Kota'}
                 </div>
                 <div className="text-sm">
                   Tahun <span className="font-semibold">{session?.fiscalYear}</span>
