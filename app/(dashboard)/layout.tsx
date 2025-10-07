@@ -113,11 +113,11 @@ export default function DashboardLayout({
         />
       )}
 
-      {/* Sidebar - fixed on mobile, relative on desktop */}
-      <div className={`fixed lg:relative inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform transition-transform lg:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      {/* Sidebar - fixed position (sticky) on all screen sizes */}
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform transition-transform lg:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`} style={{ backgroundColor: '#051923' }}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-screen">
           {/* Sidebar Header with Logo */}
           <div className="flex flex-col items-center justify-center px-6 py-6" style={{ backgroundColor: '#003554', borderBottom: '8px solid white' }}>
             <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-3" style={{ boxShadow: '0px 0px 6px rgba(0,0,0,0.3)' }}>
@@ -229,8 +229,8 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      {/* Main content - takes full remaining width */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      {/* Main content - with left margin to account for fixed sidebar */}
+      <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
         {/* Top bar with gradient */}
         <header className="sticky top-0 z-40 shadow-sm flex-shrink-0" style={{ background: 'linear-gradient(105.31deg, #0351B5 37.11%, #4AB6FF 93.5%)' }}>
           <div className="flex h-14 items-center gap-4 px-4">

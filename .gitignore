@@ -75,3 +75,21 @@ prisma-in-action.*
 
 # Test and utility scripts
 check-users.js
+test-sql-connection.js
+start-with-legacy-ssl.sh
+
+# Internal documentation and TODO files
+DIAN_TODO.md
+
+# OpenSSL configuration (local)
+openssl-legacy.cnf
+
+# Schema files from other sources
+schema.prisma-dian.prisma
+*.prisma:Zone.Identifier
+
+# Database directories
+Siswaskeudes_Baru
+
+# Windows zone identifiers
+*:Zone.Identifier
