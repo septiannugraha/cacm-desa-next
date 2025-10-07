@@ -58,8 +58,8 @@ export const authOptions: NextAuthOptions = {
           const user = await prisma.cACM_User.findUnique({
             where: { username },
             include: {
-              CACM_Role: true,
-              CACM_Pemda: true,
+              role: true,
+              pemda: true,
             },
           })
 
@@ -82,7 +82,7 @@ export const authOptions: NextAuthOptions = {
           // Parse permissions from JSON string
           let permissions = []
           try {
-            permissions = JSON.parse(user.CACM_Role.permissions)
+            permissions = JSON.parse(user.role.permissions)
           } catch {
             permissions = []
           }
@@ -106,11 +106,11 @@ export const authOptions: NextAuthOptions = {
             username: user.username,
             email: user.email || '',
             name: user.name,
-            role: user.CACM_Role.name,
-            roleCode: user.CACM_Role.code,
+            role: user.role.name,
+            roleCode: user.role.code,
             permissions,
             pemdaId: user.pemdaId || '',
-            pemdaName: user.CACM_Pemda?.name || '',
+            pemdaName: user.pemda?.name || '',
             fiscalYear,
             sessionId: session.id,
 
