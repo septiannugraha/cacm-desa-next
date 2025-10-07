@@ -55,11 +55,11 @@ export const authOptions: NextAuthOptions = {
 
 
           // Find user in local User table (use CACM_User when on Dian's network)
-          const user = await prisma.user.findUnique({
+          const user = await prisma.cACM_User.findUnique({
             where: { username },
             include: {
-              role: true,
-              pemda: true,
+              CACM_Role: true,
+              CACM_Pemda: true,
             },
           })
 
@@ -74,7 +74,7 @@ export const authOptions: NextAuthOptions = {
           }
 
           // Update last login
-          await prisma.user.update({
+          await prisma.cACM_User.update({
             where: { id: user.id },
             data: { lastLogin: new Date() },
           })
@@ -82,18 +82,21 @@ export const authOptions: NextAuthOptions = {
           // Parse permissions from JSON string
           let permissions = []
           try {
-            permissions = JSON.parse(user.role.permissions)
+            permissions = JSON.parse(user.CACM_Role.permissions)
           } catch {
             permissions = []
           }
 
           // Create session with fiscal year
-          const session = await prisma.session.create({
+          const session = await prisma.cACM_Session.create({
             data: {
+              id: crypto.randomUUID(),
               userId: user.id,
               fiscalYear,
               sessionToken: crypto.randomUUID(),
               expires: new Date(Date.now() + 8 * 60 * 60 * 1000),
+              createdAt: new Date(),
+              updatedAt: new Date(),
             },
           })
           
@@ -103,11 +106,11 @@ export const authOptions: NextAuthOptions = {
             username: user.username,
             email: user.email || '',
             name: user.name,
-            role: user.role.name,
-            roleCode: user.role.code,
+            role: user.CACM_Role.name,
+            roleCode: user.CACM_Role.code,
             permissions,
             pemdaId: user.pemdaId || '',
-            pemdaName: user.pemda?.name || '',
+            pemdaName: user.CACM_Pemda?.name || '',
             fiscalYear,
             sessionId: session.id,
 
