@@ -1,3 +1,6 @@
+// Skema Prisma yang Ready ke DB Online
+
+
 generator client {
   provider = "prisma-client-js"
 }
