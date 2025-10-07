@@ -1,46 +1,100 @@
 'use client'
 
 import {
+  AlertCircle,
+  AlertTriangle,
   BarChart,
   Bell,
   Building,
   Calendar,
+  CheckCircle,
   ChevronDown,
   ChevronRight,
   ClipboardCheck,
+  DollarSign,
   Edit,
+  Eye,
   FileText,
+  FileWarning,
+  Flag,
   Key,
   Landmark,
   LayoutDashboard,
+  LineChart,
   LinkIcon,
   LogOut,
   Mail,
   Menu,
+  Minus,
+  Plus,
   Printer,
   Rocket,
+  Search,
   Settings,
+  TrendingDown,
+  TrendingUp,
   User,
   Users,
+  Wallet,
   X,
 } from 'lucide-react'
+import { LucideIcon } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Identifikasi', href: '/identifikasi', icon: FileText },
-  { name: 'Dokumentasi', href: '/dokumentasi', icon: FileText },
-  { name: 'Atensi', href: '/atensi', icon: FileText },
-  { name: 'Verifikasi', href: '/verifikasi', icon: ClipboardCheck },
-  { name: 'Laporan', href: '/reports', icon: BarChart },
-  { name: 'Desa', href: '/villages', icon: Building },
-]
+interface NavigationItem {
+  name: string
+  icon: LucideIcon
+  href?: string
+  children?: Array<{ name: string; href: string; icon: LucideIcon }>
+}
 
-import { LucideIcon } from 'lucide-react'
+const navigation: NavigationItem[] = [
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  {
+    name: 'APBDes',
+    icon: Wallet,
+    children: [
+      { name: 'Pendapatan', href: '/apbdes/pendapatan', icon: TrendingUp },
+      { name: 'Belanja', href: '/apbdes/belanja', icon: TrendingDown },
+      { name: 'Pembiayaan +', href: '/apbdes/pembiayaan-terima', icon: Plus },
+      { name: 'Pembiayaan -', href: '/apbdes/pembiayaan-keluar', icon: Minus },
+    ]
+  },
+  {
+    name: 'Trend',
+    icon: LineChart,
+    children: [
+      { name: 'Pendapatan', href: '/trend/pendapatan', icon: TrendingUp },
+      { name: 'Belanja', href: '/trend/belanja', icon: TrendingDown },
+      { name: 'Pembiayaan +', href: '/trend/pembiayaan-terima', icon: Plus },
+      { name: 'Pembiayaan -', href: '/trend/pembiayaan-keluar', icon: Minus },
+    ]
+  },
+  {
+    name: 'Profil Risiko',
+    icon: AlertTriangle,
+    children: [
+      { name: 'Keuangan', href: '/prorisk/keuangan', icon: DollarSign },
+      { name: 'Nonkeuangan', href: '/prorisk/nonkeuangan', icon: FileWarning },
+      { name: 'Anomali', href: '/prorisk/anomali', icon: AlertCircle },
+    ]
+  },
+  {
+    name: 'Red Flags',
+    icon: Flag,
+    children: [
+      { name: 'Identifikasi', href: '/redflags/identifikasi', icon: Search },
+      { name: 'Dokumentasi', href: '/redflags/dokumentasi', icon: FileText },
+      { name: 'Atensi', href: '/redflags/atensi', icon: Bell },
+      { name: 'Verifikasi', href: '/redflags/verifikasi', icon: CheckCircle },
+      { name: 'Pemantauan', href: '/redflags/pemantauan', icon: Eye },
+    ]
+  },
+]
 
 interface AdminNavigationItem {
   name: string
@@ -86,7 +140,22 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [adminMenuOpen, setAdminMenuOpen] = useState(false)
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+  // Auto-expand menu if current path is a child route
+  useEffect(() => {
+    const newOpenMenus: Record<string, boolean> = {}
+    navigation.forEach((item) => {
+      if (item.children) {
+        const isChildActive = item.children.some((child) => pathname.startsWith(child.href))
+        if (isChildActive) {
+          newOpenMenus[item.name] = true
+        }
+      }
+    })
+    setOpenMenus((prev) => ({ ...prev, ...newOpenMenus }))
+  }, [pathname])
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -100,6 +169,13 @@ export default function DashboardLayout({
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
+
+  const toggleMenu = (menuName: string) => {
+    setOpenMenus((prev) => ({
+      ...prev,
+      [menuName]: !prev[menuName],
+    }))
+  }
 
   const isActive = (href: string) => pathname === href
 
@@ -141,20 +217,67 @@ export default function DashboardLayout({
             {/* Regular Navigation */}
             {navigation.map((item) => {
               const Icon = item.icon
+
+              // If item has no children, render as simple link
+              if (!item.children) {
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href!}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      isActive(item.href!)
+                        ? 'bg-blue-600 text-white'
+                        : 'text-gray-300 hover:bg-gray-800 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.name}
+                  </Link>
+                )
+              }
+
+              // If item has children, render as collapsible menu
               return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    isActive(item.href)
-                      ? 'bg-blue-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-800 hover:text-white'
-                  }`}
-                >
-                  <Icon className="h-5 w-5" />
-                  {item.name}
-                </Link>
+                <div key={item.name}>
+                  <button
+                    onClick={() => toggleMenu(item.name)}
+                    className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Icon className="h-5 w-5" />
+                      {item.name}
+                    </div>
+                    <ChevronRight
+                      className={`h-4 w-4 transition-transform ${
+                        openMenus[item.name] ? 'rotate-90' : ''
+                      }`}
+                    />
+                  </button>
+
+                  {openMenus[item.name] && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.children.map((child) => {
+                        const ChildIcon = child.icon
+                        return (
+                          <Link
+                            key={child.name}
+                            href={child.href}
+                            onClick={() => setSidebarOpen(false)}
+                            className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                              isActive(child.href)
+                                ? 'bg-blue-600 text-white'
+                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            }`}
+                          >
+                            <ChildIcon className="h-4 w-4" />
+                            {child.name}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
               )
             })}
 
