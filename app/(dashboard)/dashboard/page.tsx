@@ -189,7 +189,7 @@ export default function DashboardPage() {
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900 mb-2">{stat.title}</h3>
 
-                  <div className="grid grid-cols-2 gap-4 mb-2 text-xs">
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-2 mb-2 text-xs">
                     <div>
                       <span className="text-gray-500">Anggaran:</span>
                       <p className="font-medium text-gray-900">{formatCurrency(stat.anggaran)}</p>
