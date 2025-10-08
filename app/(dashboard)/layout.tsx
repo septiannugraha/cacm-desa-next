@@ -355,7 +355,7 @@ export default function DashboardLayout({
       <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
         {/* Top bar with gradient */}
         <header className="sticky top-0 z-40 shadow-sm flex-shrink-0" style={{ background: 'linear-gradient(105.31deg, #0351B5 37.11%, #4AB6FF 93.5%)' }}>
-          <div className="flex h-14 items-center gap-4 px-4">
+          <div className="flex h-14 items-center gap-2 sm:gap-4 px-3 sm:px-4 lg:px-6">
             {/* Mobile menu button */}
             <button
               className="lg:hidden"
@@ -390,8 +390,8 @@ export default function DashboardLayout({
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-white/10 transition-colors text-white"
                 >
-                  <span className="text-sm">Selamat Datang, <b>{session?.user?.name || 'User'}</b>!</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                  <span className="text-sm truncate max-w-[200px] sm:max-w-none">Selamat Datang, <b>{session?.user?.name || 'User'}</b>!</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform flex-shrink-0 ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {userMenuOpen && (
@@ -445,8 +445,8 @@ export default function DashboardLayout({
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-x-hidden bg-gray-50">
-          <div className="p-6 max-w-full">
+        <main className="flex-1 w-full bg-gray-50">
+          <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
             {children}
           </div>
         </main>

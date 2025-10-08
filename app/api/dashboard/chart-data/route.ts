@@ -15,10 +15,6 @@ export async function GET() {
     console.log('[Dashboard] FiscalYear:', fiscalYear)
     console.log('[Dashboard] User PemdaId:', session.user.pemdaId)
 
-    // Test if ANY data exists in table
-    const testCount = await prisma.taAR1RealisasiAPBDes.count()
-    console.log('[Dashboard] Total records in TaAR1RealisasiAPBDes:', testCount)
-
     // Get pemda code from user's CACM_Pemda
     const pemda = await prisma.cACM_Pemda.findUnique({
       where: { id: session.user.pemdaId },

@@ -94,10 +94,15 @@ export default function DashboardPage() {
       const response = await fetch('/api/dashboard/chart-data')
       if (response.ok) {
         const data = await response.json()
+        console.log('[Dashboard Page] Chart data received:', data)
         setChartData(data)
+      } else {
+        console.error('[Dashboard Page] Failed to fetch chart data, status:', response.status)
+        const errorData = await response.json().catch(() => ({}))
+        console.error('[Dashboard Page] Error response:', errorData)
       }
     } catch (error) {
-      console.error('Failed to fetch chart data:', error)
+      console.error('[Dashboard Page] Failed to fetch chart data:', error)
     } finally {
       setLoadingCharts(false)
     }
@@ -213,7 +218,7 @@ export default function DashboardPage() {
   // Kategori1 = NamaDesa/NamaRek2, Kategori2 = Category, Nilai1 = Anggaran, Nilai2 = Realisasi
 
   return (
-    <div className="space-y-6 max-w-full overflow-x-hidden">
+    <div className="space-y-4 sm:space-y-6 w-full">
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
@@ -223,9 +228,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-6 max-w-full">
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6 w-full">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Filter</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {/* Filter Kecamatan */}
           <div>
             <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
@@ -289,9 +294,9 @@ export default function DashboardPage() {
       </div>
 
       {/* Financial Summary Cards - Carousel */}
-      <div className="relative bg-gray-50 px-6 py-6 rounded-lg max-w-full">
+      <div className="relative bg-gray-50 px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
         {/* Header with Navigation */}
-        <div className="flex items-center justify-between mb-4 max-w-full">
+        <div className="flex items-center justify-between mb-4 w-full">
           <h2 className="text-lg font-semibold text-gray-900">Ringkasan Keuangan</h2>
           <div className="flex gap-2">
             <button
@@ -380,11 +385,11 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
-      ) : chartData ? (
+      ) : chartData && (chartData.budgetRealizationByVillage.length > 0 || chartData.budgetByAccountType.length > 0) ? (
         <>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             {/* Bar Chart - Budget vs Realization by Village */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard
                 data={chartData.budgetRealizationByVillage}
                 title="Anggaran vs Realisasi per Desa"
@@ -395,7 +400,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Pie Chart - Budget Distribution by Account Type */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard
                 data={chartData.budgetByAccountType}
                 title="Distribusi Anggaran per Jenis Belanja"
@@ -407,9 +412,9 @@ export default function DashboardPage() {
           </div>
 
           {/* Line and Area Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             {/* Line Chart - Monthly Trend */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <LineChartDashboard
                 data={chartData.monthlyTrend}
                 title="Tren Bulanan Anggaran & Realisasi"
@@ -420,7 +425,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Area Chart - Cumulative Monthly */}
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <AreaChartDashboard
                 data={chartData.monthlyTrend}
                 title="Akumulasi Realisasi per Bulan"
@@ -433,14 +438,18 @@ export default function DashboardPage() {
           </div>
         </>
       ) : (
-        <div className="text-center py-12">
-          <p className="text-gray-500">Gagal memuat data grafik</p>
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+          <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
+          <p className="text-yellow-800 font-medium">Data grafik tidak tersedia</p>
+          <p className="text-yellow-600 text-sm mt-2">
+            {!chartData ? 'Gagal memuat data dari server' : 'Tidak ada data untuk periode yang dipilih'}
+          </p>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
         {/* Priority Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Prioritas Atensi</h2>
           <div className="space-y-3">
             {priorityData.map((item, index) => {
@@ -464,7 +473,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Top Villages */}
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Desa Paling Aktif</h2>
           <div className="space-y-3">
             {topVillages.map((village, index) => (
@@ -491,7 +500,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activities */}
-      <div className="bg-white rounded-lg shadow p-6 max-w-full">
+      <div className="bg-white rounded-lg shadow p-4 sm:p-6 w-full">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900">Aktivitas Terkini</h2>
           <button className="text-sm text-blue-600 hover:text-blue-800">
