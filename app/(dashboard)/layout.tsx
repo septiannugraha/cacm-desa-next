@@ -138,7 +138,6 @@ export default function DashboardLayout({
   const pathname = usePathname()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
-  const [adminMenuOpen, setAdminMenuOpen] = useState(false)
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -170,10 +169,18 @@ export default function DashboardLayout({
   }, [])
 
   const toggleMenu = (menuName: string) => {
-    setOpenMenus((prev) => ({
-      ...prev,
-      [menuName]: !prev[menuName],
-    }))
+    setOpenMenus((prev) => {
+      // If clicking on already open menu, close it
+      if (prev[menuName]) {
+        return { ...prev, [menuName]: false }
+      }
+      // Otherwise, close all other menus and open the clicked one (accordion behavior)
+      const allClosed: Record<string, boolean> = {}
+      Object.keys(prev).forEach(key => {
+        allClosed[key] = false
+      })
+      return { ...allClosed, [menuName]: true }
+    })
   }
 
   const isActive = (href: string) => pathname === href
@@ -254,7 +261,13 @@ export default function DashboardLayout({
                     />
                   </button>
 
-                  {openMenus[item.name] && (
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      openMenus[item.name]
+                        ? 'max-h-96 opacity-100'
+                        : 'max-h-0 opacity-0'
+                    }`}
+                  >
                     <div className="ml-4 mt-1 space-y-1">
                       {item.children.map((child) => {
                         const ChildIcon = child.icon
@@ -275,7 +288,7 @@ export default function DashboardLayout({
                         )
                       })}
                     </div>
-                  )}
+                  </div>
                 </div>
               )
             })}
@@ -292,17 +305,23 @@ export default function DashboardLayout({
                 {/* Pengaturan Umum with submenu */}
                 <div>
                   <button
-                    onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                    onClick={() => toggleMenu('Pengaturan Umum')}
                     className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-800 hover:text-white transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <Settings className="h-5 w-5" />
                       Pengaturan Umum
                     </div>
-                    <ChevronRight className={`h-4 w-4 transition-transform ${adminMenuOpen ? 'rotate-90' : ''}`} />
+                    <ChevronRight className={`h-4 w-4 transition-transform ${openMenus['Pengaturan Umum'] ? 'rotate-90' : ''}`} />
                   </button>
 
-                  {adminMenuOpen && (
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      openMenus['Pengaturan Umum']
+                        ? 'max-h-96 opacity-100'
+                        : 'max-h-0 opacity-0'
+                    }`}
+                  >
                     <div className="ml-4 mt-1 space-y-1">
                       {adminNavigation[0].children?.map((child) => {
                         const ChildIcon = child.icon
@@ -323,7 +342,7 @@ export default function DashboardLayout({
                         )
                       })}
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* Other admin items */}
