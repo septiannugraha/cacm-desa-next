@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { getServerSession } from 'next-auth'
+import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
@@ -42,7 +42,7 @@ export async function GET() {
 
     // Test data for this year
     let activeFiscalYear = fiscalYear
-    const yearCount = await prisma.taAR1RealisasiAPBDes.count({
+    const yearCount = await prisma.ta_AR1_RealisasiAPBDes.count({
       where: { Tahun: activeFiscalYear.toString() }
     })
     console.log('[Dashboard] Records for year', activeFiscalYear, ':', yearCount)
@@ -50,7 +50,7 @@ export async function GET() {
     // If no data for this year, try to find what years are available
     if (yearCount === 0) {
       console.log('[Dashboard] No data for year', activeFiscalYear, ', checking available years...')
-      const availableYears = await prisma.taAR1RealisasiAPBDes.groupBy({
+      const availableYears = await prisma.ta_AR1_RealisasiAPBDes.groupBy({
         by: ['Tahun'],
         _count: { Tahun: true },
         orderBy: { Tahun: 'desc' }
@@ -65,7 +65,7 @@ export async function GET() {
     }
 
     // Test data for this pemda
-    const pemdaCount = await prisma.taAR1RealisasiAPBDes.count({
+    const pemdaCount = await prisma.ta_AR1_RealisasiAPBDes.count({
       where: { Kd_Pemda: kdPemda }
     })
     console.log('[Dashboard] Records for pemda', kdPemda, ':', pemdaCount)
@@ -73,7 +73,7 @@ export async function GET() {
     // If no data found with this pemda code, try to find what Kd_Pemda values exist
     if (pemdaCount === 0) {
       console.log('[Dashboard] No data for this pemda code, checking available Kd_Pemda values...')
-      const availablePemdas = await prisma.taAR1RealisasiAPBDes.groupBy({
+      const availablePemdas = await prisma.ta_AR1_RealisasiAPBDes.groupBy({
         by: ['Kd_Pemda'],
         _count: { Kd_Pemda: true }
       })
@@ -88,7 +88,7 @@ export async function GET() {
 
     // 1. Budget Realization by Village Chart
     // Aggregate APBDes data grouped by village
-    const villageData = await prisma.taAR1RealisasiAPBDes.groupBy({
+    const villageData = await prisma.ta_AR1_RealisasiAPBDes.groupBy({
       by: ['Kd_Desa'],
       where: {
         Tahun: activeFiscalYear.toString(),
@@ -111,7 +111,7 @@ export async function GET() {
       console.log('[Dashboard] Sample Village Data:', villageData[0])
     } else {
       console.log('[Dashboard] No village data found, checking if any data exists...')
-      const anyData = await prisma.taAR1RealisasiAPBDes.findMany({ take: 5 })
+      const anyData = await prisma.ta_AR1_RealisasiAPBDes.findMany({ take: 5 })
       console.log('[Dashboard] Sample raw data (first 5 records):', anyData.map(d => ({
         Tahun: d.Tahun,
         Kd_Pemda: d.Kd_Pemda,
@@ -122,7 +122,7 @@ export async function GET() {
 
     // Get village names
     const villageCodes = villageData.map(v => v.Kd_Desa)
-    const villages = await prisma.taDesa.findMany({
+    const villages = await prisma.ta_Desa.findMany({
       where: {
         Tahun: activeFiscalYear.toString(),
         Kd_Pemda: kdPemda,
@@ -145,7 +145,7 @@ export async function GET() {
 
     // 2. Budget by Account Type Chart
     // Aggregate by Kelompok (account group)
-    const accountData = await prisma.taAR1RealisasiAPBDes.groupBy({
+    const accountData = await prisma.ta_AR1_RealisasiAPBDes.groupBy({
       by: ['Kelompok', 'Nama_Kelompok'],
       where: {
         Tahun: activeFiscalYear.toString(),
