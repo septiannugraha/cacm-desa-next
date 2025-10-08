@@ -179,7 +179,7 @@ export default function DashboardLayout({
   const isActive = (href: string) => pathname === href
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop - invisible but clickable */}
       {sidebarOpen && (
         <div
@@ -188,7 +188,7 @@ export default function DashboardLayout({
         />
       )}
 
-      {/* Sidebar - fixed position (sticky) on all screen sizes */}
+      {/* Sidebar - fixed position on all screen sizes */}
       <div className={`fixed inset-y-0 left-0 z-50 w-64 flex-shrink-0 transform transition-transform lg:translate-x-0 ${
         sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       }`} style={{ backgroundColor: '#051923' }}>
@@ -351,10 +351,8 @@ export default function DashboardLayout({
         </div>
       </div>
 
-      {/* Main content - with left margin to account for fixed sidebar */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-64">
-        {/* Top bar with gradient */}
-        <header className="sticky top-0 z-40 shadow-sm flex-shrink-0" style={{ background: 'linear-gradient(105.31deg, #0351B5 37.11%, #4AB6FF 93.5%)' }}>
+      {/* Top bar with gradient - fixed to stay at top, as direct sibling to sidebar */}
+      <header className="fixed top-0 left-0 right-0 lg:left-64 z-50 shadow-sm" style={{ background: 'linear-gradient(105.31deg, #0351B5 37.11%, #4AB6FF 93.5%)' }}>
           <div className="flex h-14 items-center gap-2 sm:gap-4 px-3 sm:px-4 lg:px-6">
             {/* Mobile menu button */}
             <button
@@ -442,15 +440,14 @@ export default function DashboardLayout({
               </div>
             </div>
           </div>
-        </header>
+      </header>
 
-        {/* Page content */}
-        <main className="flex-1 w-full bg-gray-50">
-          <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
-            {children}
-          </div>
-        </main>
-      </div>
+      {/* Main content area - with padding for fixed header and sidebar */}
+      <main className="min-h-screen pt-14 lg:pl-64 bg-gray-50">
+        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }
