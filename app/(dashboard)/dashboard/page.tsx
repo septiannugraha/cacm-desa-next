@@ -64,6 +64,19 @@ export default function DashboardPage() {
   const [selectedDesa, setSelectedDesa] = useState<string>('')
   const [selectedSumberDana, setSelectedSumberDana] = useState<string>('')
 
+  type Kecamatan = { kecamatan: string; Kd_Kec: string };
+  type Desa = { desa: string; Kd_Desa: string };
+  type SumberDana = { sumberdana: string; Kode: string };
+  
+  type FilterData = {
+    kecamatan: Kecamatan[];
+    desa: Record<string, Desa[]>; // ✅ desa dikelompokkan berdasarkan Kd_Kec
+    sumberDana: SumberDana[];
+  };
+  
+ 
+
+
   const [isOpen, setIsOpen] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
 
@@ -123,6 +136,12 @@ export default function DashboardPage() {
       console.error('Failed to fetch filter data:', error)
     }
   }
+
+  useEffect(() => {
+    fetchFilterData();
+  }, []);
+
+
 
   if (status === 'loading') {
     return (
@@ -273,45 +292,52 @@ export default function DashboardPage() {
       >
         <div className="p-4 sm:p-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-            {/* Filter Kecamatan */}
-            <div>
-              <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
-                Kecamatan
-              </label>
-              <select
-                id="kecamatan"
-                value={selectedKecamatan}
-                onChange={(e) => setSelectedKecamatan(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Semua Kecamatan</option>
-                {filterData?.kecamatan.map((item) => (
-                  <option key={item.Kd_Kec} value={item.Kd_Kec}>
-                    {item.kecamatan}
-                  </option>
-                ))}
-              </select>
-            </div>
+         {/* Filter Kecamatan */}
+<div>
+  <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
+    Kecamatan
+  </label>
+  <select
+    id="kecamatan"
+    value={selectedKecamatan}
+    onChange={(e) => {
+      setSelectedKecamatan(e.target.value);
+      setSelectedDesa(''); // reset desa saat kecamatan berubah
+    }}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+  >
+    <option value="">Semua Kecamatan</option>
+    {filterData?.kecamatan.map((item) => (
+      <option key={item.Kd_Kec} value={item.Kd_Kec}>
+        {item.kecamatan}
+      </option>
+    ))}
+  </select>
+</div>
 
-            {/* Filter Desa */}
-            <div>
-              <label htmlFor="desa" className="block text-sm font-medium text-gray-700 mb-2">
-                Desa
-              </label>
-              <select
-                id="desa"
-                value={selectedDesa}
-                onChange={(e) => setSelectedDesa(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Semua Desa</option>
-                {filterData?.desa.map((item) => (
-                  <option key={item.Kd_Desa} value={item.Kd_Desa}>
-                    {item.desa}
-                  </option>
-                ))}
-              </select>
-            </div>
+{/* Filter Desa */}
+<div>
+  <label htmlFor="desa" className="block text-sm font-medium text-gray-700 mb-2">
+    Desa
+  </label>
+  <select
+    id="desa"
+    value={selectedDesa}
+    onChange={(e) => setSelectedDesa(e.target.value)}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+    disabled={!selectedKecamatan}
+  >
+    <option value="">
+      {!selectedKecamatan ? 'Pilih Kecamatan dulu' : 'Semua Desa'}
+    </option>
+    {selectedKecamatan &&
+      filterData?.desa[selectedKecamatan]?.map((item) => (
+        <option key={item.Kd_Desa} value={item.Kd_Desa}>
+          {item.desa}
+        </option>
+      ))}
+  </select>
+</div>
 
             {/* Filter Sumber Dana */}
             <div>
