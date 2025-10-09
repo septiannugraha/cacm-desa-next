@@ -1,28 +1,25 @@
 'use client'
 
-import { useSession } from 'next-auth/react'
-import { redirect } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
-import useEmblaCarousel from 'embla-carousel-react'
-import {
-  FileText,
-  AlertCircle,
-  CheckCircle,
-  Clock,
-  Users,
-  Building,
-  Activity,
-  Calendar,
-  BarChart3,
-  ArrowUpRight,
-  ArrowDownRight,
-  ChevronLeft,
-  ChevronRight
-} from 'lucide-react'
+import AreaChartDashboard from '@/components/charts/AreaChartDashboard'
 import BarChartDashboard from '@/components/charts/BarChartDashboard'
 import LineChartDashboard from '@/components/charts/LineChartDashboard'
 import PieChartDashboard from '@/components/charts/PieChartDashboard'
-import AreaChartDashboard from '@/components/charts/AreaChartDashboard'
+import useEmblaCarousel from 'embla-carousel-react'
+import {
+  Activity,
+  AlertCircle,
+  Building,
+  Calendar,
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Users
+} from 'lucide-react'
+import { useSession } from 'next-auth/react'
+import { redirect } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { FiMenu, FiRefreshCw } from 'react-icons/fi'
 
 interface ChartData {
   Kategori1: string
@@ -66,6 +63,12 @@ export default function DashboardPage() {
   const [selectedKecamatan, setSelectedKecamatan] = useState<string>('')
   const [selectedDesa, setSelectedDesa] = useState<string>('')
   const [selectedSumberDana, setSelectedSumberDana] = useState<string>('')
+
+  const [isOpen, setIsOpen] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+
+  const handleToggle = () => setIsOpen(!isOpen);
+  const handleRefresh = () => setLastUpdate(new Date());
 
   // Embla Carousel setup
   const [emblaRef, emblaApi] = useEmblaCarousel({
@@ -213,9 +216,15 @@ export default function DashboardPage() {
     { name: 'Desa Mandiri', atensi: 12, resolved: 11 }
   ]
 
+
+
+
+
   // Chart data is now fetched from API endpoint /api/dashboard/chart-data
   // Data structure: Kategori1, Kategori2, Nilai1, Nilai2
   // Kategori1 = NamaDesa/NamaRek2, Kategori2 = Category, Nilai1 = Anggaran, Nilai2 = Realisasi
+
+
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full">
@@ -228,70 +237,112 @@ export default function DashboardPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4 sm:p-6 w-full">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Filter</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
-          {/* Filter Kecamatan */}
-          <div>
-            <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
-              Kecamatan
-            </label>
-            <select
-              id="kecamatan"
-              value={selectedKecamatan}
-              onChange={(e) => setSelectedKecamatan(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Semua Kecamatan</option>
-              {filterData?.kecamatan.map((item) => (
-                <option key={item.Kd_Kec} value={item.Kd_Kec}>
-                  {item.kecamatan}
-                </option>
-              ))}
-            </select>
-          </div>
+      <div className="bg-white rounded-lg shadow w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b bg-gray-50">
+        {/* Left: Toggle + Title */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleToggle}
+            className="p-2 hover:bg-gray-200 rounded transition"
+            aria-label="Toggle Filter"
+          >
+            <FiMenu size={20} />
+          </button>
+          <h2 className="text-lg font-semibold text-gray-900">Filter</h2>
+        </div>
 
-          {/* Filter Desa */}
-          <div>
-            <label htmlFor="desa" className="block text-sm font-medium text-gray-700 mb-2">
-              Desa
-            </label>
-            <select
-              id="desa"
-              value={selectedDesa}
-              onChange={(e) => setSelectedDesa(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Semua Desa</option>
-              {filterData?.desa.map((item) => (
-                <option key={item.Kd_Desa} value={item.Kd_Desa}>
-                  {item.desa}
-                </option>
-              ))}
-            </select>
-          </div>
+        {/* Right: Last Update + Refresh */}
+        <div className="flex items-center gap-3 text-sm text-gray-600">
+          <span>Last Update: {lastUpdate.toLocaleString()}</span>
+          <button
+            onClick={handleRefresh}
+            className="p-2 hover:bg-gray-200 rounded transition"
+            aria-label="Refresh"
+          >
+            <FiRefreshCw size={18} />
+          </button>
+        </div>
+      </div>
 
-          {/* Filter Sumber Dana */}
-          <div>
-            <label htmlFor="sumber-dana" className="block text-sm font-medium text-gray-700 mb-2">
-              Sumber Dana
-            </label>
-            <select
-              id="sumber-dana"
-              value={selectedSumberDana}
-              onChange={(e) => setSelectedSumberDana(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">Semua Sumber Dana</option>
-              {filterData?.sumberDana.map((item) => (
-                <option key={item.Kode} value={item.Kode}>
-                  {item.sumberdana}
-                </option>
-              ))}
-            </select>
+      {/* Body */}
+      <div
+        className={`overflow-hidden transition-all duration-100 ease-in-out ${
+          isOpen ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+            {/* Filter Kecamatan */}
+            <div>
+              <label htmlFor="kecamatan" className="block text-sm font-medium text-gray-700 mb-2">
+                Kecamatan
+              </label>
+              <select
+                id="kecamatan"
+                value={selectedKecamatan}
+                onChange={(e) => setSelectedKecamatan(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Semua Kecamatan</option>
+                {filterData?.kecamatan.map((item) => (
+                  <option key={item.Kd_Kec} value={item.Kd_Kec}>
+                    {item.kecamatan}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter Desa */}
+            <div>
+              <label htmlFor="desa" className="block text-sm font-medium text-gray-700 mb-2">
+                Desa
+              </label>
+              <select
+                id="desa"
+                value={selectedDesa}
+                onChange={(e) => setSelectedDesa(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Semua Desa</option>
+                {filterData?.desa.map((item) => (
+                  <option key={item.Kd_Desa} value={item.Kd_Desa}>
+                    {item.desa}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter Sumber Dana */}
+            <div>
+              <label htmlFor="sumber-dana" className="block text-sm font-medium text-gray-700 mb-2">
+                Sumber Dana
+              </label>
+              <select
+                id="sumber-dana"
+                value={selectedSumberDana}
+                onChange={(e) => setSelectedSumberDana(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Semua Sumber Dana</option>
+                {filterData?.sumberDana.map((item) => (
+                  <option key={item.Kode} value={item.Kode}>
+                    {item.sumberdana}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+
+
+
+
+
+
+
 
       {/* Financial Summary Cards - Carousel */}
       <div className="relative bg-gray-50 px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
