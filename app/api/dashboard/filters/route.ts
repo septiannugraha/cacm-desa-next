@@ -11,20 +11,36 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Query for Kecamatan
+    // Get user's pemda code for filtering
+    const pemda = await prisma.cACM_Pemda.findUnique({
+      where: { id: session.user.pemdaId },
+      select: { code: true },
+    })
+
+    if (!pemda) {
+      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
+    }
+
+    // Extract Kd_Pemda (first 4 chars of code)
+    const kdPemda = pemda.code.substring(0, 4)
+
+    // Query for Kecamatan - FILTERED by user's Pemda
     // Select Substring(kd_Kec,6,2) + '  ' + Nama_Kecamatan as kecamatan from Ref_Kecamatan order by Kd_Kec
     const kecamatanData = await prisma.$queryRaw<Array<{kecamatan: string, Kd_Kec: string}>>`
       SELECT SUBSTRING(Kd_Kec, 6, 2) + '  ' + Nama_Kecamatan as kecamatan, Kd_Kec
       FROM Ref_Kecamatan
+      WHERE Kd_Pemda = ${kdPemda}
       ORDER BY Kd_Kec
     `
 
-    // Query for Desa
+    // Query for Desa - FILTERED by user's Pemda (via Kecamatan join)
     // Select Substring(Kd_Desa,6,7) + '  ' + Nama_Desa as kecamatan from Ref_Desa order by Kd_Desa
     const desaData = await prisma.$queryRaw<Array<{desa: string, Kd_Desa: string}>>`
-      SELECT SUBSTRING(Kd_Desa, 6, 7) + '  ' + Nama_Desa as desa, Kd_Desa
-      FROM Ref_Desa
-      ORDER BY Kd_Desa
+      SELECT SUBSTRING(d.Kd_Desa, 6, 7) + '  ' + d.Nama_Desa as desa, d.Kd_Desa
+      FROM Ref_Desa d
+      INNER JOIN Ref_Kecamatan k ON d.Kd_Kec = k.Kd_Kec
+      WHERE k.Kd_Pemda = ${kdPemda}
+      ORDER BY d.Kd_Desa
     `
 
     // Query for Sumber Dana
@@ -35,7 +51,7 @@ export async function GET() {
       ORDER BY Urut
     `
 
-    console.log('[Filters] Fetched data:', {
+    console.log('[Filters] Pemda:', kdPemda, '- Fetched data:', {
       kecamatan: kecamatanData.length,
       desa: desaData.length,
       sumberDana: sumberDanaData.length
