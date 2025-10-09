@@ -80,6 +80,8 @@ start-with-legacy-ssl.sh
 
 # Internal documentation and TODO files
 DIAN_TODO.md
+/docs/*.md
+/docs/DATABASE_SCHEMA.md
 
 # OpenSSL configuration (local)
 openssl-legacy.cnf
