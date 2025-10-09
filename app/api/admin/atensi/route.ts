@@ -10,67 +10,15 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status')
-    const priority = searchParams.get('priority')
-    const pemdaId = searchParams.get('pemdaId')
-    const villageId = searchParams.get('villageId')
-    const fiscalYear = searchParams.get('fiscalYear')
+    // TODO: Rewrite this to match actual CACM_Atensi schema from database
+    // Current schema has: Tahun, Kd_Pemda, No_Atensi, Tgl_Atensi, etc.
+    // Not the designed schema with: category, village, reportedBy, status, priority
+    // See: prisma/schema.prisma line 21-44
 
-    const where: any = {}
-
-    if (status) where.status = status
-    if (priority) where.priority = priority
-    if (pemdaId) where.pemdaId = pemdaId
-    if (villageId) where.villageId = villageId
-    if (fiscalYear) where.fiscalYear = parseInt(fiscalYear)
-
-    const atensiList = await prisma.cACM_Atensi.findMany({
-      where,
-      include: {
-        category: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            color: true,
-            icon: true,
-          },
-        },
-        village: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        pemda: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            level: true,
-          },
-        },
-        reportedBy: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
-
-    return NextResponse.json(atensiList)
+    return NextResponse.json({
+      error: 'Atensi feature temporarily disabled - schema mismatch',
+      message: 'The CACM_Atensi model structure changed. Needs rewrite to match actual database.'
+    }, { status: 501 }) // 501 = Not Implemented
   } catch (error) {
     console.error('Failed to fetch atensi:', error)
     return NextResponse.json({ error: 'Failed to fetch atensi' }, { status: 500 })
@@ -84,91 +32,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const body = await request.json()
-    const {
-      code,
-      title,
-      description,
-      categoryId,
-      priority,
-      status,
-      villageId,
-      pemdaId,
-      fiscalYear,
-      amount,
-      accountCode,
-      reportedById,
-      assignedToId,
-      dueDate,
-    } = body
-
-    if (!code || !title || !description || !categoryId || !villageId || !pemdaId || !fiscalYear || !reportedById) {
-      return NextResponse.json(
-        { error: 'Required fields: code, title, description, categoryId, villageId, pemdaId, fiscalYear, reportedById' },
-        { status: 400 }
-      )
-    }
-
-    const atensi = await prisma.cACM_Atensi.create({
-      data: {
-        code,
-        title,
-        description,
-        categoryId,
-        priority: priority || 'MEDIUM',
-        status: status || 'OPEN',
-        villageId,
-        pemdaId,
-        fiscalYear: parseInt(fiscalYear),
-        amount: amount ? parseFloat(amount) : null,
-        accountCode: accountCode || null,
-        reportedById,
-        assignedToId: assignedToId || null,
-        dueDate: dueDate ? new Date(dueDate) : null,
-      },
-      include: {
-        category: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            color: true,
-            icon: true,
-          },
-        },
-        village: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        pemda: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            level: true,
-          },
-        },
-        reportedBy: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
-      },
-    })
-
-    return NextResponse.json(atensi, { status: 201 })
+    // TODO: Rewrite this to match actual CACM_Atensi schema
+    return NextResponse.json({
+      error: 'Atensi creation temporarily disabled - schema mismatch',
+      message: 'The CACM_Atensi model structure changed. Needs rewrite to match actual database.'
+    }, { status: 501 })
   } catch (error) {
     console.error('Failed to create atensi:', error)
     return NextResponse.json({ error: 'Failed to create atensi' }, { status: 500 })
