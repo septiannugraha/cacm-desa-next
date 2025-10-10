@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// Note: [id] param here is the No_Atensi value
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -13,85 +14,33 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's pemda info
+    const pemda = await prisma.cACM_Pemda.findUnique({
+      where: { id: session.user.pemdaId },
+      select: { code: true },
+    })
+
+    if (!pemda) {
+      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
+    }
+
+    const kdPemda = pemda.code.substring(0, 4)
+    const fiscalYear = session.fiscalYear || new Date().getFullYear()
+
+    // Fetch atensi with its village-level findings
     const atensi = await prisma.cACM_Atensi.findUnique({
-      where: { id: params.id },
+      where: {
+        Tahun_Kd_Pemda_No_Atensi: {
+          Tahun: fiscalYear.toString(),
+          Kd_Pemda: kdPemda,
+          No_Atensi: params.id, // params.id is No_Atensi
+        },
+      },
       include: {
-        category: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            description: true,
-            color: true,
-            icon: true,
+        CACM_Atensi_Desa: {
+          orderBy: {
+            Kd_Desa: 'asc',
           },
-        },
-        village: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        pemda: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            level: true,
-          },
-        },
-        reportedBy: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true,
-          },
-        },
-        responses: {
-          include: {
-            createdBy: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        activities: {
-          include: {
-            performedBy: {
-              select: {
-                id: true,
-                name: true,
-                username: true,
-              },
-            },
-          },
-          orderBy: { createdAt: 'desc' },
-        },
-        attachments: {
-          select: {
-            id: true,
-            filename: true,
-            originalName: true,
-            mimeType: true,
-            size: true,
-            url: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: 'desc' },
         },
       },
     })
@@ -117,77 +66,39 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's pemda info
+    const pemda = await prisma.cACM_Pemda.findUnique({
+      where: { id: session.user.pemdaId },
+      select: { code: true },
+    })
+
+    if (!pemda) {
+      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
+    }
+
+    const kdPemda = pemda.code.substring(0, 4)
+    const fiscalYear = session.fiscalYear || new Date().getFullYear()
+
+    // Parse request body
     const body = await request.json()
-    const {
-      title,
-      description,
-      categoryId,
-      priority,
-      status,
-      amount,
-      accountCode,
-      assignedToId,
-      dueDate,
-      resolvedAt,
-      closedAt,
-    } = body
+    const { Tgl_Atensi, Tgl_CutOff, Keterangan, isSent } = body
 
-    const updateData: any = {}
-
-    if (title) updateData.title = title
-    if (description) updateData.description = description
-    if (categoryId) updateData.categoryId = categoryId
-    if (priority) updateData.priority = priority
-    if (status) updateData.status = status
-    if (amount !== undefined) updateData.amount = amount ? parseFloat(amount) : null
-    if (accountCode !== undefined) updateData.accountCode = accountCode
-    if (assignedToId !== undefined) updateData.assignedToId = assignedToId
-    if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null
-    if (resolvedAt !== undefined) updateData.resolvedAt = resolvedAt ? new Date(resolvedAt) : null
-    if (closedAt !== undefined) updateData.closedAt = closedAt ? new Date(closedAt) : null
-
+    // Update atensi period
     const atensi = await prisma.cACM_Atensi.update({
-      where: { id: params.id },
-      data: updateData,
-      include: {
-        category: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            color: true,
-            icon: true,
-          },
+      where: {
+        Tahun_Kd_Pemda_No_Atensi: {
+          Tahun: fiscalYear.toString(),
+          Kd_Pemda: kdPemda,
+          No_Atensi: params.id,
         },
-        village: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-          },
-        },
-        pemda: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            level: true,
-          },
-        },
-        reportedBy: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
-        assignedTo: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-          },
-        },
+      },
+      data: {
+        ...(Tgl_Atensi && { Tgl_Atensi: new Date(Tgl_Atensi) }),
+        ...(Tgl_CutOff && { Tgl_CutOff: new Date(Tgl_CutOff) }),
+        ...(Keterangan !== undefined && { Keterangan }),
+        ...(isSent !== undefined && { isSent }),
+        update_at: new Date(),
+        update_by: session.user.username || session.user.email,
       },
     })
 
@@ -208,8 +119,28 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Get user's pemda info
+    const pemda = await prisma.cACM_Pemda.findUnique({
+      where: { id: session.user.pemdaId },
+      select: { code: true },
+    })
+
+    if (!pemda) {
+      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
+    }
+
+    const kdPemda = pemda.code.substring(0, 4)
+    const fiscalYear = session.fiscalYear || new Date().getFullYear()
+
+    // Delete atensi period (cascade will handle child records)
     await prisma.cACM_Atensi.delete({
-      where: { id: params.id },
+      where: {
+        Tahun_Kd_Pemda_No_Atensi: {
+          Tahun: fiscalYear.toString(),
+          Kd_Pemda: kdPemda,
+          No_Atensi: params.id,
+        },
+      },
     })
 
     return NextResponse.json({ message: 'Atensi deleted successfully' })
