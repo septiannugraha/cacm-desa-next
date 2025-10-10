@@ -111,17 +111,19 @@ model CACM_CstDashboard {
 }
 
 model CACM_Dashboard {
-  id        String    @id(map: "PK_CACM_Dashboard") @db.VarChar(36)
-  id_Pemda  String?   @db.VarChar(36)
-  Tahun     String?   @db.VarChar(4)
-  Kd_Pemda  String?   @db.VarChar(4)
-  Tanggal   DateTime? @db.DateTime
-  Jenis     String?   @db.VarChar(20)
-  Kategori1 String?   @db.VarChar(100)
-  Kategori2 String?   @db.VarChar(100)
-  Nilai1    Float?
-  Nilai2    Float?
-  Persen    Float?
+  id         String    @id(map: "PK_CACM_Dashboard") @db.VarChar(36)
+  id_Pemda   String?   @db.VarChar(36)
+  Kd_Pemda   String?   @db.VarChar(4)
+  Tahun      String?   @db.VarChar(4)
+  Tanggal    DateTime? @db.DateTime
+  Jenis      String?   @db.VarChar(20)
+  Kd_Desa    String?   @db.VarChar(13)
+  Kategori1  String?   @db.VarChar(100)
+  Kategori2  String?   @db.VarChar(100)
+  Sumberdana String?   @db.VarChar(50)
+  Nilai1     Float?
+  Nilai2     Float?
+  Persen     Float?
 }
 
 model CACM_Identifikasi_Log {
@@ -187,11 +189,11 @@ model CACM_Koneksi {
 }
 
 model CACM_Pemda {
-  id               String       @id(map: "Pemda_pkey")
-  name             String
-  code             String       @unique(map: "Pemda_code_key")
-  level            String
-  parentId         String?
+  id               String       @id(map: "Pemda_pkey") @db.VarChar(36)
+  name             String       @db.VarChar(255)
+  code             String       @unique(map: "Pemda_code_key") @db.VarChar(4)
+  level            String       @db.VarChar(100)
+  parentId         String?      @db.VarChar(36)
   createdAt        DateTime     @default(now(), map: "Pemda_createdAt_df")
   updatedAt        DateTime
   CACM_Pemda       CACM_Pemda?  @relation("CACM_PemdaToCACM_Pemda", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Pemda_parentId_fkey")
@@ -249,21 +251,21 @@ model CACM_TempPesan {
 }
 
 model CACM_User {
-  id           String         @id(map: "User_pkey")
-  username     String         @unique(map: "User_username_key")
-  email        String?        @unique(map: "User_email_key")
-  password     String
-  nip          String?        @unique(map: "User_nip_key")
-  name         String
-  roleId       String
-  pemdaId      String?
-  active       Boolean        @default(true, map: "User_active_df")
-  lastLogin    DateTime?
-  createdAt    DateTime       @default(now(), map: "User_createdAt_df")
-  updatedAt    DateTime
-  session CACM_Session[]
-  pemda   CACM_Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_pemdaId_fkey")
-  role    CACM_Role      @relation(fields: [roleId], references: [id], onUpdate: NoAction, map: "User_roleId_fkey")
+  id        String         @id(map: "User_pkey")
+  username  String         @unique(map: "User_username_key")
+  email     String?        @unique(map: "User_email_key")
+  password  String
+  nip       String?        @unique(map: "User_nip_key")
+  name      String
+  roleId    String
+  pemdaId   String?        @db.VarChar(36)
+  active    Boolean        @default(true, map: "User_active_df")
+  lastLogin DateTime?
+  createdAt DateTime       @default(now(), map: "User_createdAt_df")
+  updatedAt DateTime
+  session   CACM_Session[]
+  pemda     CACM_Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_pemdaId_fkey")
+  role      CACM_Role      @relation(fields: [roleId], references: [id], onUpdate: NoAction, map: "User_roleId_fkey")
 }
 
 model Ref_Bayar {

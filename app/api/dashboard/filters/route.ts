@@ -11,19 +11,27 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Kecamatan
-    const kecamatanData = await prisma.$queryRaw<Array<{ kecamatan: string; Kd_Kec: string }>>`
-      SELECT SUBSTRING(Kd_Kec, 6, 2) + '  ' + Nama_Kecamatan as kecamatan, Kd_Kec
-      FROM Ref_Kecamatan
-      ORDER BY Kd_Kec
-    `;
+    
+ 
+
+    const kodepemda = session.user.pemdakd; // pastikan ini string dan sudah divalidasi
+
+    const kecamatanData = await prisma.$queryRawUnsafe<Array<{ kecamatan: string; Kd_Kec: string }>>(
+      `SELECT SUBSTRING(Kd_Kec, 6, 2) + '  ' + Nama_Kecamatan as kecamatan, Kd_Kec
+       FROM Ref_Kecamatan
+       WHERE Kd_Pemda = '${kodepemda}'
+       ORDER BY Kd_Kec`
+    );
+    
+    
 
     // Desa (include Kd_Kec for grouping)
-    const desaRaw = await prisma.$queryRaw<Array<{ desa: string; Kd_Desa: string; Kd_Kec: string }>>`
+    const desaRaw = await prisma.$queryRawUnsafe<Array<{ desa: string; Kd_Desa: string; Kd_Kec: string }>>(`
       SELECT SUBSTRING(Kd_Desa, 6, 7) + '  ' + Nama_Desa as desa, Kd_Desa, Kd_Kec
       FROM Ref_Desa
+      Where SUBSTRING(Kd_Desa, 1, 4) = '${kodepemda}'
       ORDER BY Kd_Desa
-    `;
+    `);
 
     // Group desa by Kd_Kec
     const desaGrouped: Record<string, Array<{ desa: string; Kd_Desa: string }>> = {};
