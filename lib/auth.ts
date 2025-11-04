@@ -7,6 +7,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { z } from 'zod'
 
 
+
 interface CustomUser extends User {
   username: string
   role: string
@@ -53,6 +54,8 @@ export const authOptions: NextAuthOptions = {
           })
 
           console.log("Received credentials:", credentials);
+
+ 
 
 
           // Find user in local User table (use CACM_User when on Dian's network)

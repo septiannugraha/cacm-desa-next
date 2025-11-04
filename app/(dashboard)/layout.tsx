@@ -42,7 +42,7 @@ import { LucideIcon } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { redirect, usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 interface NavigationItem {
@@ -109,6 +109,7 @@ const adminNavigation: AdminNavigationItem[] = [
     icon: Settings,
     children: [
       { name: 'Pemerintah Daerah', href: '/admin/pemda', icon: Landmark },
+      { name: 'Custom Dashboard', href: '/admin/cstdashboard', icon: LayoutDashboard },
       { name: 'Desa', href: '/admin/desa', icon: Building },
       { name: 'Koneksi', href: '/admin/koneksi', icon: LinkIcon },
       { name: 'Status', href: '/admin/status', icon: Rocket },
@@ -140,6 +141,14 @@ export default function DashboardLayout({
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+
+  useEffect(() => {
+    if (session?.user?.roleCode == 'DBAdmin') {
+      redirect('/dbkoneksi');
+    }
+  }, [session]);
+
 
   // Auto-expand menu if current path is a child route
   useEffect(() => {

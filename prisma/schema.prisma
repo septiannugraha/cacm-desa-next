@@ -7,15 +7,16 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model App_Log {
-  waktu    DateTime @db.DateTime
-  username String   @db.VarChar(50)
-  page     String?  @db.VarChar(255)
-  action   String?  @db.VarChar(255)
-  oldvalue String?  @db.VarChar(8000)
-  newvalue String?  @db.VarChar(8000)
+  waktu    DateTime? @db.DateTime
+  username String?   @db.VarChar(50)
+  page     String?   @db.VarChar(255)
+  action   String?   @db.VarChar(255)
+  oldvalue String?   @db.VarChar(8000)
+  newvalue String?   @db.VarChar(8000)
 
-  @@id([waktu, username], map: "PK_App_Log")
+  @@ignore
 }
 
 model CACM_Atensi {
@@ -110,22 +111,6 @@ model CACM_CstDashboard {
   Syntax      String? @db.NVarChar(Max)
 }
 
-model CACM_Dashboard {
-  id         String    @id(map: "PK_CACM_Dashboard") @db.VarChar(36)
-  id_Pemda   String?   @db.VarChar(36)
-  Kd_Pemda   String?   @db.VarChar(4)
-  Tahun      String?   @db.VarChar(4)
-  Tanggal    DateTime? @db.DateTime
-  Jenis      String?   @db.VarChar(20)
-  Kd_Desa    String?   @db.VarChar(13)
-  Kategori1  String?   @db.VarChar(100)
-  Kategori2  String?   @db.VarChar(100)
-  Sumberdana String?   @db.VarChar(50)
-  Nilai1     Float?
-  Nilai2     Float?
-  Persen     Float?
-}
-
 model CACM_Identifikasi_Log {
   No_ID          BigInt    @id(map: "PK_CACM_Identifikasi_Log")
   Tahun          String?   @db.VarChar(4)
@@ -137,8 +122,9 @@ model CACM_Identifikasi_Log {
   Username       String?   @db.VarChar(50)
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model CACM_Identifikasi_RF {
-  No_ID     Int     @id(map: "PK_CACM_Identifikasi_RF")
+  No_ID     Int
   Tahun     String? @db.VarChar(4)
   Kd_Pemda  String? @db.VarChar(4)
   Kecamatan String? @db.VarChar(255)
@@ -148,6 +134,8 @@ model CACM_Identifikasi_RF {
   BOP       Float?
   Pajak     Float?
   Jumlah    Float?
+
+  @@ignore
 }
 
 model CACM_Jns_Atensi {
@@ -169,35 +157,35 @@ model CACM_Jns_Atensi {
 }
 
 model CACM_Koneksi {
-  id                                             String?   @db.VarChar(36)
-  id_Pemda                                       String?   @db.VarChar(36)
-  Tahun                                          String    @db.VarChar(4)
-  Kd_Pemda                                       String    @db.VarChar(4)
-  Server                                         String?   @db.VarChar(50)
-  DB                                             String?   @db.VarChar(50)
-  UserID                                         String?   @db.VarChar(50)
-  Password                                       String?   @db.VarChar(50)
-  Con_Stat                                       Boolean?
-  create_at                                      DateTime? @db.DateTime
-  create_by                                      String?   @db.VarChar(100)
-  update_at                                      DateTime? @db.DateTime
-  update_by                                      String?   @db.VarChar(100)
-  Ta_Pemda_CACM_Koneksi_Tahun_Kd_PemdaToTa_Pemda Ta_Pemda  @relation("CACM_Koneksi_Tahun_Kd_PemdaToTa_Pemda", fields: [Tahun, Kd_Pemda], references: [Tahun, Kd_Pemda], map: "FK_CACM_Koneksi_Ta_Pemda")
-  Ta_Pemda_CACM_Koneksi_id_PemdaToTa_Pemda       Ta_Pemda? @relation("CACM_Koneksi_id_PemdaToTa_Pemda", fields: [id_Pemda], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CACM_Koneksi_Ta_Pemda_id")
-
-  @@id([Tahun, Kd_Pemda], map: "PK_CACM_Koneksi")
+  id           String        @id(map: "PK_CACM_Koneksi") @db.VarChar(36)
+  id_Koneksi   String?       @db.VarChar(36)
+  Tahun        String        @db.VarChar(4)
+  Kd_Pemda     String        @db.VarChar(4)
+  Server       String?       @db.VarChar(500)
+  DB           String?       @db.VarChar(500)
+  Mode         String?       @db.VarChar(500)
+  UserID       String?       @db.VarChar(500)
+  Password     String?       @db.VarChar(500)
+  Con_Stat     Boolean?
+  create_at    DateTime?     @db.DateTime
+  create_by    String?       @db.VarChar(100)
+  update_at    DateTime?     @db.DateTime
+  update_by    String?       @db.VarChar(100)
+  CACM_Pemda   CACM_Pemda    @relation(fields: [Kd_Pemda], references: [code], onUpdate: NoAction, map: "FK_CACM_Koneksi_CACM_Pemda")
+  Ta_KoneksiDB Ta_KoneksiDB? @relation(fields: [id_Koneksi], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CACM_Koneksi_Ta_KoneksiDB")
 }
 
 model CACM_Pemda {
-  id               String       @id(map: "Pemda_pkey") @db.VarChar(36)
-  name             String       @db.VarChar(255)
-  code             String       @unique(map: "Pemda_code_key") @db.VarChar(4)
-  level            String       @db.VarChar(100)
-  parentId         String?      @db.VarChar(36)
-  createdAt        DateTime     @default(now(), map: "Pemda_createdAt_df")
-  updatedAt        DateTime
-  CACM_Pemda       CACM_Pemda?  @relation("CACM_PemdaToCACM_Pemda", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Pemda_parentId_fkey")
-  other_CACM_Pemda CACM_Pemda[] @relation("CACM_PemdaToCACM_Pemda")
+  id               String         @id(map: "PK_CACM_Pemda") @db.VarChar(36)
+  name             String?        @db.VarChar(255)
+  code             String         @unique(map: "IX_CACM_Pemda") @db.VarChar(4)
+  level            String?        @db.VarChar(100)
+  parentId         String?        @db.VarChar(36)
+  createAt         DateTime?      @db.DateTime
+  updateAt         DateTime?      @db.DateTime
+  CACM_Koneksi     CACM_Koneksi[]
+  CACM_Pemda       CACM_Pemda?    @relation("CACM_PemdaToCACM_Pemda", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Pemda_parentId_fkey")
+  other_CACM_Pemda CACM_Pemda[]   @relation("CACM_PemdaToCACM_Pemda")
   CACM_User        CACM_User[]
 }
 
@@ -212,24 +200,24 @@ model CACM_Peran {
 }
 
 model CACM_Role {
-  id          String      @id(map: "Role_pkey")
-  name        String      @unique(map: "Role_name_key")
-  code        String      @unique(map: "Role_code_key")
-  permissions String      @db.NVarChar(Max)
-  createdAt   DateTime    @default(now(), map: "Role_createdAt_df")
-  updatedAt   DateTime
-  CACM_User   CACM_User[]
+  id         String      @id(map: "PK_CACM_Role") @db.VarChar(36)
+  name       String?     @db.VarChar(50)
+  code       String?     @db.VarChar(50)
+  permission String?     @db.VarChar(Max)
+  createdAt  DateTime?   @db.DateTime
+  updatedAt  DateTime?   @db.DateTime
+  CACM_User  CACM_User[]
 }
 
 model CACM_Session {
-  id           String    @id(map: "Session_pkey")
-  sessionToken String    @unique(map: "Session_sessionToken_key")
-  userId       String
-  fiscalYear   Int
-  expires      DateTime
-  createdAt    DateTime  @default(now(), map: "Session_createdAt_df")
-  updatedAt    DateTime
-  CACM_User    CACM_User @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+  id           String     @id(map: "PK_CACM_Session") @db.VarChar(36)
+  sessionToken String?    @db.VarChar(50)
+  userId       String?    @db.VarChar(36)
+  fiscalYear   Int?
+  expires      DateTime?  @db.DateTime
+  createdAt    DateTime?  @db.DateTime
+  updatedAt    DateTime?  @db.DateTime
+  CACM_User    CACM_User? @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Session_userId_fkey")
 }
 
 model CACM_StatusTL {
@@ -237,9 +225,12 @@ model CACM_StatusTL {
   Keterangan String? @db.VarChar(50)
 }
 
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model CACM_StatusVer {
-  StatusVer  Int     @id(map: "PK_CACM_StatusVer") @db.TinyInt
+  StatusVer  Int     @db.TinyInt
   Keterangan String? @db.VarChar(50)
+
+  @@ignore
 }
 
 model CACM_TempPesan {
@@ -251,21 +242,21 @@ model CACM_TempPesan {
 }
 
 model CACM_User {
-  id        String         @id(map: "User_pkey")
-  username  String         @unique(map: "User_username_key")
-  email     String?        @unique(map: "User_email_key")
-  password  String
-  nip       String?        @unique(map: "User_nip_key")
-  name      String
-  roleId    String
+  id        String         @id(map: "PK_CACM_User") @db.VarChar(36)
+  username  String?        @unique(map: "IX_CACM_User") @db.VarChar(100)
+  email     String?        @db.VarChar(100)
+  password  String?        @db.VarChar(100)
+  nip       String?        @db.VarChar(100)
+  name      String?        @db.VarChar(100)
+  roleId    String?        @db.VarChar(36)
   pemdaId   String?        @db.VarChar(36)
-  active    Boolean        @default(true, map: "User_active_df")
-  lastLogin DateTime?
-  createdAt DateTime       @default(now(), map: "User_createdAt_df")
-  updatedAt DateTime
+  active    Boolean?
+  lastLogin DateTime?      @db.DateTime
+  createdAt DateTime?      @db.DateTime
+  updatedAt DateTime?      @db.DateTime
   session   CACM_Session[]
-  pemda     CACM_Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_pemdaId_fkey")
-  role      CACM_Role      @relation(fields: [roleId], references: [id], onUpdate: NoAction, map: "User_roleId_fkey")
+  pemda     CACM_Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, map: "User_pemdaId_fkey")
+  role      CACM_Role?     @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_roleId_fkey")
 }
 
 model Ref_Bayar {
@@ -2316,20 +2307,21 @@ model Ta_Kecamatan {
 }
 
 model Ta_KoneksiDB {
-  id            String    @id(map: "PK_Ta_KoneksiDB") @db.VarChar(36)
-  Kd_Pemda      String?   @db.VarChar(4)
-  Nama_Koneksi  String    @db.VarChar(255)
-  Jenis_Koneksi String    @db.VarChar(50)
-  Server        String?   @db.VarChar(50)
-  UID           String?   @db.VarChar(50)
-  Pwd           String?   @db.VarChar(50)
-  DB            String?   @db.VarChar(50)
-  Mode          String?   @db.VarChar(50)
+  id            String         @id(map: "PK_Ta_KoneksiDB") @db.VarChar(36)
+  Kd_Pemda      String?        @db.VarChar(4)
+  Nama_Koneksi  String         @db.VarChar(255)
+  Jenis_Koneksi String         @db.VarChar(50)
+  Server        String?        @db.VarChar(500)
+  UID           String?        @db.VarChar(500)
+  Pwd           String?        @db.VarChar(500)
+  DB            String?        @db.VarChar(500)
+  Mode          String?        @db.VarChar(50)
   ConStat       Boolean?
-  create_at     DateTime? @db.DateTime
-  create_by     String?   @db.VarChar(100)
-  update_at     DateTime? @db.DateTime
-  update_by     String?   @db.VarChar(100)
+  create_at     DateTime?      @db.DateTime
+  create_by     String?        @db.VarChar(100)
+  update_at     DateTime?      @db.DateTime
+  update_by     String?        @db.VarChar(100)
+  CACM_Koneksi  CACM_Koneksi[]
 }
 
 model Ta_Pegawai {
@@ -2347,41 +2339,39 @@ model Ta_Pegawai {
 }
 
 model Ta_Pemda {
-  id                                                 String         @unique(map: "IX_Ta_Pemda_id") @db.VarChar(36)
-  Tahun                                              String         @db.VarChar(4)
-  Kd_Pemda                                           String         @db.VarChar(4)
-  Nama_Pemda                                         String?        @db.VarChar(200)
-  Ibukota                                            String?        @db.VarChar(50)
-  Alamat                                             String?        @db.VarChar(50)
-  Nm_Bupati                                          String?        @db.VarChar(100)
-  Jbt_Bupati                                         String?        @db.VarChar(100)
-  Nm_Inspektur                                       String?        @db.VarChar(100)
-  NIP_Inspektur                                      String?        @db.VarChar(100)
-  Jbt_Inspektur                                      String?        @db.VarChar(100)
-  Alamat_Inspektorat                                 String?        @db.VarChar(100)
-  Nm_Admin                                           String?        @db.VarChar(100)
-  HP_Admin                                           String?        @db.VarChar(100)
-  email_Admin                                        String?        @db.VarChar(100)
-  Logo                                               Bytes?         @db.Image
-  C_Kode                                             String?        @db.VarChar(200)
-  C_Pemda                                            String?        @db.VarChar(200)
-  C_Data                                             String?        @db.VarChar(200)
-  isactive                                           Boolean?
-  create_at                                          DateTime?      @db.DateTime
-  create_by                                          String?        @db.VarChar(100)
-  update_at                                          DateTime?      @db.DateTime
-  update_by                                          String?        @db.VarChar(100)
-  CACM_Atensi_CACM_Atensi_Tahun_Kd_PemdaToTa_Pemda   CACM_Atensi[]  @relation("CACM_Atensi_Tahun_Kd_PemdaToTa_Pemda")
-  CACM_Atensi_CACM_Atensi_id_PemdaToTa_Pemda         CACM_Atensi[]  @relation("CACM_Atensi_id_PemdaToTa_Pemda")
-  CACM_Koneksi_CACM_Koneksi_Tahun_Kd_PemdaToTa_Pemda CACM_Koneksi?  @relation("CACM_Koneksi_Tahun_Kd_PemdaToTa_Pemda")
-  CACM_Koneksi_CACM_Koneksi_id_PemdaToTa_Pemda       CACM_Koneksi[] @relation("CACM_Koneksi_id_PemdaToTa_Pemda")
-  Ta_Desa_Ta_Desa_Tahun_Kd_PemdaToTa_Pemda           Ta_Desa[]      @relation("Ta_Desa_Tahun_Kd_PemdaToTa_Pemda")
-  Ta_Desa_Ta_Desa_id_PemdaToTa_Pemda                 Ta_Desa[]      @relation("Ta_Desa_id_PemdaToTa_Pemda")
-  Ref_Pemda                                          Ref_Pemda      @relation(fields: [Kd_Pemda], references: [Kd_Pemda], onUpdate: NoAction, map: "FK_Ta_Pemda_Ref_Pemda")
-  Ta_PKPT_Ta_PKPT_Tahun_Kd_PemdaToTa_Pemda           Ta_PKPT[]      @relation("Ta_PKPT_Tahun_Kd_PemdaToTa_Pemda")
-  Ta_PKPT_Ta_PKPT_id_PemdaToTa_Pemda                 Ta_PKPT[]      @relation("Ta_PKPT_id_PemdaToTa_Pemda")
-  Ta_Wilayah_Ta_Wilayah_Tahun_Kd_PemdaToTa_Pemda     Ta_Wilayah[]   @relation("Ta_Wilayah_Tahun_Kd_PemdaToTa_Pemda")
-  Ta_Wilayah_Ta_Wilayah_id_PemdaToTa_Pemda           Ta_Wilayah[]   @relation("Ta_Wilayah_id_PemdaToTa_Pemda")
+  id                                               String        @unique(map: "IX_Ta_Pemda_id") @db.VarChar(36)
+  Tahun                                            String        @db.VarChar(4)
+  Kd_Pemda                                         String        @db.VarChar(4)
+  Nama_Pemda                                       String?       @db.VarChar(200)
+  Ibukota                                          String?       @db.VarChar(50)
+  Alamat                                           String?       @db.VarChar(50)
+  Nm_Bupati                                        String?       @db.VarChar(100)
+  Jbt_Bupati                                       String?       @db.VarChar(100)
+  Nm_Inspektur                                     String?       @db.VarChar(100)
+  NIP_Inspektur                                    String?       @db.VarChar(100)
+  Jbt_Inspektur                                    String?       @db.VarChar(100)
+  Alamat_Inspektorat                               String?       @db.VarChar(100)
+  Nm_Admin                                         String?       @db.VarChar(100)
+  HP_Admin                                         String?       @db.VarChar(100)
+  email_Admin                                      String?       @db.VarChar(100)
+  Logo                                             Bytes?        @db.Image
+  C_Kode                                           String?       @db.VarChar(200)
+  C_Pemda                                          String?       @db.VarChar(200)
+  C_Data                                           String?       @db.VarChar(200)
+  isactive                                         Boolean?
+  create_at                                        DateTime?     @db.DateTime
+  create_by                                        String?       @db.VarChar(100)
+  update_at                                        DateTime?     @db.DateTime
+  update_by                                        String?       @db.VarChar(100)
+  CACM_Atensi_CACM_Atensi_Tahun_Kd_PemdaToTa_Pemda CACM_Atensi[] @relation("CACM_Atensi_Tahun_Kd_PemdaToTa_Pemda")
+  CACM_Atensi_CACM_Atensi_id_PemdaToTa_Pemda       CACM_Atensi[] @relation("CACM_Atensi_id_PemdaToTa_Pemda")
+  Ta_Desa_Ta_Desa_Tahun_Kd_PemdaToTa_Pemda         Ta_Desa[]     @relation("Ta_Desa_Tahun_Kd_PemdaToTa_Pemda")
+  Ta_Desa_Ta_Desa_id_PemdaToTa_Pemda               Ta_Desa[]     @relation("Ta_Desa_id_PemdaToTa_Pemda")
+  Ref_Pemda                                        Ref_Pemda     @relation(fields: [Kd_Pemda], references: [Kd_Pemda], onUpdate: NoAction, map: "FK_Ta_Pemda_Ref_Pemda")
+  Ta_PKPT_Ta_PKPT_Tahun_Kd_PemdaToTa_Pemda         Ta_PKPT[]     @relation("Ta_PKPT_Tahun_Kd_PemdaToTa_Pemda")
+  Ta_PKPT_Ta_PKPT_id_PemdaToTa_Pemda               Ta_PKPT[]     @relation("Ta_PKPT_id_PemdaToTa_Pemda")
+  Ta_Wilayah_Ta_Wilayah_Tahun_Kd_PemdaToTa_Pemda   Ta_Wilayah[]  @relation("Ta_Wilayah_Tahun_Kd_PemdaToTa_Pemda")
+  Ta_Wilayah_Ta_Wilayah_id_PemdaToTa_Pemda         Ta_Wilayah[]  @relation("Ta_Wilayah_id_PemdaToTa_Pemda")
 
   @@id([Tahun, Kd_Pemda], map: "PK_Ta_Pemda")
 }

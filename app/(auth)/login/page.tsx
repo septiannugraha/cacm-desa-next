@@ -1,13 +1,14 @@
 'use client'
 
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
-import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Loader2, User, Lock, Calendar } from 'lucide-react'
+import { Calendar, Loader2, Lock, User } from 'lucide-react'
+import { signIn } from 'next-auth/react'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'Username harus diisi'),
@@ -49,6 +50,8 @@ export default function LoginPage() {
       if (result?.error) {
         setError(result.error)
       } else if (result?.ok) {
+       
+        
         router.push('/dashboard')
       }
     } catch (error) {
@@ -67,12 +70,15 @@ export default function LoginPage() {
         {/* Logo and Title Card */}
         <div className="bg-white/80 backdrop-blur-sm rounded-t-2xl shadow-xl p-8">
           <div className="text-center">
-            <div className="mx-auto w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center mb-4">
-              <span className="text-white text-2xl font-bold">CACM</span>
+
+            
+            <div className="mx-auto w-40 h-10 bg-white rounded-full flex items-center justify-center mb-4">
+                <Image src="/cacm_logo.png" alt="CACM Logo" width={120} height={80} className="object-contain" />
             </div>
             <h1 className="text-xl font-bold text-gray-900 mb-2">
               Continuous Audit Continuous Monitoring
             </h1>
+            
             <p className="text-lg text-gray-700">
               Pengelolaan Keuangan Desa
             </p>
