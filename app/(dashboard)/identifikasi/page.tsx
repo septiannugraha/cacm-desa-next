@@ -1,190 +1,111 @@
 'use client'
 
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle,
-  ClipboardCheck,
-  Clock,
-  FileText,
-  Filter,
-  MapPin,
-  Plus,
-  Search
-} from 'lucide-react'
-import { useSession } from 'next-auth/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
+import { log } from 'console'
 
-export default function IdentificationPage() {
-  useSession()
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+export default function IdentifikasiPage() {
+  const [data, setData] = useState<any[]>([])
+  const [columns, setColumns] = useState<string[]>([])
+  const [cutoffInfo, setCutoffInfo] = useState<string>('')
 
-  // Mock data
-  const inspections = [
-    {
-      id: 1,
-      title: 'Inspeksi Rutin Q1 2024',
-      village: 'Desa Sukamaju',
-      date: '2024-03-15',
-      status: 'completed',
-      inspector: 'Ahmad Fauzi',
-      findings: 5,
-      critical: 1
-    },
-    {
-      id: 2,
-      title: 'Inspeksi Khusus Dana BLT',
-      village: 'Desa Mekar Jaya',
-      date: '2024-03-20',
-      status: 'in_progress',
-      inspector: 'Siti Rahayu',
-      findings: 3,
-      critical: 0
-    },
-    {
-      id: 3,
-      title: 'Inspeksi Tahunan 2024',
-      village: 'Desa Sejahtera',
-      date: '2024-03-25',
-      status: 'scheduled',
-      inspector: 'Budi Santoso',
-      findings: 0,
-      critical: 0
-    }
-  ]
+  const fetchData = async () => {
+    const res = await axios.get('/api/identifikasi')
+    setData(res.data.rows)
+    setColumns(res.data.columns)
+    setCutoffInfo(res.data.cutoffInfo)
+  }
+
+  const handleCekRedflags = async () => {
+    await axios.post('/api/identifikasi/cek')
+    fetchData()
+  }
+  const getTodayString = () => {
+    const today = new Date();
+    return today.toISOString().split('T')[0]; // hasil: '2025-11-04'
+    
+  };
+
+
+  const [cutoffDate, setCutoffDate] = useState<string>(getTodayString());
+
+  const handleArsipkan = async () => {
+    await axios.post('/api/identifikasi/arsipkan')
+    fetchData()
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Identifikasi Permasalahan (RedFlags)</h1>
-          <p className="text-gray-600 mt-1">
-            Kelola dan pantau permasalahan yang terjadi di desa
-          </p>
-        </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          <Plus className="w-4 h-4" />
-          Jadwalkan Inspeksi
-        </button>
-      </div>
+  
+     
+     
+     <div className="space-y-2">
+  {/* Baris horizontal: Judul + DatePicker + Tombol */}
+  <div className="flex flex-wrap items-center justify-between gap-4">
+    {/* Judul */}
+    <h2 className="text-xl font-semibold">Identifikasi Redflags</h2>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">12</p>
-              <p className="text-sm text-gray-600">Total Inspeksi</p>
-            </div>
-            <ClipboardCheck className="w-8 h-8 text-blue-600" />
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">3</p>
-              <p className="text-sm text-gray-600">Sedang Berjalan</p>
-            </div>
-            <Clock className="w-8 h-8 text-yellow-600" />
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">8</p>
-              <p className="text-sm text-gray-600">Selesai</p>
-            </div>
-            <CheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-2xl font-bold text-gray-900">15</p>
-              <p className="text-sm text-gray-600">Temuan Kritis</p>
-            </div>
-            <AlertCircle className="w-8 h-8 text-red-600" />
-          </div>
-        </div>
-      </div>
+    {/* DatePicker */}
+    <div className="flex items-center space-x-2">
+      <label htmlFor="cutoffDate" className="text-sm font-medium text-gray-700">
+       Cut Off:
+      </label>
+      <input
+        type="date"
+        id="cutoffDate"
+        value={cutoffDate}
+        onChange={(e) => setCutoffDate(e.target.value)}
+        className="px-3 py-2 border rounded text-sm text-gray-800"
+      />
+    </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Cari inspeksi..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-          </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Semua Status</option>
-            <option value="scheduled">Terjadwal</option>
-            <option value="in_progress">Sedang Berjalan</option>
-            <option value="completed">Selesai</option>
-          </select>
-          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter Lanjutan
-          </button>
-        </div>
-      </div>
+    {/* Tombol */}
+    <div className="flex items-center space-x-2">
+      <button
+        onClick={handleCekRedflags}
+        className="flex items-center px-4 py-2 bg-yellow-400 text-gray-900 rounded hover:bg-yellow-500"
+      >
+        <span className="mr-2">🔄</span> Cek Redflags
+      </button>
+      <button
+        onClick={handleArsipkan}
+        className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+      >
+        <span className="mr-2">📨</span> Arsipkan
+      </button>
+    </div>
+  </div>
 
-      {/* Inspections List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="divide-y divide-gray-200">
-          {inspections.map((inspection) => (
-            <div key={inspection.id} className="p-4 hover:bg-gray-50 transition-colors">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    {inspection.title}
-                  </h3>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {inspection.village}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-4 h-4" />
-                      {inspection.date}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <FileText className="w-4 h-4" />
-                      {inspection.findings} Temuan
-                    </span>
-                    {inspection.critical > 0 && (
-                      <span className="flex items-center gap-1 text-red-600">
-                        <AlertCircle className="w-4 h-4" />
-                        {inspection.critical} Kritis
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 text-xs rounded-full border ${
-                    inspection.status === 'completed' ? 'bg-green-100 text-green-800 border-green-300' :
-                    inspection.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                    'bg-gray-100 text-gray-800 border-gray-300'
-                  }`}>
-                    {inspection.status === 'completed' ? 'Selesai' :
-                     inspection.status === 'in_progress' ? 'Berlangsung' : 'Terjadwal'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+  {/* Cutoff Info */}
+  <p className="text-sm text-gray-600">{cutoffInfo || '-'}</p>
+ 
+
+      <div className="overflow-auto border rounded">
+        <table className="min-w-full table-auto">
+          <thead className="bg-gray-100">
+            <tr>
+              {columns.map((col) => (
+                <th key={col} className="px-4 py-2 text-left text-sm font-medium text-gray-700">
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, idx) => (
+              <tr key={idx} className="border-t">
+                {columns.map((col) => (
+                  <td key={col} className="px-4 py-2 text-sm text-gray-800">
+                    {row[col] ?? '-'}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   )

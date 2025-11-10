@@ -49,11 +49,7 @@ interface FilterOptionSumberDana {
   Kode: string
 }
 
-interface FilterData {
-  kecamatan: FilterOption[]
-  desa: FilterOptionDesa[]
-  sumberDana: FilterOptionSumberDana[]
-}
+
 
 export default function DashboardPage() {
   const { data: session, status } = useSession()

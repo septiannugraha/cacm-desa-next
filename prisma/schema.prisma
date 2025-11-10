@@ -2359,8 +2359,8 @@ model Ta_Pemda {
   C_Pemda                                          String?       @db.VarChar(200)
   C_Data                                           String?       @db.VarChar(200)
   isactive                                         Boolean?
-  create_at                                        DateTime?     @db.DateTime
-  create_by                                        String?       @db.VarChar(100)
+  created_at                                       DateTime?     @db.DateTime
+  created_by                                       String?       @db.VarChar(100)
   update_at                                        DateTime?     @db.DateTime
   update_by                                        String?       @db.VarChar(100)
   CACM_Atensi_CACM_Atensi_Tahun_Kd_PemdaToTa_Pemda CACM_Atensi[] @relation("CACM_Atensi_Tahun_Kd_PemdaToTa_Pemda")
@@ -2559,4 +2559,66 @@ model Ta_Wilayah {
   Ta_Pemda_Ta_Wilayah_id_PemdaToTa_Pemda                          Ta_Pemda       @relation("Ta_Wilayah_id_PemdaToTa_Pemda", fields: [id_Pemda], references: [id], onUpdate: NoAction, map: "FK_Ta_Wilayah_Ta_Pemda_id")
 
   @@id([Tahun, Kd_Pemda, Kd_Wilayah], map: "PK_Ta_Wilayah")
+}
+
+model CACM_DataDetail {
+  id              String    @id(map: "PK_CACM_DataDetail") @db.VarChar(36)
+  Grup            String?   @db.VarChar(9)
+  Tahun           String?   @db.NVarChar(4)
+  KodePemda       String?   @db.NVarChar(8)
+  NamaPemda       String?   @db.NVarChar(100)
+  KodeProvinsi    String?   @db.NVarChar(4)
+  NamaProvinsi    String?   @db.NVarChar(200)
+  KodeKecamatan   String?   @db.NVarChar(13)
+  NamaKecamatan   String?   @db.NVarChar(100)
+  KodeDesa        String?   @db.NVarChar(18)
+  Kd_Desa         String    @db.NVarChar(8)
+  Tipologi        String?   @db.VarChar(103)
+  NamaDesa        String?   @db.NVarChar(100)
+  NamaDesaFilter  String?   @db.NVarChar(100)
+  KodeRek1        String?   @db.NVarChar(3)
+  NamaRek1        String?   @db.NVarChar(100)
+  KodeRek2        String?   @db.NVarChar(4)
+  NamaRek2        String?   @db.NVarChar(100)
+  KodeRek3        String?   @db.NVarChar(7)
+  NamaRek3        String?   @db.NVarChar(100)
+  KodeRek4        String?   @db.NVarChar(12)
+  NamaRek4        String?   @db.NVarChar(100)
+  KodePaket       String?   @db.NVarChar(2)
+  NamaPaket       String    @db.NVarChar(100)
+  Lokasi          String?   @db.NVarChar(40)
+  Output          String?   @db.NVarChar(80)
+  Satuan          String?   @db.NVarChar(20)
+  Volume          Float?
+  KodeSumberDana  String?   @db.NVarChar(3)
+  NamaSumberDana  String?   @db.NVarChar(50)
+  KodeTagging     String    @db.NVarChar(3)
+  NamaTagging     String    @db.NVarChar(100)
+  JenisRekening   String    @db.VarChar(44)
+  KodeBidang      String?   @db.NVarChar(10)
+  NamaBidang      String    @db.NVarChar(100)
+  KodeSubbidang   String?   @db.NVarChar(14)
+  NamaSubbidang   String    @db.NVarChar(100)
+  KodeKegiatan    String?   @db.NVarChar(20)
+  NamaKegiatan    String    @db.NVarChar(100)
+  NomorDokumen    String?   @db.NVarChar(40)
+  TanggalDokumen  DateTime? @db.DateTime
+  NomorRinci      String?   @db.NVarChar(30)
+  TanggalRinci    DateTime? @db.DateTime
+  UraianRinci     String?   @db.NVarChar(255)
+  SumberDanaRinci String?   @db.NVarChar(4)
+  JmlSatuanRinci  Float?
+  HrgSatuanRinci  Float?
+  MetodeBayar     String?   @db.VarChar(8)
+  Anggaran        Float?
+  Realisasi       Float?
+  Nilai           Float?
+  KodePotongan    String?   @db.NVarChar(18)
+  NilaiPotongan   Float?
+  NomorSSP        String?   @db.NVarChar(30)
+  TanggalSetor    DateTime? @db.DateTime
+  NilaiSetor      Float?
+  NamaPotongan    String?   @db.NVarChar(4000)
+
+  @@index([Grup, KodePemda, KodeKecamatan, Kd_Desa, KodeDesa, KodeRek1, KodeRek2, KodeRek3, KodeRek4, KodePaket, KodeSumberDana, KodeBidang, KodeSubbidang, KodeKegiatan, KodeTagging, NomorRinci], map: "IX_CACM_DataDetail")
 }
