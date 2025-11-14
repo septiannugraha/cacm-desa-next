@@ -19,6 +19,7 @@ import {
 
 import AreaChartDashboard from '@/components/charts/AreaChartDashboard'
 import BarChartDashboard from '@/components/charts/BarChartDashboard'
+import BarChartDashboardH from '@/components/charts/BarChartDashboardH'
 import LineChartDashboard from '@/components/charts/LineChartDashboard'
 import PieChartDashboard from '@/components/charts/PieChartDashboard'
 import FilterModal from '@/components/dashboard/FilterModal'
@@ -39,6 +40,7 @@ interface DashboardChartData {
   monthlyTrend: ChartData[]
   prop_belanja_perkelompok: ChartData[]
   ringkasan_apbdes: ChartData[]
+  prop_belanja_pertagging_tertinggi: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -468,12 +470,21 @@ export default function DashboardBelanjaPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+              <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+             <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Judul disesuikan" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.prop_belanja_pertagging_tertinggi} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+          </div>         
 v
         </>
       ) : (

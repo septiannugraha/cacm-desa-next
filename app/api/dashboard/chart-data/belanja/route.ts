@@ -95,14 +95,33 @@ export async function GET(request: Request) {
    
      
 
+      console.log('Params:', { tahun, kdprov, kdpemda, kdkec, kddesa, sumberdana })
 
-
+      const prop_belanja_pertagging_tertinggi = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = prop_belanja_pertagging_tertinggi,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+       
+         
 
 
  
     return NextResponse.json({
       prop_belanja_perkelompok,
-      ringkasan_apbdes
+      ringkasan_apbdes,
+      prop_belanja_pertagging_tertinggi
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)
