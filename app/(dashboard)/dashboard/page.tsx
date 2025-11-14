@@ -31,11 +31,14 @@ interface ChartData {
   Kategori2?: string
   Nilai1: number
   Nilai2?: number
+  Nilai3?: number
 }
 interface DashboardChartData {
-  budgetRealizationByVillage: ChartData[]
+ 
   budgetByAccountType: ChartData[]
   monthlyTrend: ChartData[]
+  prop_belanja_perkelompok: ChartData[]
+  ringkasan_apbdes: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -132,11 +135,11 @@ export default function DashboardPage() {
   // ===== LOAD CHARTS
   const filterQueryString = useMemo(() => {
     const params = new URLSearchParams()
-    if (selectedProvinsi) params.set('provinsi', selectedProvinsi)
-    if (selectedPemda) params.set('pemda', selectedPemda)
-    if (selectedKecamatan) params.set('kecamatan', selectedKecamatan)
-    if (selectedDesa) params.set('desa', selectedDesa)
-    if (selectedSumberDana) params.set('sumberdana', selectedSumberDana)
+    if (selectedProvinsi) params.set('kdprov', selectedProvinsi)
+    if (selectedPemda) params.set('kdpemda', selectedPemda)
+    if (selectedKecamatan) params.set('kdkec', selectedKecamatan)
+    if (selectedDesa) params.set('kddesa', selectedDesa)
+    if (selectedSumberDana) params.set('kdsumberdana', selectedSumberDana)
     const qs = params.toString()
     return qs ? `?${qs}` : ''
   }, [selectedProvinsi, selectedPemda, selectedKecamatan, selectedDesa, selectedSumberDana])
@@ -304,6 +307,12 @@ export default function DashboardPage() {
     { name: 'Rendah', value: 32, color: 'bg-gray-400' }
   ]
 
+
+
+  const colors = ['bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-yellow-500']
+
+
+
   return (
     <div className="space-y-4 sm:space-y-6 w-full">
       {/* Header */}
@@ -388,40 +397,57 @@ export default function DashboardPage() {
           </div>
         </div>
 
+
+
         <div className="overflow-hidden max-w-full" ref={emblaRef}>
           <div className="flex gap-4 max-w-full">
-            {[
-              { title: 'PENDAPATAN DESA', anggaran: 1259753655839, realisasi: 659093758116.797, percentage: 52.32, color: 'bg-blue-500' },
-              { title: 'BELANJA DESA', anggaran: 1320798731355.694, realisasi: 579382068213.787, percentage: 43.87, color: 'bg-green-500' },
-              { title: 'PENERIMAAN PEMBIAYAAN', anggaran: 69079321337.618, realisasi: 43373783005.546, percentage: 63.5, color: 'bg-red-500' },
-              { title: 'PENGELUARAN PEMBIAYAAN', anggaran: 8426019944193, realisasi: 4623908264045, percentage: 49.05, color: 'bg-orange-500' }
-            ].map((stat, index) => (
-              <div key={index} className="flex-[0_0_calc(100%-1rem)] min-w-0 sm:flex-[0_0_calc(50%-0.5rem)] lg:flex-[0_0_calc(33.333%-0.667rem)] xl:flex-[0_0_calc(25%-0.75rem)]">
-                <div className="bg-white rounded-lg shadow overflow-hidden h-full">
-                  <div className="flex items-center p-4">
-                    <div className={`${stat.color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}>
-                      <span className="text-base sm:text-lg font-bold">{stat.percentage}%</span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 leading-tight">{stat.title}</h3>
-                      <div className="space-y-1 mb-2 text-xs">
-                        <div>
-                          <span className="text-gray-500">Anggaran:</span>
-                          <p className="font-medium text-gray-900 truncate">{formatCurrency(stat.anggaran)}</p>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Realisasi:</span>
-                          <p className="font-medium text-gray-900 truncate">{formatCurrency(stat.realisasi)}</p>
-                        </div>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className={`${stat.color} h-2 rounded-full transition-all duration-300`} style={{ width: `${stat.percentage}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          {chartData?.ringkasan_apbdes?.map((stat, index) => {
+  const color = colors[index % colors.length] // rotasi warna jika data lebih dari 4
+
+  return (
+    <div
+      key={index}
+      className="flex-[0_0_calc(100%-1rem)] min-w-0 sm:flex-[0_0_calc(50%-0.5rem)] lg:flex-[0_0_calc(40%-0.667rem)] xl:flex-[0_0_calc(25%-0.75rem)]"
+    >
+      <div className="bg-white rounded-lg shadow overflow-hidden h-full">
+        <div className="flex items-center p-4">
+          <div
+            className={`${color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}
+          >
+            <span className="text-base sm:text-lg font-bold">
+              {stat.Nilai3?.toFixed(2)}%
+            </span>
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 leading-tight">
+              {stat.Kategori1}
+            </h3>
+            <div className="space-y-1 mb-2 text-xs">
+              <div>
+                <span className="text-gray-500">Anggaran:</span>
+                <p className="font-medium text-gray-900 truncate">
+                  {formatCurrency(stat.Nilai1)}
+                </p>
               </div>
-            ))}
+              <div>
+                <span className="text-gray-500">Realisasi:</span>
+                <p className="font-medium text-gray-900 truncate">
+                  {formatCurrency(stat.Nilai2 || 0)}
+                </p>
+              </div>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className={`${color} h-2 rounded-full transition-all duration-300`}
+                style={{ width: `${stat.Nilai3}%` }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})}
           </div>
         </div>
       </div>
@@ -442,10 +468,10 @@ export default function DashboardPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.budgetRealizationByVillage} title="Anggaran vs Realisasi per Desa" xAxisKey="Kategori1" nilai1Label="Anggaran" nilai2Label="Realisasi" />
+            <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.budgetByAccountType} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1" label="Anggaran" />
+              <PieChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 

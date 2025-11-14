@@ -2563,12 +2563,13 @@ model Ta_Wilayah {
 
 model CACM_DataDetail {
   id              String    @id(map: "PK_CACM_DataDetail") @db.VarChar(36)
+  id_getdata      String?   @db.VarChar(36)
   Grup            String?   @db.VarChar(9)
   Tahun           String?   @db.NVarChar(4)
-  KodePemda       String?   @db.NVarChar(8)
-  NamaPemda       String?   @db.NVarChar(100)
   KodeProvinsi    String?   @db.NVarChar(4)
   NamaProvinsi    String?   @db.NVarChar(200)
+  KodePemda       String?   @db.NVarChar(8)
+  NamaPemda       String?   @db.NVarChar(100)
   KodeKecamatan   String?   @db.NVarChar(13)
   NamaKecamatan   String?   @db.NVarChar(100)
   KodeDesa        String?   @db.NVarChar(18)
@@ -2618,7 +2619,90 @@ model CACM_DataDetail {
   NomorSSP        String?   @db.NVarChar(30)
   TanggalSetor    DateTime? @db.DateTime
   NilaiSetor      Float?
-  NamaPotongan    String?   @db.NVarChar(4000)
+  NamaPotongan    String?   @db.VarChar(100)
 
   @@index([Grup, KodePemda, KodeKecamatan, Kd_Desa, KodeDesa, KodeRek1, KodeRek2, KodeRek3, KodeRek4, KodePaket, KodeSumberDana, KodeBidang, KodeSubbidang, KodeKegiatan, KodeTagging, NomorRinci], map: "IX_CACM_DataDetail")
+}
+
+model CACM_DataDetail_Log {
+  id         Int       @id(map: "PK_CACM_DataDetail_Log") @default(autoincrement())
+  id_getdata String?   @db.VarChar(36)
+  tanggal    DateTime? @db.DateTime
+  jenis      Int?      @db.TinyInt
+  kd_pemda   String?   @db.VarChar(5)
+  tgl_awal   DateTime? @db.DateTime
+  tgl_akhir  DateTime? @db.DateTime
+}
+
+model CACM_DataKompilasi {
+  id             String    @id(map: "PK_CACM_KompilasiAPBDes") @db.VarChar(36)
+  id_getdata     String?   @db.VarChar(36)
+  Grup           String?   @db.VarChar(9)
+  Tahun          String?   @db.NVarChar(4)
+  KodeProvinsi   String?   @db.NVarChar(4)
+  NamaProvinsi   String?   @db.NVarChar(200)
+  KodePemda      String?   @db.NVarChar(8)
+  NamaPemda      String?   @db.NVarChar(100)
+  KodeKecamatan  String?   @db.NVarChar(13)
+  NamaKecamatan  String?   @db.NVarChar(100)
+  KodeDesa       String?   @db.NVarChar(18)
+  Kd_Desa        String    @db.NVarChar(8)
+  Tipologi       String?   @db.VarChar(103)
+  NamaDesa       String?   @db.NVarChar(100)
+  NamaDesaFilter String?   @db.NVarChar(100)
+  KodeRek1       String?   @db.NVarChar(3)
+  NamaRek1       String?   @db.NVarChar(100)
+  KodeRek2       String?   @db.NVarChar(4)
+  NamaRek2       String?   @db.NVarChar(100)
+  KodeRek3       String?   @db.NVarChar(7)
+  NamaRek3       String?   @db.NVarChar(100)
+  KodeRek4       String?   @db.NVarChar(12)
+  NamaRek4       String?   @db.NVarChar(100)
+  KodePaket      String?   @db.NVarChar(2)
+  NamaPaket      String    @db.NVarChar(100)
+  Lokasi         String?   @db.NVarChar(40)
+  Output         String?   @db.NVarChar(80)
+  Satuan         String?   @db.NVarChar(20)
+  Volume         Float?
+  KodeSumberDana String?   @db.NVarChar(3)
+  NamaSumberDana String?   @db.NVarChar(50)
+  KodeTagging    String    @db.NVarChar(3)
+  NamaTagging    String    @db.NVarChar(100)
+  JenisRekening  String    @db.VarChar(44)
+  KodeBidang     String?   @db.NVarChar(10)
+  NamaBidang     String    @db.NVarChar(100)
+  KodeSubbidang  String?   @db.NVarChar(14)
+  NamaSubbidang  String    @db.NVarChar(100)
+  KodeKegiatan   String?   @db.NVarChar(20)
+  NamaKegiatan   String    @db.NVarChar(100)
+  NomorDokumen   String?   @db.NVarChar(40)
+  TanggalDokumen DateTime? @db.DateTime
+  Anggaran       Float?
+  Realisasi      Float?
+
+  @@index([Grup, KodeProvinsi, KodeKecamatan, KodeDesa, KodeKegiatan, KodePaket, KodeSumberDana, KodeTagging, KodeRek4, TanggalDokumen], map: "IX_CACM_KompilasiAPBDes")
+}
+
+model CACM_DataPajak {
+  id             String    @id(map: "PK_CACM_DataPajak") @db.VarChar(36)
+  id_getdata     String?   @db.VarChar(36)
+  Grup           String?   @db.VarChar(9)
+  Tahun          String?   @db.NVarChar(4)
+  KodeProvinsi   String?   @db.NVarChar(4)
+  NamaProvinsi   String?   @db.NVarChar(200)
+  KodePemda      String?   @db.NVarChar(8)
+  NamaPemda      String?   @db.NVarChar(100)
+  KodeKecamatan  String?   @db.NVarChar(13)
+  NamaKecamatan  String?   @db.NVarChar(100)
+  KodeDesa       String?   @db.NVarChar(18)
+  Kd_Desa        String    @db.NVarChar(8)
+  Tipologi       String?   @db.VarChar(103)
+  NamaDesa       String?   @db.NVarChar(100)
+  NamaDesaFilter String?   @db.NVarChar(100)
+  TanggalDokumen DateTime? @db.DateTime
+  JenisPajak     String?   @db.VarChar(50)
+  KodePotongan   String?   @db.NVarChar(18)
+  NamaPotongan   String?   @db.VarChar(100)
+  NilaiPotongan  Float?
+  NilaiSetor     Float?
 }

@@ -2,8 +2,9 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { NextResponse } from 'next/server'
+ 
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
 
@@ -175,6 +176,65 @@ export async function GET() {
       console.log('[Dashboard] Sample Account Data:', accountData[0])
     }
 
+
+
+
+    const { searchParams } = new URL(request.url);
+    const tahun = searchParams.get('tahun');
+    const kdprov = searchParams.get('kdprov');
+    const kdpemda = searchParams.get('kdpemda');
+    const kdkec = searchParams.get('kdkec');
+    const kddesa = searchParams.get('kddesa');
+    const sumberdana = searchParams.get('sumberdana');
+  
+    const ringkasan_apbdes = await prisma.$queryRaw<
+    {
+      Kategori1: string
+      Nilai1: number | null
+      Nilai2: number | null
+      Nilai3: number | null
+    }[]
+  >`
+          EXEC sp_cacm_dashboard 
+            @nmdashboard = ringkasan_apbdes,
+            @tahun = ${tahun},
+            @kdprov = ${kdprov},
+            @kdpemda = ${kdpemda},
+            @kdkec = ${kdkec},
+            @kddesa = ${kddesa},
+            @sumberdana = ${sumberdana}
+           
+        `;
+     
+  
+  const prop_belanja_perkelompok = await prisma.$queryRaw<
+  {
+    Kategori1: string
+    Nilai1: number | null
+  }[]
+>`
+        EXEC sp_cacm_dashboard 
+          @nmdashboard = prop_belanja_perkelompok,
+          @tahun = ${tahun},
+          @kdprov = ${kdprov},
+          @kdpemda = ${kdpemda},
+          @kdkec = ${kdkec},
+          @kddesa = ${kddesa},
+          @sumberdana = ${sumberdana}
+         
+      `;
+   
+     
+
+
+
+
+
+
+
+
+
+
     // 3. Monthly Trend - Keep dummy data for now as table doesn't have date breakdown
     // TODO: Replace with actual monthly data if available
     const monthlyTrend = [
@@ -226,6 +286,8 @@ export async function GET() {
       budgetRealizationByVillage,
       budgetByAccountType,
       monthlyTrend,
+      prop_belanja_perkelompok,
+      ringkasan_apbdes
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)

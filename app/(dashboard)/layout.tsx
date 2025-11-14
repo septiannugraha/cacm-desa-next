@@ -36,6 +36,7 @@ import {
   User,
   Users,
   Wallet,
+  Receipt,
   X,
 } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
@@ -60,8 +61,8 @@ const navigation: NavigationItem[] = [
     children: [
       { name: 'Pendapatan', href: '/apbdes/pendapatan', icon: TrendingUp },
       { name: 'Belanja', href: '/apbdes/belanja', icon: TrendingDown },
-      { name: 'Pembiayaan +', href: '/apbdes/pembiayaan-terima', icon: Plus },
-      { name: 'Pembiayaan -', href: '/apbdes/pembiayaan-keluar', icon: Minus },
+      { name: 'Pembiayaan', href: '/apbdes/pembiayaan', icon: Wallet },
+      { name: 'Perpajakan', href: '/apbdes/pembiayaan/pajak', icon: Receipt },
     ]
   },
   {
@@ -70,8 +71,8 @@ const navigation: NavigationItem[] = [
     children: [
       { name: 'Pendapatan', href: '/trend/pendapatan', icon: TrendingUp },
       { name: 'Belanja', href: '/trend/belanja', icon: TrendingDown },
-      { name: 'Pembiayaan +', href: '/trend/pembiayaan-terima', icon: Plus },
-      { name: 'Pembiayaan -', href: '/trend/pembiayaan-keluar', icon: Minus },
+      { name: 'Pembiayaan', href: '/trend/pembiayaan', icon: Wallet },
+      { name: 'Perpajakan', href: '/trend/pajak', icon: Receipt },
     ]
   },
   {
