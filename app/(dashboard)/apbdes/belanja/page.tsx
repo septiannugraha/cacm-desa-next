@@ -42,6 +42,7 @@ interface DashboardChartData {
   ringkasan_apbdes: ChartData[]
   prop_belanja_pertagging_tertinggi: ChartData[]
   prop_belanja_pertagging_terendah: ChartData[]
+  prop_belanja_perkecamatan_terendah: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -480,10 +481,13 @@ export default function DashboardBelanjaPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Judul disesuikan" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+             <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Judul disesuikan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_terendah} title="Belanja per Kecamatan Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
           </div>         
 v
