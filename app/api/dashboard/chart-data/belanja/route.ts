@@ -183,7 +183,39 @@ export async function GET(request: Request) {
              
           `;
 
+          const realisasi_belanja_desa_terendah = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = realisasi_belanja_desa_terendah,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
          
+          const realisasi_belanja_desa_tertinggi = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = realisasi_belanja_desa_tertinggi,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
  
     return NextResponse.json({
       prop_belanja_perkelompok,
@@ -193,6 +225,8 @@ export async function GET(request: Request) {
       prop_belanja_perkecamatan_terendah,
       prop_belanja_perkecamatan_tertinggi,
       sumber_pendapatan_tertinggi,
+      realisasi_belanja_desa_terendah,
+      realisasi_belanja_desa_tertinggi
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)

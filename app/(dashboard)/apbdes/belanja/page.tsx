@@ -45,6 +45,8 @@ interface DashboardChartData {
   prop_belanja_perkecamatan_terendah: ChartData[]
   prop_belanja_perkecamatan_tertinggi: ChartData[]
   sumber_pendapatan_tertinggi: ChartData[]
+  realisasi_belanja_desa_terendah: ChartData[]
+  realisasi_belanja_desa_tertinggi: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -496,6 +498,12 @@ export default function DashboardBelanjaPage() {
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard  data={chartData.sumber_pendapatan_tertinggi} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
           </div>         
 v
