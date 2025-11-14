@@ -41,6 +41,7 @@ interface DashboardChartData {
   prop_belanja_perkelompok: ChartData[]
   ringkasan_apbdes: ChartData[]
   prop_belanja_pertagging_tertinggi: ChartData[]
+  prop_belanja_pertagging_terendah: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -482,7 +483,7 @@ export default function DashboardBelanjaPage() {
              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Judul disesuikan" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.prop_belanja_pertagging_tertinggi} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Judul disesuikan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
           </div>         
 v

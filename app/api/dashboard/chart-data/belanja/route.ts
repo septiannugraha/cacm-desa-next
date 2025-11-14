@@ -114,6 +114,23 @@ export async function GET(request: Request) {
              
           `;
        
+
+          const prop_belanja_pertagging_terendah = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = prop_belanja_pertagging_terendah,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
          
 
 
@@ -121,7 +138,8 @@ export async function GET(request: Request) {
     return NextResponse.json({
       prop_belanja_perkelompok,
       ringkasan_apbdes,
-      prop_belanja_pertagging_tertinggi
+      prop_belanja_pertagging_tertinggi,
+      prop_belanja_pertagging_terendah
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)
