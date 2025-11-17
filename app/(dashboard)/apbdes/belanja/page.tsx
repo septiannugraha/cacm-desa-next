@@ -47,6 +47,11 @@ interface DashboardChartData {
   sumber_pendapatan_tertinggi: ChartData[]
   realisasi_belanja_desa_terendah: ChartData[]
   realisasi_belanja_desa_tertinggi: ChartData[]
+  realisasi_belanja_per_bidang: ChartData[]
+  rasio_belanja_barjas: ChartData[]
+  rasio_belanja_modal: ChartData[]
+  rasio_belanja_pegawai: ChartData[]
+  rasio_belanja_tidak_terduga: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -504,6 +509,21 @@ export default function DashboardBelanjaPage() {
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.realisasi_belanja_per_bidang} title="Belanja per Bidang" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.rasio_belanja_barjas} title="Rasio Belanja Barang dan Jasa" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.rasio_belanja_modal} title="Rasio Belanja Modal" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.rasio_belanja_pegawai} title="Rasio Belanja Pegawai" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.rasio_belanja_tidak_terduga} title="Rasio Belanja Tidak Terduga" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>         
 v

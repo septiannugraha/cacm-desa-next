@@ -217,6 +217,91 @@ export async function GET(request: Request) {
              
           `;
  
+          const realisasi_belanja_per_bidang = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = realisasi_belanja_per_bidang,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_barjas = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_barjas,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_modal = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_modal,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_pegawai = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_pegawai,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_tidak_terduga = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_tidak_terduga,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
     return NextResponse.json({
       prop_belanja_perkelompok,
       ringkasan_apbdes,
@@ -226,7 +311,12 @@ export async function GET(request: Request) {
       prop_belanja_perkecamatan_tertinggi,
       sumber_pendapatan_tertinggi,
       realisasi_belanja_desa_terendah,
-      realisasi_belanja_desa_tertinggi
+      realisasi_belanja_desa_tertinggi,
+      realisasi_belanja_per_bidang,
+      rasio_belanja_barjas,
+      rasio_belanja_modal,
+      rasio_belanja_pegawai,
+      rasio_belanja_tidak_terduga
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)
