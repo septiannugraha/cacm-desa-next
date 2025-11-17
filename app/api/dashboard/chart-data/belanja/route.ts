@@ -131,49 +131,15 @@ export async function GET(request: Request) {
               @sumberdana = ${sumberdana}
              
           `;
-         
-          const prop_belanja_perkecamatan_terendah = await prisma.$queryRaw<
-      {
-        Kategori1: string
-        Nilai1: number | null
-      }[]
-    >`
-            EXEC sp_cacm_dashboard 
-              @nmdashboard = prop_belanja_perkecamatan_terendah,
-              @tahun = ${tahun},
-              @kdprov = ${kdprov},
-              @kdpemda = ${kdpemda},
-              @kdkec = ${kdkec},
-              @kddesa = ${kddesa},
-              @sumberdana = ${sumberdana}
-             
-          `;
 
-          const prop_belanja_perkecamatan_tertinggi = await prisma.$queryRaw<
+          const sumber_pendanaan = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = prop_belanja_perkecamatan_tertinggi,
-              @tahun = ${tahun},
-              @kdprov = ${kdprov},
-              @kdpemda = ${kdpemda},
-              @kdkec = ${kdkec},
-              @kddesa = ${kddesa},
-              @sumberdana = ${sumberdana}
-             
-          `;
-
-          const sumber_pendapatan_tertinggi = await prisma.$queryRaw<
-      {
-        Kategori1: string
-        Nilai1: number | null
-      }[]
-    >`
-            EXEC sp_cacm_dashboard 
-              @nmdashboard = sumber_pendapatan_tertinggi,
+              @nmdashboard = sumber_pendanaan,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -217,16 +183,266 @@ export async function GET(request: Request) {
              
           `;
  
+          const rasio_belanja_per_bidang = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_per_bidang,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_barjas = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_barjas,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_modal = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_modal,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_pegawai = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_pegawai,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_tidak_terduga = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_tidak_terduga,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_bid_ppd = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_bid_ppd,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_bid_pm = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_bid_pm,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_bid_pk = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_bid_pk,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_bid_pbendes = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_bid_pbendes,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rasio_belanja_bid_ppdes = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rasio_belanja_bid_ppdes,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const desa_belanja_pegawai_tinggi = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = desa_belanja_pegawai_tinggi,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const desa_belanja_pegawai_rendah = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = desa_belanja_pegawai_rendah,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const desa_belanja_modal_tinggi = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = desa_belanja_modal_tinggi,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+
+          `;
+
+          const desa_belanja_modal_rendah = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = desa_belanja_modal_rendah,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+
+          `;
+
     return NextResponse.json({
       prop_belanja_perkelompok,
       ringkasan_apbdes,
       prop_belanja_pertagging_tertinggi,
       prop_belanja_pertagging_terendah,
-      prop_belanja_perkecamatan_terendah,
-      prop_belanja_perkecamatan_tertinggi,
-      sumber_pendapatan_tertinggi,
+      sumber_pendanaan,
       realisasi_belanja_desa_terendah,
-      realisasi_belanja_desa_tertinggi
+      realisasi_belanja_desa_tertinggi,
+      rasio_belanja_per_bidang,
+      rasio_belanja_barjas,
+      rasio_belanja_modal,
+      rasio_belanja_pegawai,
+      rasio_belanja_tidak_terduga,
+      rasio_belanja_bid_ppd,
+      rasio_belanja_bid_pm,
+      rasio_belanja_bid_pk,
+      rasio_belanja_bid_pbendes,
+      rasio_belanja_bid_ppdes,
+      desa_belanja_pegawai_tinggi,
+      desa_belanja_pegawai_rendah,
+      desa_belanja_modal_tinggi,
+      desa_belanja_modal_rendah
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)
