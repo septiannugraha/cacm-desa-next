@@ -76,14 +76,14 @@ export async function GET(request: Request) {
         `;
      
   
-  const prop_belanja_perkelompok = await prisma.$queryRaw<
+  const belanja_perkelompok = await prisma.$queryRaw<
   {
     Kategori1: string
     Nilai1: number | null
   }[]
 >`
         EXEC sp_cacm_dashboard 
-          @nmdashboard = prop_belanja_perkelompok,
+          @nmdashboard = belanja_perkelompok,
           @tahun = ${tahun},
           @kdprov = ${kdprov},
           @kdpemda = ${kdpemda},
@@ -97,14 +97,14 @@ export async function GET(request: Request) {
 
       console.log('Params:', { tahun, kdprov, kdpemda, kdkec, kddesa, sumberdana })
 
-      const prop_belanja_pertagging_tertinggi = await prisma.$queryRaw<
+      const belanja_pertagging_tertinggi = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = prop_belanja_pertagging_tertinggi,
+              @nmdashboard = belanja_pertagging_tertinggi,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -115,14 +115,14 @@ export async function GET(request: Request) {
           `;
        
 
-          const prop_belanja_pertagging_terendah = await prisma.$queryRaw<
+          const belanja_pertagging_terendah = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = prop_belanja_pertagging_terendah,
+              @nmdashboard = belanja_pertagging_terendah,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -132,14 +132,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const sumber_pendanaan = await prisma.$queryRaw<
+          const belanja_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = sumber_pendanaan,
+              @nmdashboard = belanja_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -183,14 +183,14 @@ export async function GET(request: Request) {
              
           `;
  
-          const rasio_belanja_per_bidang = await prisma.$queryRaw<
+          const belanja_per_bidang = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_per_bidang,
+              @nmdashboard = belanja_per_bidang,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -200,14 +200,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_barjas = await prisma.$queryRaw<
+          const belanja_barjas_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_barjas,
+              @nmdashboard = belanja_barjas_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -217,14 +217,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_modal = await prisma.$queryRaw<
+          const belanja_modal_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_modal,
+              @nmdashboard = belanja_modal_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -234,14 +234,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_pegawai = await prisma.$queryRaw<
+          const belanja_pegawai_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_pegawai,
+              @nmdashboard = belanja_pegawai_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -251,14 +251,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_tidak_terduga = await prisma.$queryRaw<
+          const belanja_tidak_terduga_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_tidak_terduga,
+              @nmdashboard = belanja_tidak_terduga_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -268,14 +268,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_bid_ppd = await prisma.$queryRaw<
+          const belanja_bid_ppd_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_bid_ppd,
+              @nmdashboard = belanja_bid_ppd_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -285,14 +285,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_bid_pm = await prisma.$queryRaw<
+          const belanja_bid_pm_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_bid_pm,
+              @nmdashboard = belanja_bid_pm_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -302,14 +302,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_bid_pk = await prisma.$queryRaw<
+          const belanja_bid_pk_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_bid_pk,
+              @nmdashboard = belanja_bid_pk_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -319,14 +319,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_bid_pbendes = await prisma.$queryRaw<
+          const belanja_bid_pbendes_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_bid_pbendes,
+              @nmdashboard = belanja_bid_pbendes_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -336,14 +336,14 @@ export async function GET(request: Request) {
              
           `;
 
-          const rasio_belanja_bid_ppdes = await prisma.$queryRaw<
+          const belanja_bid_ppdes_persumberdana = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = rasio_belanja_bid_ppdes,
+              @nmdashboard = belanja_bid_ppdes_persumberdana,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -422,23 +422,23 @@ export async function GET(request: Request) {
           `;
 
     return NextResponse.json({
-      prop_belanja_perkelompok,
+      belanja_perkelompok,
       ringkasan_apbdes,
-      prop_belanja_pertagging_tertinggi,
-      prop_belanja_pertagging_terendah,
-      sumber_pendanaan,
+      belanja_pertagging_tertinggi,
+      belanja_pertagging_terendah,
+      belanja_persumberdana,
       realisasi_belanja_desa_terendah,
       realisasi_belanja_desa_tertinggi,
-      rasio_belanja_per_bidang,
-      rasio_belanja_barjas,
-      rasio_belanja_modal,
-      rasio_belanja_pegawai,
-      rasio_belanja_tidak_terduga,
-      rasio_belanja_bid_ppd,
-      rasio_belanja_bid_pm,
-      rasio_belanja_bid_pk,
-      rasio_belanja_bid_pbendes,
-      rasio_belanja_bid_ppdes,
+      belanja_per_bidang,
+      belanja_barjas_persumberdana,
+      belanja_modal_persumberdana,
+      belanja_pegawai_persumberdana,
+      belanja_tidak_terduga_persumberdana,
+      belanja_bid_ppd_persumberdana,
+      belanja_bid_pm_persumberdana,
+      belanja_bid_pk_persumberdana,
+      belanja_bid_pbendes_persumberdana,
+      belanja_bid_ppdes_persumberdana,
       desa_belanja_pegawai_tinggi,
       desa_belanja_pegawai_rendah,
       desa_belanja_modal_tinggi,

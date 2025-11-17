@@ -36,25 +36,24 @@ interface ChartData {
 }
 interface DashboardChartData {
  
-  budgetByAccountType: ChartData[]
-  monthlyTrend: ChartData[]
-  prop_belanja_perkelompok: ChartData[]
+ 
+  belanja_perkelompok: ChartData[]
   ringkasan_apbdes: ChartData[]
-  prop_belanja_pertagging_tertinggi: ChartData[]
-  prop_belanja_pertagging_terendah: ChartData[]
-  sumber_pendanaan: ChartData[]
+  belanja_pertagging_tertinggi: ChartData[]
+  belanja_pertagging_terendah: ChartData[]
+  belanja_persumberdana: ChartData[]
   realisasi_belanja_desa_terendah: ChartData[]
   realisasi_belanja_desa_tertinggi: ChartData[]
-  rasio_belanja_per_bidang: ChartData[]
-  rasio_belanja_barjas: ChartData[]
-  rasio_belanja_modal: ChartData[]
-  rasio_belanja_pegawai: ChartData[]
-  rasio_belanja_tidak_terduga: ChartData[]
-  rasio_belanja_bid_ppd: ChartData[]
-  rasio_belanja_bid_pm: ChartData[]
-  rasio_belanja_bid_pk: ChartData[]
-  rasio_belanja_bid_pbendes: ChartData[]
-  rasio_belanja_bid_ppdes: ChartData[]
+  belanja_per_bidang: ChartData[]
+  belanja_barjas_sumberdana: ChartData[]
+  belanja_modal_sumberdana: ChartData[]
+ belanja_pegawai_sumberdana: ChartData[]
+  belanja_tidak_terduga_sumberdana: ChartData[]
+  belanja_bid_ppd_sumberdana: ChartData[]
+  belanja_bid_pm_sumberdana: ChartData[]
+  belanja_bid_pk_sumberdana: ChartData[]
+  belanja_bid_pbendes_sumberdana: ChartData[]
+  belanja_bid_ppdes_sumberdana: ChartData[]
   desa_belanja_pegawai_tinggi: ChartData[]
   desa_belanja_pegawai_rendah: ChartData[]
   desa_belanja_modal_tinggi: ChartData[]
@@ -307,26 +306,7 @@ export default function DashboardBelanjaPage() {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
 
-  const financialStats = [
-    { title: 'PENDAPATAN DESA', anggaran: 1259753655839, realisasi: 659093758116.797, percentage: 52.32, color: 'bg-blue-500' },
-    { title: 'BELANJA DESA', anggaran: 1320798731355.694, realisasi: 579382068213.787, percentage: 43.87, color: 'bg-green-500' },
-    { title: 'PENERIMAAN PEMBIAYAAN', anggaran: 69079321337.618, realisasi: 43373783005.546, percentage: 63.5, color: 'bg-red-500' },
-    { title: 'PENGELUARAN PEMBIAYAAN', anggaran: 8426019944193, realisasi: 4623908264045, percentage: 49.05, color: 'bg-orange-500' }
-  ]
-
-  const recentActivities = [
-    { id: 1, type: 'atensi_created', title: 'Atensi baru dibuat', description: 'Laporan keterlambatan pencairan dana desa', user: 'Ahmad Fauzi', village: 'Desa Sukamaju', time: '2 jam yang lalu', priority: 'HIGH' },
-    { id: 2, type: 'response_added', title: 'Tanggapan ditambahkan', description: 'Penjelasan status pencairan dana BLT', user: 'Siti Rahayu', village: 'Desa Mekar Jaya', time: '5 jam yang lalu', priority: 'MEDIUM' },
-    { id: 3, type: 'atensi_resolved', title: 'Atensi diselesaikan', description: 'Masalah SPJ telah diperbaiki', user: 'Budi Santoso', village: 'Desa Sejahtera', time: '1 hari yang lalu', priority: 'LOW' }
-  ]
-
-  const priorityData = [
-    { name: 'Kritis', value: 5, color: 'bg-red-500' },
-    { name: 'Tinggi', value: 18, color: 'bg-orange-500' },
-    { name: 'Sedang', value: 45, color: 'bg-yellow-500' },
-    { name: 'Rendah', value: 32, color: 'bg-gray-400' }
-  ]
-
+  const formatPercent = (value: number) => `${value.toFixed(2)}%`
 
 
   const colors = ['bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-yellow-500']
@@ -484,26 +464,26 @@ export default function DashboardBelanjaPage() {
             </div>
           ))}
         </div>
-      ) : chartData && (chartData.prop_belanja_perkelompok.length > 0 || chartData.prop_belanja_perkelompok.length > 0) ? (
+      ) : chartData && (chartData.belanja_perkelompok.length > 0 || chartData.belanja_persumberdana.length > 0) ? (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+              <BarChartDashboard data={chartData.belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_persumberdana} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+             <BarChartDashboardH  data={chartData.belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard  data={chartData.sumber_pendanaan} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <PieChartDashboard  data={chartData.belanja_persumberdana} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
@@ -512,34 +492,34 @@ export default function DashboardBelanjaPage() {
               <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_per_bidang} title="Belanja per Bidang" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_per_bidang} title="Belanja per Bidang" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_barjas} title="Rasio Belanja Barang dan Jasa" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_barjas_persumberdana} title="Rasio Belanja Barang dan Jasa" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_modal} title="Rasio Belanja Modal" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_modal_persumberdana} title="Rasio Belanja Modal" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_pegawai} title="Rasio Belanja Pegawai" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_pegawai_persumberdana} title="Rasio Belanja Pegawai" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_tidak_terduga} title="Rasio Belanja Tidak Terduga" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_tidak_terduga_persumberdana} title="Rasio Belanja Tidak Terduga" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_bid_ppd} title="Rasio Belanja Bid. PPD" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_bid_ppd_persumberdana} title="Rasio Belanja Bid. PPD" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_bid_pm} title="Rasio Belanja Bid. PM" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_bid_pm_persumberdana} title="Rasio Belanja Bid. PM" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_bid_pk} title="Rasio Belanja Bid. PK" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_bid_pk_persumberdana} title="Rasio Belanja Bid. PK" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_bid_pbendes} title="Rasio Belanja Bid. Pbendes" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_bid_pbendes_persumberdana} title="Rasio Belanja Bid. Pbendes" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.rasio_belanja_bid_ppdes} title="Rasio Belanja Bid. PPDes" dataKey="Nilai1" nameKey="Kategori1"   />
+              <PieChartDashboard data={chartData.belanja_bid_ppdes_persumberdana} title="Rasio Belanja Bid. PPDes" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.desa_belanja_pegawai_tinggi} title="Desa Belanja Pegawai Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
