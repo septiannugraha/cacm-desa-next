@@ -42,9 +42,7 @@ interface DashboardChartData {
   ringkasan_apbdes: ChartData[]
   prop_belanja_pertagging_tertinggi: ChartData[]
   prop_belanja_pertagging_terendah: ChartData[]
-  prop_belanja_perkecamatan_terendah: ChartData[]
-  prop_belanja_perkecamatan_tertinggi: ChartData[]
-  sumber_pendapatan_tertinggi: ChartData[]
+  sumber_pendanaan: ChartData[]
   realisasi_belanja_desa_terendah: ChartData[]
   realisasi_belanja_desa_tertinggi: ChartData[]
   rasio_belanja_per_bidang: ChartData[]
@@ -504,14 +502,8 @@ export default function DashboardBelanjaPage() {
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
-             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_terendah} title="Belanja per Kecamatan Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_tertinggi} title="Belanja per Kecamatan Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard  data={chartData.sumber_pendapatan_tertinggi} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <PieChartDashboard  data={chartData.sumber_pendanaan} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />

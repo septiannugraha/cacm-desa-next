@@ -131,49 +131,15 @@ export async function GET(request: Request) {
               @sumberdana = ${sumberdana}
              
           `;
-         
-          const prop_belanja_perkecamatan_terendah = await prisma.$queryRaw<
-      {
-        Kategori1: string
-        Nilai1: number | null
-      }[]
-    >`
-            EXEC sp_cacm_dashboard 
-              @nmdashboard = prop_belanja_perkecamatan_terendah,
-              @tahun = ${tahun},
-              @kdprov = ${kdprov},
-              @kdpemda = ${kdpemda},
-              @kdkec = ${kdkec},
-              @kddesa = ${kddesa},
-              @sumberdana = ${sumberdana}
-             
-          `;
 
-          const prop_belanja_perkecamatan_tertinggi = await prisma.$queryRaw<
+          const sumber_pendanaan = await prisma.$queryRaw<
       {
         Kategori1: string
         Nilai1: number | null
       }[]
     >`
             EXEC sp_cacm_dashboard 
-              @nmdashboard = prop_belanja_perkecamatan_tertinggi,
-              @tahun = ${tahun},
-              @kdprov = ${kdprov},
-              @kdpemda = ${kdpemda},
-              @kdkec = ${kdkec},
-              @kddesa = ${kddesa},
-              @sumberdana = ${sumberdana}
-             
-          `;
-
-          const sumber_pendapatan_tertinggi = await prisma.$queryRaw<
-      {
-        Kategori1: string
-        Nilai1: number | null
-      }[]
-    >`
-            EXEC sp_cacm_dashboard 
-              @nmdashboard = sumber_pendapatan_tertinggi,
+              @nmdashboard = sumber_pendanaan,
               @tahun = ${tahun},
               @kdprov = ${kdprov},
               @kdpemda = ${kdpemda},
@@ -460,9 +426,7 @@ export async function GET(request: Request) {
       ringkasan_apbdes,
       prop_belanja_pertagging_tertinggi,
       prop_belanja_pertagging_terendah,
-      prop_belanja_perkecamatan_terendah,
-      prop_belanja_perkecamatan_tertinggi,
-      sumber_pendapatan_tertinggi,
+      sumber_pendanaan,
       realisasi_belanja_desa_terendah,
       realisasi_belanja_desa_tertinggi,
       rasio_belanja_per_bidang,
