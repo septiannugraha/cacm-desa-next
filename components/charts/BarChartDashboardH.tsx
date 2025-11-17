@@ -64,7 +64,7 @@ export default function BarChartDashboard({
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 20, right: 30, left: 160, bottom: 5 }}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -73,13 +73,20 @@ export default function BarChartDashboard({
             tickLine={{ stroke: '#9ca3af' }}
             tickFormatter={formatNumber}
           />
-          <YAxis
-            type="category"
-            
-            dataKey={xAxisKey}
-            tick={{ fill: '#6b7280', fontSize: 12 }}
-            tickLine={{ stroke: '#9ca3af' }}
-          />
+<YAxis
+  type="category"
+  dataKey={xAxisKey}
+  tick={{
+    fill: '#6b7280',
+    fontSize: 12,
+    width: 200, // Lebar maksimum label
+    wordBreak: 'break-word', // Memungkinkan pemisahan kata
+  }}
+  tickLine={{ stroke: '#9ca3af' }}
+  interval={0} // Menampilkan semua label
+  width={210} // Lebar sumbu Y agar label tidak terpotong
+/>
+
           <Tooltip
             contentStyle={{
               backgroundColor: '#fff',

@@ -36,17 +36,14 @@ interface ChartData {
 }
 interface DashboardChartData {
  
-  budgetByAccountType: ChartData[]
-  monthlyTrend: ChartData[]
-  prop_belanja_perkelompok: ChartData[]
-  ringkasan_apbdes: ChartData[]
-  prop_belanja_pertagging_tertinggi: ChartData[]
-  prop_belanja_pertagging_terendah: ChartData[]
-  prop_belanja_perkecamatan_terendah: ChartData[]
-  prop_belanja_perkecamatan_tertinggi: ChartData[]
-  sumber_pendapatan_tertinggi: ChartData[]
-  realisasi_belanja_desa_terendah: ChartData[]
-  realisasi_belanja_desa_tertinggi: ChartData[]
+  
+pendapatan_perkelompok: ChartData[]
+pendapatan_persumberdana: ChartData[]
+belanja_persumberdana: ChartData[]
+belanja_perkelompok: ChartData[]
+ringkasan_apbdes: ChartData[]
+belanja_pertagging_tertinggi: ChartData[]
+belanja_pertagging_terendah: ChartData[] 
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -295,26 +292,7 @@ export default function DashboardBelanjaPage() {
   const formatCurrency = (value: number) =>
     new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value)
 
-  const financialStats = [
-    { title: 'PENDAPATAN DESA', anggaran: 1259753655839, realisasi: 659093758116.797, percentage: 52.32, color: 'bg-blue-500' },
-    { title: 'BELANJA DESA', anggaran: 1320798731355.694, realisasi: 579382068213.787, percentage: 43.87, color: 'bg-green-500' },
-    { title: 'PENERIMAAN PEMBIAYAAN', anggaran: 69079321337.618, realisasi: 43373783005.546, percentage: 63.5, color: 'bg-red-500' },
-    { title: 'PENGELUARAN PEMBIAYAAN', anggaran: 8426019944193, realisasi: 4623908264045, percentage: 49.05, color: 'bg-orange-500' }
-  ]
-
-  const recentActivities = [
-    { id: 1, type: 'atensi_created', title: 'Atensi baru dibuat', description: 'Laporan keterlambatan pencairan dana desa', user: 'Ahmad Fauzi', village: 'Desa Sukamaju', time: '2 jam yang lalu', priority: 'HIGH' },
-    { id: 2, type: 'response_added', title: 'Tanggapan ditambahkan', description: 'Penjelasan status pencairan dana BLT', user: 'Siti Rahayu', village: 'Desa Mekar Jaya', time: '5 jam yang lalu', priority: 'MEDIUM' },
-    { id: 3, type: 'atensi_resolved', title: 'Atensi diselesaikan', description: 'Masalah SPJ telah diperbaiki', user: 'Budi Santoso', village: 'Desa Sejahtera', time: '1 hari yang lalu', priority: 'LOW' }
-  ]
-
-  const priorityData = [
-    { name: 'Kritis', value: 5, color: 'bg-red-500' },
-    { name: 'Tinggi', value: 18, color: 'bg-orange-500' },
-    { name: 'Sedang', value: 45, color: 'bg-yellow-500' },
-    { name: 'Rendah', value: 32, color: 'bg-gray-400' }
-  ]
-
+  const formatPercent = (value: number) => `${value.toFixed(2)}%`
 
 
   const colors = ['bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-yellow-500']
@@ -472,39 +450,36 @@ export default function DashboardBelanjaPage() {
             </div>
           ))}
         </div>
-      ) : chartData && (chartData.prop_belanja_perkelompok.length > 0 || chartData.prop_belanja_perkelompok.length > 0) ? (
+      ) : chartData && (chartData.belanja_persumberdana.length > 0 || chartData.belanja_perkelompok.length > 0) ? (
         <>
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+             <PieChartDashboard data={chartData.pendapatan_perkelompok} title="Kelompok Pendapatan Desa" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
+            <BarChartDashboard  data={chartData.pendapatan_persumberdana} title="Pendapatan Per Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+            </div>
+          </div>
+
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+             <PieChartDashboard data={chartData.belanja_persumberdana} title="Distribusi Anggaran per Sumber Dana" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.belanja_perkelompok} title="Distribusi Anggaran per Kelompok Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+             <BarChartDashboardH  data={chartData.belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
-             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_terendah} title="Belanja per Kecamatan Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_tertinggi} title="Belanja per Kecamatan Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard  data={chartData.sumber_pendapatan_tertinggi} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
+ 
           </div>         
 v
         </>

@@ -126,16 +126,19 @@ export default function PieChartDashboard({
             ]}
           />
           <Legend
-            verticalAlign="bottom"
-            height={36}
-            wrapperStyle={{
-              paddingTop: '1rem',
-            }}
-            formatter={(value, entry: any) => {
-              const percentage = ((entry.payload.value / total) * 100).toFixed(1)
-              return `${value} (${percentage}%)`
-            }}
-          />
+  layout="vertical" // atau "horizontal" tergantung kebutuhan
+  align="center" // bisa juga "left", "center"
+  verticalAlign="bottom" // bisa juga "top", "bottom"
+  wrapperStyle={{
+    fontSize: '12px', // mengecilkan ukuran teks
+    marginRight: '10px', // jarak dari pie chart
+    lineHeight: '1.2',
+  }}
+  formatter={(value, entry: any) => {
+    const percentage = ((entry.payload.value / total) * 100).toFixed(1)
+    return `${value} (${percentage}%)`
+  }}
+/>
         </PieChart>
       </ResponsiveContainer>
     </div>
