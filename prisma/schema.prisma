@@ -2566,12 +2566,25 @@ model CACM_DataDetail {
   id_getdata      String?   @db.VarChar(36)
   Grup            String?   @db.VarChar(9)
   Tahun           String?   @db.NVarChar(4)
+  KodeProvinsi    String?   @db.VarChar(2)
+  NamaProvinsi    String?   @db.VarChar(200)
   KodePemda       String?   @db.NVarChar(4)
+  NamaPemda       String?   @db.VarChar(100)
+  KodeKecamatan   String?   @db.VarChar(7)
+  NamaKecamatan   String?   @db.NVarChar(100)
   KodeDesa        String    @db.NVarChar(12)
+  NamaDesa        String?   @db.VarChar(100)
+  KodeRek1        String?   @db.NVarChar(3)
+  NamaRek1        String?   @db.NVarChar(100)
+  KodeRek2        String?   @db.NVarChar(4)
+  NamaRek2        String?   @db.NVarChar(100)
+  KodeRek3        String?   @db.NVarChar(7)
+  NamaRek3        String?   @db.NVarChar(100)
+  KodeRek4        String?   @db.NVarChar(18)
+  NamaRek4        String?   @db.NVarChar(100)
   Tipologi        String?   @db.VarChar(103)
   KodePaket       String?   @db.NVarChar(2)
   NamaPaket       String    @db.NVarChar(100)
-  KodeRek4        String?   @db.NVarChar(18)
   Lokasi          String?   @db.NVarChar(40)
   Output          String?   @db.NVarChar(80)
   Satuan          String?   @db.NVarChar(20)
@@ -2606,7 +2619,7 @@ model CACM_DataDetail {
   NilaiSetor      Float?
   NamaPotongan    String?   @db.VarChar(100)
 
-  @@index([Grup, KodeDesa, KodeBidang, KodeSubbidang, KodeKegiatan, KodePaket, KodeSumberDana, KodeRek4, NomorDokumen, TanggalDokumen, Tahun, KodePemda], map: "IX_CACM_DataDetail")
+  @@index([Grup, KodeProvinsi, KodePemda, KodeKecamatan, KodeDesa, KodeBidang, KodeSubbidang, KodeKegiatan, KodePaket, KodeSumberDana, KodeRek1, KodeRek2, KodeRek3, KodeRek4, TanggalDokumen, Tahun], map: "IX_CACM_DataDetail")
 }
 
 model CACM_DataDetail_Log {
@@ -2624,12 +2637,25 @@ model CACM_DataKompilasi {
   id_getdata     String?   @db.VarChar(36)
   Grup           String?   @db.VarChar(9)
   Tahun          String?   @db.NVarChar(4)
+  KodeProvinsi   String?   @db.VarChar(2)
+  NamaProvinsi   String?   @db.VarChar(200)
   KodePemda      String?   @db.NVarChar(4)
-  KodeDesa       String    @db.NVarChar(12)
+  NamaPemda      String?   @db.VarChar(100)
+  KodeKecamatan  String?   @db.VarChar(7)
+  NamaKecamatan  String?   @db.NVarChar(100)
+  KodeDesa       String?   @db.NVarChar(12)
+  NamaDesa       String?   @db.VarChar(100)
+  KodeRek1       String?   @db.NVarChar(3)
+  NamaRek1       String?   @db.NVarChar(100)
+  KodeRek2       String?   @db.NVarChar(4)
+  NamaRek2       String?   @db.NVarChar(100)
+  KodeRek3       String?   @db.NVarChar(7)
+  NamaRek3       String?   @db.NVarChar(100)
+  KodeRek4       String?   @db.NVarChar(18)
+  NamaRek4       String?   @db.NVarChar(100)
   Tipologi       String?   @db.VarChar(103)
   KodePaket      String?   @db.NVarChar(2)
   NamaPaket      String    @db.NVarChar(100)
-  KodeRek4       String?   @db.NVarChar(18)
   Lokasi         String?   @db.NVarChar(40)
   Output         String?   @db.NVarChar(80)
   Satuan         String?   @db.NVarChar(20)
@@ -2650,7 +2676,7 @@ model CACM_DataKompilasi {
   Anggaran       Float?
   Realisasi      Float?
 
-  @@index([Grup, KodeDesa, KodeBidang, KodeSubbidang, KodeKegiatan, KodePaket, KodeSumberDana, KodeRek4, NomorDokumen, TanggalDokumen, Tahun, KodePemda], map: "IX_CACM_DataKompilasi")
+  @@index([Tahun, KodeProvinsi, KodePemda, KodeKecamatan, KodeDesa, Grup, KodeBidang, KodeSubbidang, KodeKegiatan, KodePaket, KodeSumberDana, KodeRek1, KodeRek2, KodeRek3, KodeRek4, TanggalDokumen], map: "IX_CACM_DataKompilasi")
 }
 
 model CACM_DataPajak {
@@ -2658,8 +2684,14 @@ model CACM_DataPajak {
   id_getdata     String?   @db.VarChar(36)
   Grup           String?   @db.VarChar(9)
   Tahun          String?   @db.NVarChar(4)
+  KodeProvinsi   String?   @db.VarChar(2)
+  NamaProvinsi   String?   @db.VarChar(200)
   KodePemda      String?   @db.NVarChar(4)
+  NamaPemda      String?   @db.VarChar(100)
+  KodeKecamatan  String?   @db.VarChar(7)
+  NamaKecamatan  String?   @db.NVarChar(100)
   KodeDesa       String    @db.NVarChar(12)
+  NamaDesa       String?   @db.VarChar(100)
   Tipologi       String?   @db.VarChar(103)
   TanggalDokumen DateTime? @db.DateTime
   JenisPajak     String?   @db.VarChar(50)
@@ -2668,19 +2700,5 @@ model CACM_DataPajak {
   NilaiPotongan  Float?
   NilaiSetor     Float?
 
-  @@index([Grup, KodePemda, KodeDesa, Tahun, KodePotongan, TanggalDokumen], map: "IX_CACM_DataPajak")
-}
-
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model Vw_Ref_Rek4 {
-  KodeRek1 String  @db.NVarChar(3)
-  NamaRek1 String? @db.NVarChar(100)
-  KodeRek2 String  @db.NVarChar(4)
-  NamaRek2 String? @db.NVarChar(100)
-  KodeRek3 String  @db.NVarChar(7)
-  NamaRek3 String? @db.NVarChar(100)
-  KodeRek4 String  @id(map: "PK_Vw_Ref_Rek4") @db.NVarChar(12)
-  NamaRek4 String? @db.NVarChar(100)
-
-  @@ignore
+  @@index([Grup, KodeProvinsi, KodePemda, KodeKecamatan, KodeDesa, KodePotongan, TanggalDokumen], map: "IX_CACM_DataPajak")
 }

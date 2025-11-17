@@ -19,6 +19,7 @@ import {
 
 import AreaChartDashboard from '@/components/charts/AreaChartDashboard'
 import BarChartDashboard from '@/components/charts/BarChartDashboard'
+import BarChartDashboardH from '@/components/charts/BarChartDashboardH'
 import LineChartDashboard from '@/components/charts/LineChartDashboard'
 import PieChartDashboard from '@/components/charts/PieChartDashboard'
 import FilterModal from '@/components/dashboard/FilterModal'
@@ -39,6 +40,13 @@ interface DashboardChartData {
   monthlyTrend: ChartData[]
   prop_belanja_perkelompok: ChartData[]
   ringkasan_apbdes: ChartData[]
+  prop_belanja_pertagging_tertinggi: ChartData[]
+  prop_belanja_pertagging_terendah: ChartData[]
+  prop_belanja_perkecamatan_terendah: ChartData[]
+  prop_belanja_perkecamatan_tertinggi: ChartData[]
+  sumber_pendapatan_tertinggi: ChartData[]
+  realisasi_belanja_desa_terendah: ChartData[]
+  realisasi_belanja_desa_tertinggi: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -50,7 +58,7 @@ type SDOpt = { sumberdana: string; Kode: string }
 /** ==========================
  *  Page Component
  *  ========================== */
-export default function DashboardPage() {
+export default function DashboardBelanjaPage() {
   const { data: session, status } = useSession()
 
   // Guards agar efek reset tidak menendang nilai initial
@@ -464,25 +472,41 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
-      ) : chartData && (chartData.budgetRealizationByVillage.length > 0 || chartData.budgetByAccountType.length > 0) ? (
+      ) : chartData && (chartData.prop_belanja_perkelompok.length > 0 || chartData.prop_belanja_perkelompok.length > 0) ? (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+              <BarChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.prop_belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <LineChartDashboard data={chartData.monthlyTrend} title="Tren Bulanan Anggaran & Realisasi" xAxisKey="Kategori1" nilai1Label="Anggaran" nilai2Label="Realisasi" />
+             <BarChartDashboardH  data={chartData.prop_belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <AreaChartDashboard data={chartData.monthlyTrend} title="Akumulasi Realisasi per Bulan" xAxisKey="Kategori1" nilai1Label="Target" nilai2Label="Capaian" stacked={false} />
+              <BarChartDashboardH  data={chartData.prop_belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
-          </div>
+             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_terendah} title="Belanja per Kecamatan Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboardH  data={chartData.prop_belanja_perkecamatan_tertinggi} title="Belanja per Kecamatan Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard  data={chartData.sumber_pendapatan_tertinggi} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+          </div>         
+v
         </>
       ) : (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
@@ -492,93 +516,9 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Distribusi Prioritas Atensi</h2>
-          <div className="space-y-3">
-            {priorityData.map((item, index) => (
-              <div key={index}>
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm font-medium">{item.name}</span>
-                  <span className="text-sm text-gray-600">{item.value}</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div className={`${item.color} h-2 rounded-full`} style={{ width: `${item.value}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+ 
 
-        <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Desa Paling Aktif</h2>
-          <div className="space-y-3">
-            {[
-              { name: 'Desa Sukamaju', atensi: 24, resolved: 18 },
-              { name: 'Desa Mekar Jaya', atensi: 21, resolved: 15 },
-              { name: 'Desa Sejahtera', atensi: 18, resolved: 16 },
-              { name: 'Desa Harapan', atensi: 15, resolved: 10 },
-              { name: 'Desa Mandiri', atensi: 12, resolved: 11 }
-            ].map((village, index) => (
-              <div key={index} className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-blue-600">{index + 1}</span>
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{village.name}</p>
-                    <p className="text-xs text-gray-500">{village.resolved}/{village.atensi} diselesaikan</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-900">{village.atensi}</p>
-                  <p className="text-xs text-gray-500">Atensi</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg shadow p-4 sm:p-6 w-full">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Aktivitas Terkini</h2>
-          <button className="text-sm text-blue-600 hover:text-blue-800">Lihat Semua</button>
-        </div>
-        <div className="space-y-4">
-          {[
-            { id: 1, type: 'atensi_created', title: 'Atensi baru dibuat', description: 'Laporan keterlambatan pencairan dana desa', user: 'Ahmad Fauzi', village: 'Desa Sukamaju', time: '2 jam yang lalu', priority: 'HIGH' },
-            { id: 2, type: 'response_added', title: 'Tanggapan ditambahkan', description: 'Penjelasan status pencairan dana BLT', user: 'Siti Rahayu', village: 'Desa Mekar Jaya', time: '5 jam yang lalu', priority: 'MEDIUM' },
-            { id: 3, type: 'atensi_resolved', title: 'Atensi diselesaikan', description: 'Masalah SPJ telah diperbaiki', user: 'Budi Santoso', village: 'Desa Sejahtera', time: '1 hari yang lalu', priority: 'LOW' }
-          ].map((activity) => (
-            <div key={activity.id} className="flex items-start gap-4 p-4 hover:bg-gray-50 rounded-lg">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                {activity.type === 'atensi_created' && <FileText className="w-5 h-5 text-blue-600" />}
-                {activity.type === 'response_added' && <Activity className="w-5 h-5 text-blue-600" />}
-                {activity.type === 'atensi_resolved' && <CheckCircle className="w-5 h-5 text-green-600" />}
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-gray-900">{activity.title}</p>
-                <p className="text-sm text-gray-600 mt-1">{activity.description}</p>
-                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                  <span className="flex items-center gap-1"><Users className="w-3 h-3" />{activity.user}</span>
-                  <span className="flex items-center gap-1"><Building className="w-3 h-3" />{activity.village}</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{activity.time}</span>
-                </div>
-              </div>
-              <div>
-                <span className={`px-2 py-1 text-xs rounded-full border ${
-                  activity.priority === 'HIGH' ? 'bg-orange-100 text-orange-800 border-orange-300' :
-                  activity.priority === 'MEDIUM' ? 'bg-yellow-100 text-yellow-800 border-yellow-300' :
-                  'bg-gray-100 text-gray-800 border-gray-300'
-                }`}>
-                  {activity.priority === 'HIGH' ? 'Tinggi' : activity.priority === 'MEDIUM' ? 'Sedang' : 'Rendah'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+ 
     </div>
   )
 }
