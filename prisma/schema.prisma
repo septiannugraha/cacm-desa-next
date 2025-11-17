@@ -2671,6 +2671,10 @@ model CACM_DataPajak {
   @@index([Grup, KodePemda, KodeDesa, Tahun, KodePotongan, TanggalDokumen], map: "IX_CACM_DataPajak")
 }
 
+<<<<<<< HEAD
+=======
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+>>>>>>> 9d97ad63ebefc754c67c45ac6108e2150f9f83ae
 model Vw_Ref_Rek4 {
   KodeRek1 String  @db.NVarChar(3)
   NamaRek1 String? @db.NVarChar(100)
@@ -2680,4 +2684,9 @@ model Vw_Ref_Rek4 {
   NamaRek3 String? @db.NVarChar(100)
   KodeRek4 String  @id(map: "PK_Vw_Ref_Rek4") @db.NVarChar(12)
   NamaRek4 String? @db.NVarChar(100)
+<<<<<<< HEAD
+=======
+
+  @@ignore
+>>>>>>> 9d97ad63ebefc754c67c45ac6108e2150f9f83ae
 }
