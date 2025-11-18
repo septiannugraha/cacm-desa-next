@@ -483,7 +483,7 @@ export default function DashboardBelanjaPage() {
               <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard  data={chartData.belanja_persumberdana} title="Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <PieChartDashboard  data={chartData.belanja_persumberdana} title="Belanja per Sumber Pendanaan" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
