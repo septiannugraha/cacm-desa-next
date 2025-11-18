@@ -465,54 +465,69 @@ export default function DashboardBelanjaPage() {
             </div>
           ))}
         </div>
-      ) : chartData && (chartData.belanja_perkelompok.length > 0 || chartData.belanja_persumberdana.length > 0) ? (
+      ) : chartData && (chartData.belanja_perkelompok.length > 0 || chartData.belanja_perkelompok.length > 0) ? (
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <PieChartDashboard data={chartData.belanja_perkelompok} title="Proporsi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
+             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard data={chartData.realisasi_belanja_persumberdana} title="Distribusi Anggaran per Sumber Dana" dataKey="Nilai1" nameKey="Kategori1"   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.belanja_persumberdana} title="Proporsi Anggaran per Sumber Dana" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.belanja_perkelompok} title="Proporsi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.realisasi_belanja_persumberdana} title="Distribusi Anggaran per Sumber Dana" dataKey="Nilai1" nameKey="Kategori1"   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboardH  data={chartData.belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
-            </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.belanja_per_bidang} title="Distribusi Anggaran per Bidang" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.belanja_per_bidang} title="Proposi Anggaran per Bidang" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH data={chartData.belanja_barjas_persumberdana} title="Realisasi Belanja Barang dan Jasa Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+             <BarChartDashboard  data={chartData.belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH data={chartData.belanja_modal_persumberdana} title="Realisasi Belanja Modal Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH data={chartData.belanja_pegawai_persumberdana} title="Realisasi Belanja Pegawai Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard data={chartData.belanja_barjas_persumberdana} title="Realisasi Belanja Barang dan Jasa Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH data={chartData.belanja_tidak_terduga_persumberdana} title="Realisasi Belanja Tidak Terduga Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard data={chartData.belanja_modal_persumberdana} title="Realisasi Belanja Modal Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard data={chartData.belanja_pegawai_persumberdana} title="Realisasi Belanja Pegawai Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+              <BarChartDashboard data={chartData.belanja_tidak_terduga_persumberdana} title="Realisasi Belanja Tidak Terduga Berdasarkan Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.belanja_bid_ppd_persumberdana} title="Rasio Belanja Bid. PPD" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
@@ -528,19 +543,26 @@ export default function DashboardBelanjaPage() {
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.belanja_bid_ppdes_persumberdana} title="Rasio Belanja Bid. PPDes" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.desa_belanja_pegawai_tinggi} title="Desa Belanja Pegawai Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.desa_belanja_pegawai_rendah} title="Desa Belanja Pegawai Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.desa_belanja_modal_tinggi} title="Desa Belanja Modal Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <BarChartDashboard data={chartData.desa_belanja_modal_rendah} title="Desa Belanja Modal Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
-          </div>         
+          </div>
+       
 v
         </>
       ) : (
