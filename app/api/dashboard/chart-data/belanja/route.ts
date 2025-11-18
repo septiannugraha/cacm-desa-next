@@ -149,6 +149,23 @@ export async function GET(request: Request) {
              
           `;
 
+          const realisasi_belanja_persumberdana = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = realisasi_belanja_persumberdana,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
           const realisasi_belanja_desa_terendah = await prisma.$queryRaw<
       {
         Kategori1: string
@@ -427,6 +444,7 @@ export async function GET(request: Request) {
       belanja_pertagging_tertinggi,
       belanja_pertagging_terendah,
       belanja_persumberdana,
+      realisasi_belanja_persumberdana,
       realisasi_belanja_desa_terendah,
       realisasi_belanja_desa_tertinggi,
       belanja_per_bidang,
