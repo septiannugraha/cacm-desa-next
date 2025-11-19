@@ -126,7 +126,7 @@ export default function PieChartDashboard({
             ]}
           />
           <Legend
-  layout="vertical" // atau "horizontal" tergantung kebutuhan
+  layout="horizontal" // atau "horizontal" tergantung kebutuhan
   align="center" // bisa juga "left", "center"
   verticalAlign="bottom" // bisa juga "top", "bottom"
   wrapperStyle={{

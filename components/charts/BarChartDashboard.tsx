@@ -69,14 +69,21 @@ export default function BarChartDashboard({
             top: 20,
             right: 30,
             left: 20,
-            bottom: 5,
+            bottom: 65,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             dataKey={xAxisKey}
-            tick={{ fill: '#6b7280', fontSize: 12 }}
+            tick={{
+              fill: '#6b7280',
+              fontSize: 12,
+              angle: -45,
+              textAnchor: 'end',
+            }}
             tickLine={{ stroke: '#9ca3af' }}
+            interval={0}
+            tickFormatter={(value: string) => value.replace('PEMERINTAH DESA ', '')}
           />
           <YAxis
             tick={{ fill: '#6b7280', fontSize: 12 }}
@@ -92,11 +99,13 @@ export default function BarChartDashboard({
             }}
             formatter={(value: number) => formatCurrency(value)}
           />
-          <Legend
-            wrapperStyle={{
-              paddingTop: '1rem',
-            }}
-          />
+            <Legend
+              verticalAlign="top"
+              align="right"
+              wrapperStyle={{
+                paddingTop: '1rem',
+              }}
+            />
           <Bar dataKey="Nilai1" name={nilai1Label} fill={nilai1Color} radius={[8, 8, 0, 0]} />
           <Bar dataKey="Nilai2" name={nilai2Label} fill={nilai2Color} radius={[8, 8, 0, 0]} />
         </BarChart>
