@@ -5,7 +5,9 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import useEmblaCarousel from 'embla-carousel-react'
 import { FiMenu } from 'react-icons/fi'
+import Link from 'next/link'
 import {
+  ArrowLeft,
   Activity,
   AlertCircle,
   Building,
@@ -38,7 +40,7 @@ interface DashboardChartData {
  
  
   belanja_perkelompok: ChartData[]
-  ringkasan_apbdes: ChartData[]
+  ringkasan_belanja: ChartData[]
   belanja_pertagging_tertinggi: ChartData[]
   belanja_pertagging_terendah: ChartData[]
   belanja_persumberdana: ChartData[]
@@ -59,6 +61,7 @@ interface DashboardChartData {
   desa_belanja_pegawai_rendah: ChartData[]
   desa_belanja_modal_tinggi: ChartData[]
   desa_belanja_modal_rendah: ChartData[]
+  trend_belanja_bulanan: ChartData[]
 }
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
@@ -102,6 +105,7 @@ export default function DashboardBelanjaPage() {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: false, align: 'start', slidesToScroll: 1 })
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi])
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi])
+
 
   // ===== INITIAL: preselect dari session + seed label provinsi + seed 1 item pemda user
   useEffect(() => {
@@ -315,21 +319,35 @@ export default function DashboardBelanjaPage() {
 
 
   return (
-    <div className="space-y-4 sm:space-y-6 w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">{subtitle}</p>
-        </div>
-        <button
-          onClick={() => { setShowFilterModal(true) }}  // tidak preload provinsi
-          className="p-2 rounded hover:bg-gray-200 transition"
-          aria-label="Open Filter Modal"
-        >
-          <FiMenu size={20} />
-        </button>
-      </div>
+    <div className="space-y-4 sm:space-y-6 w-full ">
+    {/* Header */}
+<div className="flex items-center justify-between">
+  {/* Kiri: Judul */}
+  <div>
+    <h1 className="text-2xl font-bold text-gray-900">Dashboard Belanja APBDes</h1>
+    <p className="text-gray-600 mt-1">{subtitle}</p>
+  </div>
+
+  {/* Kanan: Tombol-tombol */}
+  <div className="flex items-center gap-3">
+    <button
+      onClick={() => setShowFilterModal(true)}
+      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+      aria-label="Open Filter Modal"
+    >
+      <FiMenu size={18} />
+      Filter
+    </button>
+
+    <Link
+      href="/dashboard"
+      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+    >
+      <ArrowLeft className="h-4 w-4" />
+      Kembali ke Dashboard
+    </Link>
+  </div>
+</div>
 
       {/* Filter Modal */}
       <FilterModal
@@ -385,7 +403,7 @@ export default function DashboardBelanjaPage() {
       />
 
       {/* Financial Summary Cards - Carousel */}
-      <div className="relative bg-gray-50 px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
+      <div className="relative bg-white shadow px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
         <div className="flex items-center justify-between mb-4 w-full">
           <h2 className="text-lg font-semibold text-gray-900">Ringkasan Keuangan</h2>
           <div className="flex gap-2">
@@ -402,7 +420,7 @@ export default function DashboardBelanjaPage() {
 
         <div className="overflow-hidden max-w-full" ref={emblaRef}>
           <div className="flex gap-4 max-w-full">
-          {chartData?.ringkasan_apbdes?.map((stat, index) => {
+          {chartData?.ringkasan_belanja?.map((stat, index) => {
   const color = colors[index % colors.length] // rotasi warna jika data lebih dari 4
 
   return (
@@ -410,41 +428,51 @@ export default function DashboardBelanjaPage() {
       key={index}
       className="flex-[0_0_calc(100%-1rem)] min-w-0 sm:flex-[0_0_calc(50%-0.5rem)] lg:flex-[0_0_calc(40%-0.667rem)] xl:flex-[0_0_calc(25%-0.75rem)]"
     >
-      <div className="bg-white rounded-lg shadow overflow-hidden h-full">
-        <div className="flex items-center p-4">
-          <div
-            className={`${color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}
-          >
-            <span className="text-base sm:text-lg font-bold">
-              {stat.Nilai3?.toFixed(2)}%
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 leading-tight">
-              {stat.Kategori1}
-            </h3>
-            <div className="space-y-1 mb-2 text-xs">
-              <div>
-                <span className="text-gray-500">Anggaran:</span>
-                <p className="font-medium text-gray-900 truncate">
-                  {formatCurrency(stat.Nilai1)}
-                </p>
-              </div>
-              <div>
-                <span className="text-gray-500">Realisasi:</span>
-                <p className="font-medium text-gray-900 truncate">
-                  {formatCurrency(stat.Nilai2 || 0)}
-                </p>
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`${color} h-2 rounded-full transition-all duration-300`}
-                style={{ width: `${stat.Nilai3}%` }}
-              />
-            </div>
-          </div>
+     <div className="bg-white rounded-lg shadow overflow-hidden h-full">
+  {/* Header dengan background sama seperti kotak persentase */}
+  <div className={`${color} text-white px-4 py-2`}>
+    <h3 className="text-sm sm:text-base font-semibold leading-tight text-center">
+      {stat.Kategori1}
+    </h3>
+  </div>
+
+  {/* Konten utama */}
+  <div className="flex items-center p-4">
+    {/* Kotak persentase */}
+    <div
+      className={`${color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}
+    >
+      <span className="text-base sm:text-lg font-bold">
+        {stat.Nilai3?.toFixed(2)}%
+      </span>
+    </div>
+
+    {/* Detail anggaran */}
+    <div className="flex-1 min-w-0">
+      <div className="space-y-1 mb-2 text-xs">
+        <div>
+          <span className="text-gray-500">Anggaran:</span>
+          <p className="font-medium text-gray-900 truncate">
+            {formatCurrency(stat.Nilai1)}
+          </p>
         </div>
+        <div>
+          <span className="text-gray-500">Realisasi:</span>
+          <p className="font-medium text-gray-900 truncate">
+            {formatCurrency(stat.Nilai2 || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className={`${color} h-2 rounded-full transition-all duration-300`}
+          style={{ width: `${stat.Nilai3}%` }}
+        />
+      </div>
+    </div>
+  </div>
       </div>
     </div>
   )
@@ -469,10 +497,24 @@ export default function DashboardBelanjaPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.belanja_perkelompok} title="Distribusi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+              <BarChartDashboard data={chartData.belanja_perkelompok} mode="stacked" title="Proporsi Anggaran per Kelompok Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    
+                columnLabels={{
+                  Kategori1: 'Kelompok Belanja',
+                  Nilai1: 'Anggaran',
+                  Nilai2: 'Realisasi',
+                  }}
+                  
+                  />
+           
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.belanja_perkelompok} title="Proporsi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+              <PieChartDashboard data={chartData.belanja_perkelompok} title="Proporsi Anggaran per Jenis Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'          
+                columnLabels={{
+                Kategori1: 'Kelompok Belanja',
+                Nilai1: 'Anggaran',
+                Nilai2: 'Realisasi',
+                }}
+  />
             </div>
           </div>
 
@@ -487,28 +529,40 @@ export default function DashboardBelanjaPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.belanja_per_bidang} title="Distribusi Anggaran per Bidang" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard data={chartData.belanja_per_bidang} title="Distribusi Anggaran per Bidang" mode="stacked" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.belanja_per_bidang} title="Proposi Anggaran per Bidang" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 
+
+          <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
+            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
+             <LineChartDashboard  data={chartData.trend_belanja_bulanan} title="Trend Belanja Bulanan" nilai1Label="Anggaran" nilai2Label='Realisasi'  xAxisKey="Kategori1"  
+                             columnLabels={{
+                              Kategori1: 'Bulan',
+                              Nilai1: 'Anggaran',
+                              Nilai2: 'Realisasi',
+                              }} />
+            </div>
+            
+          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboard  data={chartData.belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+             <BarChartDashboard  data={chartData.belanja_pertagging_tertinggi}  mode="stacked" title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard  data={chartData.belanja_pertagging_terendah} mode="stacked" title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_tertinggi} mode="stacked" title="Realisasi Belanja Desa Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboard  data={chartData.realisasi_belanja_desa_terendah} mode="stacked" title="Realisasi Belanja Desa Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
           </div>
           
@@ -547,19 +601,19 @@ export default function DashboardBelanjaPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_pegawai_tinggi} title="Desa Belanja Pegawai Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_pegawai_tinggi} mode="stacked" title="Desa Belanja Pegawai Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_pegawai_rendah} title="Desa Belanja Pegawai Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_pegawai_rendah} mode="stacked" title="Desa Belanja Pegawai Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_modal_tinggi} title="Desa Belanja Modal Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_modal_tinggi} mode="stacked" title="Desa Belanja Modal Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_modal_rendah} title="Desa Belanja Modal Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_modal_rendah} mode="stacked" title="Desa Belanja Modal Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
             </div>
           </div>
        

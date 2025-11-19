@@ -370,7 +370,7 @@ export default function DashboardBelanjaPage() {
       />
 
       {/* Financial Summary Cards - Carousel */}
-      <div className="relative bg-gray-50 px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
+      <div className="relative bg-white shadow px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
         <div className="flex items-center justify-between mb-4 w-full">
           <h2 className="text-lg font-semibold text-gray-900">Ringkasan Keuangan</h2>
           <div className="flex gap-2">
@@ -395,41 +395,51 @@ export default function DashboardBelanjaPage() {
       key={index}
       className="flex-[0_0_calc(100%-1rem)] min-w-0 sm:flex-[0_0_calc(50%-0.5rem)] lg:flex-[0_0_calc(40%-0.667rem)] xl:flex-[0_0_calc(25%-0.75rem)]"
     >
-      <div className="bg-white rounded-lg shadow overflow-hidden h-full">
-        <div className="flex items-center p-4">
-          <div
-            className={`${color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}
-          >
-            <span className="text-base sm:text-lg font-bold">
-              {stat.Nilai3?.toFixed(2)}%
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 leading-tight">
-              {stat.Kategori1}
-            </h3>
-            <div className="space-y-1 mb-2 text-xs">
-              <div>
-                <span className="text-gray-500">Anggaran:</span>
-                <p className="font-medium text-gray-900 truncate">
-                  {formatCurrency(stat.Nilai1)}
-                </p>
-              </div>
-              <div>
-                <span className="text-gray-500">Realisasi:</span>
-                <p className="font-medium text-gray-900 truncate">
-                  {formatCurrency(stat.Nilai2 || 0)}
-                </p>
-              </div>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div
-                className={`${color} h-2 rounded-full transition-all duration-300`}
-                style={{ width: `${stat.Nilai3}%` }}
-              />
-            </div>
-          </div>
+     <div className="bg-white rounded-lg shadow overflow-hidden h-full">
+  {/* Header dengan background sama seperti kotak persentase */}
+  <div className={`${color} text-white px-4 py-2`}>
+    <h3 className="text-sm sm:text-base font-semibold leading-tight text-center">
+      {stat.Kategori1}
+    </h3>
+  </div>
+
+  {/* Konten utama */}
+  <div className="flex items-center p-4">
+    {/* Kotak persentase */}
+    <div
+      className={`${color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}
+    >
+      <span className="text-base sm:text-lg font-bold">
+        {stat.Nilai3?.toFixed(2)}%
+      </span>
+    </div>
+
+    {/* Detail anggaran */}
+    <div className="flex-1 min-w-0">
+      <div className="space-y-1 mb-2 text-xs">
+        <div>
+          <span className="text-gray-500">Anggaran:</span>
+          <p className="font-medium text-gray-900 truncate">
+            {formatCurrency(stat.Nilai1)}
+          </p>
         </div>
+        <div>
+          <span className="text-gray-500">Realisasi:</span>
+          <p className="font-medium text-gray-900 truncate">
+            {formatCurrency(stat.Nilai2 || 0)}
+          </p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2">
+        <div
+          className={`${color} h-2 rounded-full transition-all duration-300`}
+          style={{ width: `${stat.Nilai3}%` }}
+        />
+      </div>
+    </div>
+  </div>
       </div>
     </div>
   )
@@ -472,12 +482,12 @@ export default function DashboardBelanjaPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-1 gap-4 sm:gap-6 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboardH  data={chartData.belanja_pertagging_tertinggi} title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+             <BarChartDashboardH  data={chartData.belanja_pertagging_tertinggi} mode="stacked" title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+              <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} mode="stacked" title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
             </div>
  
           </div>         

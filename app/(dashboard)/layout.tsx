@@ -472,8 +472,8 @@ export default function DashboardLayout({
       </header>
 
       {/* Main content area - with padding for fixed header and sidebar */}
-      <main className="min-h-screen pt-14 lg:pl-64 bg-gray-50">
-        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
+      <main className="min-h-screen pt-14 lg:pl-64 bg-gray-50 ">
+        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto ">
           {children}
         </div>
       </main>

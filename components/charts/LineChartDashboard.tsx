@@ -1,5 +1,6 @@
-'use client'
+'use client';
 
+import React, { useState } from 'react';
 import {
   LineChart,
   Line,
@@ -9,23 +10,30 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts'
+} from 'recharts';
+import { FiEye } from 'react-icons/fi';
 
 interface ChartData {
-  Kategori1: string
-  Kategori2: string
-  Nilai1: number
-  Nilai2: number
+  Kategori1: string;
+  Kategori2: string;
+  Nilai1: number;
+  Nilai2: number;
 }
 
 interface LineChartDashboardProps {
-  data: ChartData[]
-  title?: string
-  xAxisKey?: 'Kategori1' | 'Kategori2'
-  nilai1Label?: string
-  nilai2Label?: string
-  nilai1Color?: string
-  nilai2Color?: string
+  data: ChartData[];
+  title?: string;
+  xAxisKey?: 'Kategori1' | 'Kategori2';
+  nilai1Label?: string;
+  nilai2Label?: string;
+  nilai1Color?: string;
+  nilai2Color?: string;
+  columnLabels?: {
+    Kategori1?: string;
+    Kategori2?: string;
+    Nilai1?: string;
+    Nilai2?: string;
+  };
 }
 
 export default function LineChartDashboard({
@@ -36,41 +44,47 @@ export default function LineChartDashboard({
   nilai2Label = 'Realisasi',
   nilai1Color = '#3b82f6',
   nilai2Color = '#10b981',
+  columnLabels = {Kategori1: 'Kategori', Nilai1: `${nilai1Label}` , Nilai2: `${nilai2Label}`},
 }: LineChartDashboardProps) {
-  // Format currency for Indonesia
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('id-ID', {
+  const [showTable, setShowTable] = useState(false);
+
+  const formatCurrency = (value: number) =>
+    new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value)
-  }
+    }).format(value);
 
-  // Format large numbers
   const formatNumber = (value: number) => {
-    if (value >= 1000000000) {
-      return `${(value / 1000000000).toFixed(1)}M`
-    } else if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}Jt`
-    } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}Rb`
-    }
-    return value.toString()
-  }
+    if (value >= 1_000_000_000) return `${(value / 1_000_000_000).toFixed(1)}M`;
+    if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}Jt`;
+    if (value >= 1_000) return `${(value / 1_000).toFixed(1)}Rb`;
+    if (value < 0) return '';
+    return value.toString();
+  };
+
+  const showPersen = columnLabels.Nilai1 && columnLabels.Nilai2;
 
   return (
-    <div className="w-full">
-      {title && <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>}
+    <div className="w-full relative">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <button
+          onClick={() => setShowTable(true)}
+          className="flex items-center gap-2 px-3 py-1.5 border text-blue-600 border-blue-600 rounded hover:bg-blue-600 hover:text-white transition"
+        >
+          <FiEye size={16} />
+          Lihat Detail
+        </button>
+      </div>
+
+      {/* Chart */}
       <ResponsiveContainer width="100%" height={400}>
         <LineChart
           data={data}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
+          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
@@ -92,11 +106,7 @@ export default function LineChartDashboard({
             }}
             formatter={(value: number) => formatCurrency(value)}
           />
-          <Legend
-            wrapperStyle={{
-              paddingTop: '1rem',
-            }}
-          />
+          <Legend wrapperStyle={{ paddingTop: '1rem' }} />
           <Line
             type="monotone"
             dataKey="Nilai1"
@@ -117,6 +127,77 @@ export default function LineChartDashboard({
           />
         </LineChart>
       </ResponsiveContainer>
+
+      {/* Modal Table */}
+      {showTable && (
+        <div className="fixed top-0 left-64 right-0 bottom-0 z-50 bg-transparent bg-opacity-30 flex items-center justify-center">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 border border-gray-200">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-semibold text-gray-800">
+                Tabel Data {title}
+              </h4>
+              <button
+                onClick={() => setShowTable(false)}
+                className="text-sm text-gray-600 hover:text-red-500"
+              >
+                Tutup ✕
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-300 text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    {columnLabels.Kategori1 && (
+                      <th className="px-4 py-2 border">{columnLabels.Kategori1}</th>
+                    )}
+                    {columnLabels.Kategori2 && (
+                      <th className="px-4 py-2 border">{columnLabels.Kategori2}</th>
+                    )}
+                    {columnLabels.Nilai1 && (
+                      <th className="px-4 py-2 border">{columnLabels.Nilai1}</th>
+                    )}
+                    {columnLabels.Nilai2 && (
+                      <th className="px-4 py-2 border">{columnLabels.Nilai2}</th>
+                    )}
+                    {showPersen && (
+                      <th className="px-4 py-2 border">Persen</th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((item, i) => (
+                    <tr key={i} className="hover:bg-gray-50">
+                      {columnLabels.Kategori1 && (
+                        <td className="px-4 py-2 border">{item.Kategori1}</td>
+                      )}
+                      {columnLabels.Kategori2 && (
+                        <td className="px-4 py-2 border">{item.Kategori2}</td>
+                      )}
+                      {columnLabels.Nilai1 && (
+                        <td className="px-4 py-2 border text-right">
+                          {formatCurrency(item.Nilai1)}
+                        </td>
+                      )}
+                      {columnLabels.Nilai2 && (
+                        <td className="px-4 py-2 border text-right">
+                          {formatCurrency(item.Nilai2)}
+                        </td>
+                      )}
+                      {showPersen && (
+                        <td className="px-4 py-2 border text-center">
+                          {item.Nilai1 > 0
+                            ? `${((item.Nilai2 / item.Nilai1) * 100).toFixed(1)}%`
+                            : '-'}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }

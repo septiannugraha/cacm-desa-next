@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     const kddesa = searchParams.get('kddesa');
     const sumberdana = searchParams.get('sumberdana');
   
-    const ringkasan_apbdes = await prisma.$queryRaw<
+    const ringkasan_pendapatan = await prisma.$queryRaw<
     {
       Kategori1: string
       Nilai1: number | null
@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     }[]
   >`
           EXEC sp_cacm_dashboard 
-            @nmdashboard = ringkasan_apbdes,
+            @nmdashboard = ringkasan_pendapatan,
             @tahun = ${tahun},
             @kdprov = ${kdprov},
             @kdpemda = ${kdpemda},
@@ -76,14 +76,15 @@ export async function GET(request: Request) {
         `;
      
   
-  const prop_belanja_perkelompok = await prisma.$queryRaw<
+  const pendapatan_perkelompok = await prisma.$queryRaw<
   {
     Kategori1: string
     Nilai1: number | null
+    Nilai2?: number | null
   }[]
 >`
         EXEC sp_cacm_dashboard 
-          @nmdashboard = prop_belanja_perkelompok,
+          @nmdashboard = pendapatan_perkelompok,
           @tahun = ${tahun},
           @kdprov = ${kdprov},
           @kdpemda = ${kdpemda},
@@ -95,15 +96,192 @@ export async function GET(request: Request) {
    
      
 
+      console.log('Params:', { tahun, kdprov, kdpemda, kdkec, kddesa, sumberdana })
+
+      const pendapatan_persumberdana = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = pendapatan_persumberdana,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+       
+
+          const rincian_pades = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rincian_pades,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rincian_ptransfer = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rincian_ptransfer,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const rincian_plainnya = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = rincian_plainnya,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
 
 
 
 
+          const pendapatan_tertinggi = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = pendapatan_tertinggi,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+         
+          const pendapatan_terendah = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = pendapatan_terendah,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
  
-    return NextResponse.json({
-      prop_belanja_perkelompok,
-      ringkasan_apbdes
-    })
+
+
+
+          const pades_tertinggi = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = pades_tertinggi,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const pades_terendah = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        Nilai2?: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = pades_terendah,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+          const trend_pendapatan_bulanan = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+        
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = trend_pendapatan_bulanan,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+             
+          `;
+
+
+          return NextResponse.json({
+            ringkasan_pendapatan,
+            pendapatan_perkelompok,
+            pendapatan_persumberdana,
+            rincian_pades,
+            rincian_ptransfer,
+            rincian_plainnya,
+            pendapatan_tertinggi,
+            pendapatan_terendah,
+            pades_tertinggi,
+            pades_terendah,
+            trend_pendapatan_bulanan
+          })
+         
   } catch (error) {
     console.error('Dashboard chart data error:', error)
     return NextResponse.json(

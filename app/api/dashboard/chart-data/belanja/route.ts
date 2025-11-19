@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     const kddesa = searchParams.get('kddesa');
     const sumberdana = searchParams.get('sumberdana');
   
-    const ringkasan_apbdes = await prisma.$queryRaw<
+    const ringkasan_belanja = await prisma.$queryRaw<
     {
       Kategori1: string
       Nilai1: number | null
@@ -65,7 +65,7 @@ export async function GET(request: Request) {
     }[]
   >`
           EXEC sp_cacm_dashboard 
-            @nmdashboard = ringkasan_apbdes,
+            @nmdashboard = ringkasan_belanja,
             @tahun = ${tahun},
             @kdprov = ${kdprov},
             @kdpemda = ${kdpemda},
@@ -438,9 +438,28 @@ export async function GET(request: Request) {
 
           `;
 
+
+          const trend_belanja_bulanan = await prisma.$queryRaw<
+      {
+        Kategori1: string
+        Nilai1: number | null
+      }[]
+    >`
+            EXEC sp_cacm_dashboard 
+              @nmdashboard = trend_belanja_bulanan,
+              @tahun = ${tahun},
+              @kdprov = ${kdprov},
+              @kdpemda = ${kdpemda},
+              @kdkec = ${kdkec},
+              @kddesa = ${kddesa},
+              @sumberdana = ${sumberdana}
+
+          `;
+
+
     return NextResponse.json({
       belanja_perkelompok,
-      ringkasan_apbdes,
+      ringkasan_belanja,
       belanja_pertagging_tertinggi,
       belanja_pertagging_terendah,
       belanja_persumberdana,
@@ -460,7 +479,8 @@ export async function GET(request: Request) {
       desa_belanja_pegawai_tinggi,
       desa_belanja_pegawai_rendah,
       desa_belanja_modal_tinggi,
-      desa_belanja_modal_rendah
+      desa_belanja_modal_rendah,
+      trend_belanja_bulanan
     })
   } catch (error) {
     console.error('Dashboard chart data error:', error)
