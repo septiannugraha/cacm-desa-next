@@ -1,6 +1,6 @@
 'use client'
 
-import Header from './components/header';
+import Header from './components/Header';
 import AreaChartDashboard from '@/components/charts/AreaChartDashboard'
 import BarChartDashboard from '@/components/charts/BarChartDashboard'
 import LineChartDashboard from '@/components/charts/LineChartDashboard'
