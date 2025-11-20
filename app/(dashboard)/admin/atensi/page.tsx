@@ -5,14 +5,22 @@ import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
 interface Atensi {
-  id: string
-  title: string
-  description: string
-  category: string
-  priority: string
-  status: string
-  assignedTo: string
-  createdAt: string
+  id: string | null
+  id_Pemda: string | null
+  Tahun: string
+  Kd_Pemda: string
+  No_Atensi: string
+  Tgl_Atensi: string
+  Tgl_CutOff: string
+  Keterangan: string | null
+  Jlh_Desa: number | null
+  Jlh_RF: number | null
+  Jlh_TL: number | null
+  isSent: boolean | null
+  create_at: string | null
+  create_by: string | null
+  update_at: string | null
+  update_by: string | null
 }
 
 export default function AtensiPage() {
@@ -29,7 +37,7 @@ export default function AtensiPage() {
       const response = await fetch('/api/admin/atensi')
       if (response.ok) {
         const data = await response.json()
-        setAtensi(data)
+        setAtensi(data.atensi || [])
       }
     } catch (error) {
       console.error('Failed to fetch atensi:', error)
@@ -38,11 +46,11 @@ export default function AtensiPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
+  const handleDelete = async (No_Atensi: string) => {
+    if (!confirm('Apakah Anda yakin ingin menghapus periode atensi ini?')) return
 
     try {
-      const response = await fetch(`/api/admin/atensi/${id}`, {
+      const response = await fetch(`/api/admin/atensi?No_Atensi=${No_Atensi}`, {
         method: 'DELETE',
       })
       if (response.ok) {
@@ -66,14 +74,14 @@ export default function AtensiPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Manajemen Atensi</h1>
-          <p className="text-gray-600 mt-1">Kelola atensi dan perhatian khusus</p>
+          <p className="text-gray-600 mt-1">Kelola periode atensi dan temuan audit</p>
         </div>
         <button
           onClick={() => router.push('/admin/atensi/create')}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Tambah Atensi
+          Tambah Periode Atensi
         </button>
       </div>
 
@@ -83,19 +91,22 @@ export default function AtensiPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Judul
+                  No. Atensi
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kategori
+                  Tgl Atensi
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Prioritas
+                  Tgl Cut-Off
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Jumlah Desa
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Red Flags
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dibuat
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
@@ -105,53 +116,46 @@ export default function AtensiPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {atensi.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-4 text-center text-gray-500">
                     Tidak ada data
                   </td>
                 </tr>
               ) : (
                 atensi.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                  <tr key={`${item.Tahun}-${item.Kd_Pemda}-${item.No_Atensi}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.title}
+                      {item.No_Atensi}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.category}
+                      {new Date(item.Tgl_Atensi).toLocaleDateString('id-ID')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(item.Tgl_CutOff).toLocaleDateString('id-ID')}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                      {item.Jlh_Desa || 0}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                      {item.Jlh_RF || 0}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs ${
-                        item.priority === 'high'
-                          ? 'bg-red-100 text-red-800'
-                          : item.priority === 'medium'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
+                        item.isSent
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-yellow-100 text-yellow-800'
                       }`}>
-                        {item.priority}
+                        {item.isSent ? 'Terkirim' : 'Belum Terkirim'}
                       </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        item.status === 'open'
-                          ? 'bg-blue-100 text-blue-800'
-                          : item.status === 'in_progress'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-green-100 text-green-800'
-                      }`}>
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(item.createdAt).toLocaleDateString('id-ID')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => router.push(`/admin/atensi/${item.id}`)}
+                        onClick={() => router.push(`/admin/atensi/${item.No_Atensi}`)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <Edit className="w-4 h-4 inline" />
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.No_Atensi)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-4 h-4 inline" />
