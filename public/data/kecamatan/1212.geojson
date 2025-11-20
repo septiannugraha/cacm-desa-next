@@ -1,0 +1,194 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121201",
+        "Nama_Kecamatan": "Gunung Meriah",
+        "Kd_Pemda": "1212",
+        "budget": 42000000000,
+        "idm": 0.73,
+        "auditCount": 18
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.5, 3.9],
+          [98.7, 3.9],
+          [98.7, 3.7],
+          [98.5, 3.7],
+          [98.5, 3.9]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121202",
+        "Nama_Kecamatan": "STM Hilir",
+        "Kd_Pemda": "1212",
+        "budget": 38000000000,
+        "idm": 0.75,
+        "auditCount": 15
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.7, 3.9],
+          [98.9, 3.9],
+          [98.9, 3.7],
+          [98.7, 3.7],
+          [98.7, 3.9]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121203",
+        "Nama_Kecamatan": "STM Hulu",
+        "Kd_Pemda": "1212",
+        "budget": 35000000000,
+        "idm": 0.74,
+        "auditCount": 14
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.9, 3.9],
+          [99.1, 3.9],
+          [99.1, 3.7],
+          [98.9, 3.7],
+          [98.9, 3.9]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121204",
+        "Nama_Kecamatan": "Namorambe",
+        "Kd_Pemda": "1212",
+        "budget": 48000000000,
+        "idm": 0.76,
+        "auditCount": 20
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.5, 3.7],
+          [98.7, 3.7],
+          [98.7, 3.5],
+          [98.5, 3.5],
+          [98.5, 3.7]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121205",
+        "Nama_Kecamatan": "Pancur Batu",
+        "Kd_Pemda": "1212",
+        "budget": 52000000000,
+        "idm": 0.77,
+        "auditCount": 22
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.7, 3.7],
+          [98.9, 3.7],
+          [98.9, 3.5],
+          [98.7, 3.5],
+          [98.7, 3.7]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121206",
+        "Nama_Kecamatan": "Lubuk Pakam",
+        "Kd_Pemda": "1212",
+        "budget": 55000000000,
+        "idm": 0.78,
+        "auditCount": 24
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.9, 3.7],
+          [99.1, 3.7],
+          [99.1, 3.5],
+          [98.9, 3.5],
+          [98.9, 3.7]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121207",
+        "Nama_Kecamatan": "Patumbak",
+        "Kd_Pemda": "1212",
+        "budget": 45000000000,
+        "idm": 0.76,
+        "auditCount": 19
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.5, 3.5],
+          [98.7, 3.5],
+          [98.7, 3.3],
+          [98.5, 3.3],
+          [98.5, 3.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121208",
+        "Nama_Kecamatan": "Deli Tua",
+        "Kd_Pemda": "1212",
+        "budget": 40000000000,
+        "idm": 0.75,
+        "auditCount": 17
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.7, 3.5],
+          [98.9, 3.5],
+          [98.9, 3.3],
+          [98.7, 3.3],
+          [98.7, 3.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Kec": "121209",
+        "Nama_Kecamatan": "Sunggal",
+        "Kd_Pemda": "1212",
+        "budget": 30000000000,
+        "idm": 0.72,
+        "auditCount": 12
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.9, 3.5],
+          [99.1, 3.5],
+          [99.1, 3.3],
+          [98.9, 3.3],
+          [98.9, 3.5]
+        ]]
+      }
+    }
+  ]
+}

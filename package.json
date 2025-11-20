@@ -25,6 +25,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.17.1",
     "@tanstack/react-query": "^5.90.1",
+    "@types/leaflet": "^1.9.21",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "bcryptjs": "^3.0.2",
@@ -33,6 +34,7 @@
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
     "mssql": "^12.0.0",
     "next": "^16.0.1-canary.2",
@@ -42,6 +44,7 @@
     "react-dom": "19.1.0",
     "react-hook-form": "^7.63.0",
     "react-icons": "^5.5.0",
+    "react-leaflet": "^5.0.0",
     "recharts": "^3.2.1",
     "tailwind-merge": "^3.3.1",
     "zod": "^4.1.11"

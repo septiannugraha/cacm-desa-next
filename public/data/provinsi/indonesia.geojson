@@ -1,0 +1,225 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "11",
+        "Nama_Provinsi": "Aceh",
+        "budget": 1250000000000,
+        "idm": 0.68,
+        "auditCount": 245
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [95.0, 6.0],
+          [98.0, 6.0],
+          [98.0, 3.0],
+          [95.0, 3.0],
+          [95.0, 6.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "12",
+        "Nama_Provinsi": "Sumatera Utara",
+        "budget": 2150000000000,
+        "idm": 0.72,
+        "auditCount": 6148
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.0, 4.0],
+          [100.5, 4.0],
+          [100.5, 0.5],
+          [98.0, 0.5],
+          [98.0, 4.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "13",
+        "Nama_Provinsi": "Sumatera Barat",
+        "budget": 1580000000000,
+        "idm": 0.70,
+        "auditCount": 928
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [98.5, 0.5],
+          [101.5, 0.5],
+          [101.5, -2.5],
+          [98.5, -2.5],
+          [98.5, 0.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "14",
+        "Nama_Provinsi": "Riau",
+        "budget": 1920000000000,
+        "idm": 0.71,
+        "auditCount": 1591
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [100.5, 2.5],
+          [103.5, 2.5],
+          [103.5, -1.0],
+          [100.5, -1.0],
+          [100.5, 2.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "32",
+        "Nama_Provinsi": "Jawa Barat",
+        "budget": 3450000000000,
+        "idm": 0.75,
+        "auditCount": 5965
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [106.5, -6.0],
+          [109.0, -6.0],
+          [109.0, -8.0],
+          [106.5, -8.0],
+          [106.5, -6.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "33",
+        "Nama_Provinsi": "Jawa Tengah",
+        "budget": 3280000000000,
+        "idm": 0.73,
+        "auditCount": 7809
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [109.0, -6.5],
+          [111.5, -6.5],
+          [111.5, -8.5],
+          [109.0, -8.5],
+          [109.0, -6.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "35",
+        "Nama_Provinsi": "Jawa Timur",
+        "budget": 3890000000000,
+        "idm": 0.74,
+        "auditCount": 8502
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [111.5, -6.5],
+          [114.5, -6.5],
+          [114.5, -8.8],
+          [111.5, -8.8],
+          [111.5, -6.5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "51",
+        "Nama_Provinsi": "Bali",
+        "budget": 890000000000,
+        "idm": 0.77,
+        "auditCount": 715
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [114.5, -8.0],
+          [115.7, -8.0],
+          [115.7, -8.9],
+          [114.5, -8.9],
+          [114.5, -8.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "73",
+        "Nama_Provinsi": "Sulawesi Selatan",
+        "budget": 2450000000000,
+        "idm": 0.69,
+        "auditCount": 2954
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [118.5, -2.0],
+          [121.5, -2.0],
+          [121.5, -6.0],
+          [118.5, -6.0],
+          [118.5, -2.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "82",
+        "Nama_Provinsi": "Maluku",
+        "budget": 1120000000000,
+        "idm": 0.65,
+        "auditCount": 1233
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [125.0, -2.0],
+          [131.0, -2.0],
+          [131.0, -8.5],
+          [125.0, -8.5],
+          [125.0, -2.0]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Kd_Prov": "94",
+        "Nama_Provinsi": "Papua",
+        "budget": 1680000000000,
+        "idm": 0.58,
+        "auditCount": 1456
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [131.0, -1.0],
+          [141.0, -1.0],
+          [141.0, -9.0],
+          [131.0, -9.0],
+          [131.0, -1.0]
+        ]]
+      }
+    }
+  ]
+}
