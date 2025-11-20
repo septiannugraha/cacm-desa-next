@@ -197,56 +197,68 @@ export default function BarChartDashboard({
               </button>
             </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-300 text-sm">
-                <thead className="bg-gray-100">
-                  <tr>
-                    {columnLabels.Kategori1 && (
-                      <th className="px-4 py-2 border">{columnLabels.Kategori1}</th>
-                    )}
-                    {columnLabels.Kategori2 && (
-                      <th className="px-4 py-2 border">{columnLabels.Kategori2}</th>
-                    )}
-                    {columnLabels.Nilai1 && (
-                      <th className="px-4 py-2 border">{columnLabels.Nilai1}</th>
-                    )}
-                    {columnLabels.Nilai2 && (
-                      <th className="px-4 py-2 border">{columnLabels.Nilai2}</th>
-                    )}
-                    {showPersen && (
-                      <th className="px-4 py-2 border">Persen</th>
-                    )}
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.map((item, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      {columnLabels.Kategori1 && (
-                        <td className="px-4 py-2 border">{item.Kategori1}</td>
-                      )}
-                      {columnLabels.Kategori2 && (
-                        <td className="px-4 py-2 border">{item.Kategori2}</td>
-                      )}
-                      {columnLabels.Nilai1 && (
-                        <td className="px-4 py-2 border text-right">
-                          {formatCurrency(item.Nilai1)}
-                        </td>
-                      )}
-                      {columnLabels.Nilai2 && (
-                        <td className="px-4 py-2 border text-right">
-                          {formatCurrency(item.Nilai2)}
-                        </td>
-                      )}
-                      {showPersen && (
-                        <td className="px-4 py-2 border text-center">
-                          {item.Nilai1 > 0
-                            ? `${((item.Nilai2 / item.Nilai1) * 100).toFixed(1)}%`
-                            : '-'}
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <table className="min-w-full border border-gray-300 text-sm">
+  <thead className="bg-gray-100">
+    <tr>
+      {columnLabels.Kategori1 && <th className="px-4 py-2 border">{columnLabels.Kategori1}</th>}
+      {columnLabels.Kategori2 && <th className="px-4 py-2 border">{columnLabels.Kategori2}</th>}
+      {columnLabels.Nilai1 && <th className="px-4 py-2 border">{columnLabels.Nilai1}</th>}
+      {columnLabels.Nilai2 && <th className="px-4 py-2 border">{columnLabels.Nilai2}</th>}
+      {showPersen && <th className="px-4 py-2 border">Persen</th>}
+    </tr>
+  </thead>
+
+  <tbody>
+    {data.map((item, i) => (
+      <tr key={i} className="hover:bg-gray-50">
+        {columnLabels.Kategori1 && <td className="px-4 py-2 border">{item.Kategori1}</td>}
+        {columnLabels.Kategori2 && <td className="px-4 py-2 border">{item.Kategori2}</td>}
+        {columnLabels.Nilai1 && (
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1)}</td>
+        )}
+        {columnLabels.Nilai2 && (
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2)}</td>
+        )}
+        {showPersen && (
+          <td className="px-4 py-2 border text-center">
+            {item.Nilai1 > 0 ? `${((item.Nilai2 / item.Nilai1) * 100).toFixed(1)}%` : '-'}
+          </td>
+        )}
+      </tr>
+    ))}
+  </tbody>
+
+  <tfoot className="bg-gray-100 font-semibold">
+  <tr>
+    {columnLabels.Kategori1 && (
+      <td className="px-4 py-2 border text-right" colSpan={columnLabels.Kategori2 ? 2 : 1}>
+        Jumlah
+      </td>
+    )}
+    {columnLabels.Nilai1 && (
+      <td className="px-4 py-2 border text-right">
+        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai1, 0))}
+      </td>
+    )}
+    {columnLabels.Nilai2 && (
+      <td className="px-4 py-2 border text-right">
+        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai2, 0))}
+      </td>
+    )}
+    {showPersen && (
+      <td className="px-4 py-2 border text-center">
+        {(() => {
+          const totalNilai1 = data.reduce((sum, item) => sum + item.Nilai1, 0);
+          const totalNilai2 = data.reduce((sum, item) => sum + item.Nilai2, 0);
+          return totalNilai1 > 0
+            ? `${((totalNilai2 / totalNilai1) * 100).toFixed(1)}%`
+            : '-';
+        })()}
+      </td>
+    )}
+  </tr>
+</tfoot>
+</table>
             </div>
           </div>
         </div>
