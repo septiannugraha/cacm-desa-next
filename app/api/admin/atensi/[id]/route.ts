@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// Note: [id] param here is the No_Atensi value
+/
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }

@@ -36,13 +36,14 @@ import {
   User,
   Users,
   Wallet,
+  Receipt,
   X,
 } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { redirect, usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 
 interface NavigationItem {
@@ -60,8 +61,8 @@ const navigation: NavigationItem[] = [
     children: [
       { name: 'Pendapatan', href: '/apbdes/pendapatan', icon: TrendingUp },
       { name: 'Belanja', href: '/apbdes/belanja', icon: TrendingDown },
-      { name: 'Pembiayaan +', href: '/apbdes/pembiayaan-terima', icon: Plus },
-      { name: 'Pembiayaan -', href: '/apbdes/pembiayaan-keluar', icon: Minus },
+      { name: 'Pembiayaan', href: '/apbdes/pembiayaan', icon: Wallet },
+      { name: 'Perpajakan', href: '/apbdes/pembiayaan/pajak', icon: Receipt },
     ]
   },
   {
@@ -70,8 +71,8 @@ const navigation: NavigationItem[] = [
     children: [
       { name: 'Pendapatan', href: '/trend/pendapatan', icon: TrendingUp },
       { name: 'Belanja', href: '/trend/belanja', icon: TrendingDown },
-      { name: 'Pembiayaan +', href: '/trend/pembiayaan-terima', icon: Plus },
-      { name: 'Pembiayaan -', href: '/trend/pembiayaan-keluar', icon: Minus },
+      { name: 'Pembiayaan', href: '/trend/pembiayaan', icon: Wallet },
+      { name: 'Perpajakan', href: '/trend/pajak', icon: Receipt },
     ]
   },
   {
@@ -109,6 +110,7 @@ const adminNavigation: AdminNavigationItem[] = [
     icon: Settings,
     children: [
       { name: 'Pemerintah Daerah', href: '/admin/pemda', icon: Landmark },
+      { name: 'Custom Dashboard', href: '/admin/cstdashboard', icon: LayoutDashboard },
       { name: 'Desa', href: '/admin/desa', icon: Building },
       { name: 'Koneksi', href: '/admin/koneksi', icon: LinkIcon },
       { name: 'Status', href: '/admin/status', icon: Rocket },
@@ -140,6 +142,14 @@ export default function DashboardLayout({
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
+
+
+  useEffect(() => {
+    if (session?.user?.roleCode == 'DBAdmin') {
+      redirect('/dbkoneksi');
+    }
+  }, [session]);
+
 
   // Auto-expand menu if current path is a child route
   useEffect(() => {
@@ -462,8 +472,8 @@ export default function DashboardLayout({
       </header>
 
       {/* Main content area - with padding for fixed header and sidebar */}
-      <main className="min-h-screen pt-14 lg:pl-64 bg-gray-50">
-        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto">
+      <main className="min-h-screen pt-14 lg:pl-64 bg-gray-50 ">
+        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto ">
           {children}
         </div>
       </main>

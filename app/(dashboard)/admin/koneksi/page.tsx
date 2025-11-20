@@ -5,19 +5,13 @@ import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
 interface Koneksi {
-  id: string | null
-  id_Pemda: string | null
+  id: string
   Tahun: string
   Kd_Pemda: string
-  Server: string | null
-  DB: string | null
-  UserID: string | null
-  Password: string | null
   Con_Stat: boolean | null
-  create_at: string | null
-  create_by: string | null
-  update_at: string | null
-  update_by: string | null
+  Ta_KoneksiDB: {
+    Nama_Koneksi: string
+  } | null
 }
 
 export default function KoneksiPage() {
@@ -43,12 +37,14 @@ export default function KoneksiPage() {
     }
   }
 
-  const handleDelete = async () => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus koneksi ini?')) return
 
     try {
       const response = await fetch('/api/admin/koneksi', {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
       })
       if (response.ok) {
         fetchKoneksi()
@@ -87,44 +83,24 @@ export default function KoneksiPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Server
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Database
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User ID
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Koneksi</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Koneksi</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {koneksi.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                    Tidak ada data
-                  </td>
+                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
                 </tr>
               ) : (
-                koneksi.map((item, index) => (
-                  <tr key={`${item.Tahun}-${item.Kd_Pemda}`} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.Server || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.DB || '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.UserID || '-'}
-                    </td>
+                koneksi.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{item.Tahun}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{item.Ta_KoneksiDB?.Nama_Koneksi || '-'}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`px-2 py-1 rounded-full text-xs ${
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         item.Con_Stat
                           ? 'bg-green-100 text-green-800'
                           : 'bg-red-100 text-red-800'
@@ -134,13 +110,13 @@ export default function KoneksiPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => router.push('/admin/koneksi/edit')}
+                        onClick={() => router.push(`/admin/koneksi/${item.id}`)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <Edit className="w-4 h-4 inline" />
                       </button>
                       <button
-                        onClick={() => handleDelete()}
+                        onClick={() => handleDelete(item.id)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-4 h-4 inline" />

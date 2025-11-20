@@ -3,38 +3,25 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Get user's pemda code for filtering
     const pemda = await prisma.cACM_Pemda.findUnique({
       where: { id: session.user.pemdaId },
       select: { code: true },
     })
+    if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
 
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    // Extract Kd_Pemda (first 4 chars of code)
     const kdPemda = pemda.code.substring(0, 4)
 
-    // Get fiscal year from session or use current year
-    const fiscalYear = session.fiscalYear || new Date().getFullYear()
-
-    // Fetch connections for this Pemda
     const connections = await prisma.cACM_Koneksi.findMany({
-      where: {
-        Kd_Pemda: kdPemda,
-        Tahun: fiscalYear.toString(),
+      where: { Kd_Pemda: kdPemda },
+      include: {
+        Ta_KoneksiDB: { select: { Nama_Koneksi: true } },
       },
-      orderBy: {
-        create_at: 'desc',
-      },
+      orderBy: { create_at: 'desc' },
     })
 
     return NextResponse.json({ connections })
@@ -47,70 +34,40 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Get user's pemda info
     const pemda = await prisma.cACM_Pemda.findUnique({
       where: { id: session.user.pemdaId },
-      select: { id: true, code: true },
+      select: { code: true },
     })
-
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
+    if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
 
     const kdPemda = pemda.code.substring(0, 4)
-    const fiscalYear = session.fiscalYear || new Date().getFullYear()
-
-    // Parse request body
-    const body = await request.json()
-    const { Server, DB, UserID, Password } = body
-
-    // Validate required fields
-    if (!Server || !DB || !UserID || !Password) {
-      return NextResponse.json(
-        { error: 'Server, DB, UserID, and Password are required' },
-        { status: 400 }
-      )
+    const { id_Koneksi, Tahun } = await request.json()
+    if (!id_Koneksi || !Tahun) {
+      return NextResponse.json({ error: 'id_Koneksi and Tahun are required' }, { status: 400 })
     }
 
-    // Check if connection already exists
-    const existingConnection = await prisma.cACM_Koneksi.findUnique({
-      where: {
-        Tahun_Kd_Pemda: {
-          Tahun: fiscalYear.toString(),
-          Kd_Pemda: kdPemda,
-        },
-      },
+    const existing = await prisma.cACM_Koneksi.findFirst({
+      where: { Tahun, Kd_Pemda: kdPemda },
     })
-
-    if (existingConnection) {
-      return NextResponse.json(
-        { error: 'Connection already exists for this Pemda and year' },
-        { status: 409 }
-      )
+    if (existing) {
+      return NextResponse.json({ error: 'Connection already exists for this year and Pemda' }, { status: 409 })
     }
 
-    // Create new connection
-    const connection = await prisma.cACM_Koneksi.create({
-      data: {
-        id: crypto.randomUUID(),
-        id_Pemda: pemda.id,
-        Tahun: fiscalYear.toString(),
-        Kd_Pemda: kdPemda,
-        Server,
-        DB,
-        UserID,
-        Password,
-        Con_Stat: false, // Initially set to false until tested
-        create_at: new Date(),
-        create_by: session.user.username || session.user.email,
-      },
-    })
+    const newId = crypto.randomUUID()
 
-    return NextResponse.json({ connection }, { status: 201 })
+    await prisma.$executeRawUnsafe(`
+      INSERT INTO CACM_Koneksi (
+        id, id_Koneksi, Tahun, Kd_Pemda, Server, DB, Mode, UserID, Password, Con_Stat, create_at, create_by
+      )
+      SELECT
+        '${newId}', id, '${Tahun}', '${kdPemda}', Server, DB, Mode, UID, Pwd, 0, GETDATE(), '${session.user.username || session.user.email}'
+      FROM Ta_KoneksiDB
+      WHERE id = '${id_Koneksi}'
+    `)
+
+    return NextResponse.json({ success: true }, { status: 201 })
   } catch (error) {
     console.error('Failed to create connection:', error)
     return NextResponse.json({ error: 'Failed to create connection' }, { status: 500 })
@@ -120,55 +77,31 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { id_Koneksi, id } = await request.json()
+    if (!id_Koneksi || !id) {
+      return NextResponse.json({ error: 'id and id_Koneksi are required' }, { status: 400 })
     }
 
-    // Get user's pemda info
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
+    await prisma.$executeRawUnsafe(`
+      UPDATE CACM_Koneksi
+      SET
+        id_Koneksi = '${id_Koneksi}',
+        Server = src.Server,
+        DB = src.DB,
+        Mode = src.Mode,
+        UserID = src.UID,
+        Password = src.Pwd,
+        Con_Stat = 0,
+        update_at = GETDATE(),
+        update_by = '${session.user.username || session.user.email}'
+      FROM CACM_Koneksi dst
+      JOIN Ta_KoneksiDB src ON src.id = '${id_Koneksi}'
+      WHERE dst.id = '${id}'
+    `)
 
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    const kdPemda = pemda.code.substring(0, 4)
-    const fiscalYear = session.fiscalYear || new Date().getFullYear()
-
-    // Parse request body
-    const body = await request.json()
-    const { Server, DB, UserID, Password } = body
-
-    // Validate required fields
-    if (!Server || !DB || !UserID || !Password) {
-      return NextResponse.json(
-        { error: 'Server, DB, UserID, and Password are required' },
-        { status: 400 }
-      )
-    }
-
-    // Update connection
-    const connection = await prisma.cACM_Koneksi.update({
-      where: {
-        Tahun_Kd_Pemda: {
-          Tahun: fiscalYear.toString(),
-          Kd_Pemda: kdPemda,
-        },
-      },
-      data: {
-        Server,
-        DB,
-        UserID,
-        Password,
-        Con_Stat: false, // Reset to false until tested again
-        update_at: new Date(),
-        update_by: session.user.username || session.user.email,
-      },
-    })
-
-    return NextResponse.json({ connection })
+    return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Failed to update connection:', error)
     return NextResponse.json({ error: 'Failed to update connection' }, { status: 500 })
@@ -178,31 +111,13 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Get user's pemda info
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
+    const { id } = await request.json()
+    if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    const kdPemda = pemda.code.substring(0, 4)
-    const fiscalYear = session.fiscalYear || new Date().getFullYear()
-
-    // Delete connection
     await prisma.cACM_Koneksi.delete({
-      where: {
-        Tahun_Kd_Pemda: {
-          Tahun: fiscalYear.toString(),
-          Kd_Pemda: kdPemda,
-        },
-      },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Connection deleted successfully' })

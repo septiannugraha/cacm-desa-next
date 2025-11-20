@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import Link from 'next/link'
 import {
   Landmark,
+  LayoutDashboard,
   Building,
   LinkIcon,
   Mail,
@@ -20,6 +21,13 @@ const adminModules = [
     description: 'Kelola data pemerintah daerah',
     href: '/admin/pemda',
     icon: Landmark,
+    color: 'bg-blue-500'
+  },
+  {
+    name: 'Custom Dashboard',
+    description: 'Kostumisasi Dashboard',
+    href: '/admin/cstdashboard',
+    icon: LayoutDashboard,
     color: 'bg-blue-500'
   },
   {

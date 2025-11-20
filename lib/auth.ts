@@ -7,6 +7,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { z } from 'zod'
 
 
+
 interface CustomUser extends User {
   username: string
   role: string
@@ -14,6 +15,7 @@ interface CustomUser extends User {
   permissions: string[]
   pemdaId: string
   pemdaName: string
+  pemdakd: string
   fiscalYear: number
   sessionId: string
 }
@@ -52,6 +54,8 @@ export const authOptions: NextAuthOptions = {
           })
 
           console.log("Received credentials:", credentials);
+
+ 
 
 
           // Find user in local User table (use CACM_User when on Dian's network)
@@ -111,6 +115,7 @@ export const authOptions: NextAuthOptions = {
             permissions,
             pemdaId: user.pemdaId || '',
             pemdaName: user.pemda?.name || '',
+            pemdakd:user.pemda?.code || '',
             fiscalYear,
             sessionId: session.id,
 
@@ -151,6 +156,7 @@ export const authOptions: NextAuthOptions = {
         token.permissions = customUser.permissions
         token.pemdaId = customUser.pemdaId
         token.pemdaName = customUser.pemdaName
+        token.pemdakd=customUser.pemdakd
         token.fiscalYear = customUser.fiscalYear
         token.sessionId = customUser.sessionId
       }
@@ -175,6 +181,7 @@ export const authOptions: NextAuthOptions = {
           permissions: token.permissions as string[],
           pemdaId: token.pemdaId as string,
           pemdaName: token.pemdaName as string,
+          pemdakd:token.pemdakd as string,
         },
         fiscalYear: token.fiscalYear as number,
         sessionId: token.sessionId as string,
