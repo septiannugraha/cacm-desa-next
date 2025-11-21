@@ -1,34 +1,23 @@
 'use client';
 
-import { MapContainer, TileLayer, GeoJSON, useMap } from 'react-leaflet';
-import { useEffect, useRef, useState } from 'react';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import type { MapLevel, MapMetric, RegionGeoJSON } from '@/types/map';
-import type { ColorBreaks } from '@/lib/map/choropleth';
-import {
-  calculateQuantileBreaks,
-  getColorForValue,
-  getMetricValue,
-  HIGHLIGHT_COLOR,
-  NO_DATA_COLOR,
-} from '@/lib/map/choropleth';
-import { getRegionCode, getRegionName } from '@/lib/map/geojson-loader';
+import type { RegionGeoJSON } from '@/types/map';
 
-interface InteractiveMapProps {
-  geojson: RegionGeoJSON;
-  level: MapLevel;
-  metric: MapMetric;
-  onRegionClick: (code: string, name: string) => void;
-  onRegionDoubleClick: (code: string, name: string) => void;
-  colorBreaks: ColorBreaks | null;
-  onColorBreaksCalculated: (breaks: ColorBreaks) => void;
-}
+// Warna gradasi untuk grad_value 1–5
+const gradColors: Record<number, string> = {
+  1: '#ffffcc',
+  2: '#a1dab4',
+  3: '#41b6c4',
+  4: '#2c7fb8',
+  5: '#253494',
+};
 
-// Component to handle map bounds fitting
+// Komponen untuk auto-fit bounds
 function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
   const map = useMap();
-
   useEffect(() => {
     if (geojson && geojson.features.length > 0) {
       const geoJsonLayer = L.geoJSON(geojson);
@@ -38,104 +27,115 @@ function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
       }
     }
   }, [geojson, map]);
-
   return null;
 }
 
-// Main GeoJSON layer component
+// Layer GeoJSON dengan pewarnaan grad_value + hover biru + double click
 function GeoJSONLayer({
   geojson,
-  level,
-  metric,
-  colorBreaks,
-  onRegionClick,
-  onRegionDoubleClick,
-  onColorBreaksCalculated,
-}: Omit<InteractiveMapProps, 'colorBreaks'> & { colorBreaks: ColorBreaks | null; onColorBreaksCalculated: (breaks: ColorBreaks) => void }) {
+  map_data,
+  onRegionDoubleClick,   // ✅ tambahkan prop
+}: {
+  geojson: RegionGeoJSON;
+  map_data: any[];
+  onRegionDoubleClick?: (code: string, name: string) => void;
+}) {
   const map = useMap();
   const layerRef = useRef<L.GeoJSON | null>(null);
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-
-  // Calculate color breaks if not provided
-  useEffect(() => {
-    if (!colorBreaks && geojson) {
-      const values = geojson.features
-        .map(f => getMetricValue(f.properties, metric))
-        .filter((v): v is number => v !== null);
-
-      const breaks = calculateQuantileBreaks(values);
-      onColorBreaksCalculated(breaks);
-    }
-  }, [geojson, metric, colorBreaks, onColorBreaksCalculated]);
 
   useEffect(() => {
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
     }
+   // if (!geojson || !map_data) return;
 
-    if (!geojson || !colorBreaks) {
-      return;
-    }
+    // gabungkan data map_data ke geojson
+// Buat map dari data statistik: key = kode wilayah, value = objek data
+
+//console.log(Object.keys(map_data[0]));
+
+//console.log(map_data.map(s => s.Kode));
+//console.log(geojson.features.map(f => f.properties.code));
+
+const statsMap = new Map(map_data.map((s) => [s.Kode, s]));
+ 
+// Loop setiap feature di geojson
+geojson.features.forEach((f) => {
+  const kode = f.properties.code; 
+  const data = statsMap.get(kode);       // cari data berdasarkan kode
+ 
+  
+
+  if (!data) {
+    // Kalau tidak ada match, log warning
+  //  console.log(`⚠️ Tidak ada data untuk kode: ${kode}`);
+  } else {
+    // Kalau ada match, log detail
+    console.log(`✅ Match ditemukan untuk kode: ${kode}`, data);
+
+
+    // Tambahkan properti baru ke feature
+    f.properties.kode = data.Kode;
+    f.properties.grad_value = data.Skor;
+    f.properties.nama = data.Nama;
+    f.properties.anggaran = data.Anggaran != null ? parseFloat(data.Anggaran.toString()) : 0;
+    f.properties.realisasi = data.Realisasi != null ? parseFloat(data.Realisasi.toString()) : 0;
+  //  console.log('cek anggaran:', kode, data.anggaran, typeof data.anggaran);
+  }
+});
+
 
     const layer = L.geoJSON(geojson, {
       style: (feature) => {
-        if (!feature) return {};
-
-        const code = getRegionCode(feature.properties, level);
-        const isSelected = code === selectedRegion;
-        const metricValue = getMetricValue(feature.properties, metric);
-        const color = isSelected ? HIGHLIGHT_COLOR : getColorForValue(metricValue, colorBreaks);
-
+        const grad = feature?.properties?.grad_value;
+        const color = grad ? gradColors[grad] : '#ccc';
         return {
           fillColor: color,
-          weight: isSelected ? 3 : 1,
-          opacity: 1,
-          color: isSelected ? HIGHLIGHT_COLOR : '#666',
+          weight: 1,
+          color: '#666',
           fillOpacity: 0.7,
         };
       },
       onEachFeature: (feature, layer) => {
-        const code = getRegionCode(feature.properties, level);
-        const name = getRegionName(feature.properties, level);
+        const kode = feature.properties.code;
+        const nama = feature.properties.name;
+        const anggaran = feature.properties.anggaran;
+        const realisasi = feature.properties.realisasi;
 
-        if (!code) return;
+        // Tooltip saat hover
+        layer.bindTooltip(
+          `<strong>${nama}</strong><br/>
+           Kode: ${kode}<br/>
+           Anggaran: Rp ${anggaran?.toLocaleString('id-ID') ?? '-'}<br/>
+           Realisasi: Rp ${realisasi?.toLocaleString('id-ID') ?? '-'}`,
+          { sticky: true }
+        );
 
-        // Hover effect
-        layer.on({
-          mouseover: (e) => {
-            const targetLayer = e.target;
-            targetLayer.setStyle({
-              weight: 3,
-              color: HIGHLIGHT_COLOR,
-              fillOpacity: 0.8,
-            });
-            targetLayer.bringToFront();
-          },
-          mouseout: (e) => {
-            const targetLayer = e.target;
-            const isSelected = code === selectedRegion;
-            targetLayer.setStyle({
-              weight: isSelected ? 3 : 1,
-              color: isSelected ? HIGHLIGHT_COLOR : '#666',
-              fillOpacity: 0.7,
-            });
-          },
-          click: (e) => {
-            L.DomEvent.stopPropagation(e);
-            setSelectedRegion(code);
-            onRegionClick(code, name);
-          },
-          dblclick: (e) => {
-            L.DomEvent.stopPropagation(e);
-            onRegionDoubleClick(code, name);
-          },
+        // Hover → biru
+        layer.on('mouseover', () => {
+          layer.setStyle({
+            fillColor: 'blue',
+            weight: 2,
+            color: '#000',
+            fillOpacity: 0.9,
+          });
+        });
+        layer.on('mouseout', () => {
+          const grad = feature?.properties?.grad_value;
+          const color = grad ? gradColors[grad] : '#ccc';
+          layer.setStyle({
+            fillColor: color,
+            weight: 1,
+            color: '#666',
+            fillOpacity: 0.7,
+          });
         });
 
-        // Tooltip
-        const metricValue = getMetricValue(feature.properties, metric);
-        const metricText = metricValue !== null ? metricValue.toLocaleString('id-ID') : 'Tidak ada data';
-        layer.bindTooltip(`<strong>${name}</strong><br/>${metricText}`, {
-          sticky: true,
+        // Double click → panggil handler dari props
+        layer.on('dblclick', () => {
+          if (onRegionDoubleClick) {
+            onRegionDoubleClick(kode, nama);
+          }
         });
       },
     });
@@ -148,51 +148,64 @@ function GeoJSONLayer({
         map.removeLayer(layerRef.current);
       }
     };
-  }, [geojson, level, metric, colorBreaks, selectedRegion, onRegionClick, onRegionDoubleClick, map]);
+  }, [geojson, map_data, map, onRegionDoubleClick]);
 
   return null;
 }
 
+// Legend menggunakan gradation_data
+function MapLegend({ gradation_data }: { gradation_data: any[] }) {
+  return (
+    <div className="absolute bottom-2 left-2 bg-white p-3 rounded shadow text-sm">
+      <strong>Legenda</strong>
+      <ul className="mt-2 space-y-1">
+        {gradation_data.map((item, idx) => (
+          <li key={idx} className="flex items-center space-x-2">
+            <span
+              className="inline-block w-4 h-4 rounded"
+              style={{ backgroundColor: gradColors[item.Skor] }}
+            ></span>
+            <span>{item.Range_Anggaran}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export default function InteractiveMap({
   geojson,
-  level,
-  metric,
-  onRegionClick,
-  onRegionDoubleClick,
-  colorBreaks,
-  onColorBreaksCalculated,
-}: InteractiveMapProps) {
+  map_data,
+  gradation_data,
+  onRegionDoubleClick,   // ✅ tambahkan prop di komponen utama
+}: {
+  geojson: RegionGeoJSON;
+  map_data: any[];
+  gradation_data: any[];
+  onRegionDoubleClick?: (code: string, name: string) => void;
+}) {
   return (
     <div className="relative w-full h-full">
       <MapContainer
         center={[-2.5, 118]}
         zoom={5}
         style={{ height: '100%', width: '100%' }}
-        maxBounds={[
-          [-11, 95],
-          [6.5, 141],
-        ]}
-        maxBoundsViscosity={1.0}
-        minZoom={4}
-        maxZoom={18}
         scrollWheelZoom={true}
-        doubleClickZoom={false} // Disable default double-click zoom
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; OpenStreetMap contributors'
         />
         <MapBoundsFitter geojson={geojson} />
         <GeoJSONLayer
           geojson={geojson}
-          level={level}
-          metric={metric}
-          colorBreaks={colorBreaks}
-          onColorBreaksCalculated={onColorBreaksCalculated}
-          onRegionClick={onRegionClick}
-          onRegionDoubleClick={onRegionDoubleClick}
+          map_data={map_data}
+          onRegionDoubleClick={onRegionDoubleClick}   // ✅ pass prop ke layer
         />
       </MapContainer>
+
+      {/* Legend */}
+      <MapLegend gradation_data={gradation_data} />
     </div>
   );
 }

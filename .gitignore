@@ -95,3 +95,9 @@ Siswaskeudes_Baru
 
 # Windows zone identifiers
 *:Zone.Identifier
+
+
+# Abaikan folder data peta
+public/data/pemda/
+public/data/kecamatan/
+public/data/desa/
