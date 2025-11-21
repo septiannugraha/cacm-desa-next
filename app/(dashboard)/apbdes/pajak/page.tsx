@@ -303,7 +303,7 @@ export default function DashboardBelanjaPage() {
 <div className="flex items-center justify-between">
   {/* Kiri: Judul */}
   <div>
-    <h1 className="text-2xl font-bold text-gray-900">Dashboard Pembiayaan APBDes</h1>
+    <h1 className="text-2xl font-bold text-gray-900">Dashboard Pajak Desa</h1>
     <p className="text-gray-600 mt-1">{subtitle}</p>
   </div>
 
