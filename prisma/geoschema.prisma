@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("GEODATABASE_URL")
+}
+
+model CACM_GeoData {
+  kode            String  @id(map: "PK_CACM_GeoData") @db.VarChar(50)
+  kode_parent     String? @db.VarChar(50)
+  nama            String? @db.VarChar(200)
+  tipe            String? @db.VarChar(50)
+  luas            Float?
+  geojson_feature String? @db.NVarChar(Max)
+  level           String? @db.VarChar(20)
+}
