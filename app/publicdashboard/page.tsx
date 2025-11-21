@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import Header from './components/header';
+import Header from './components/Header';
 import Breadcrumb from './components/Breadcrumb';
 import MetricSelector from './components/MetricSelector';
 import MapLegend from './components/MapLegend';
