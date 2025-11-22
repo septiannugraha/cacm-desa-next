@@ -165,8 +165,9 @@ export default function MapDashboardPage() {
                   gradation_data={gradationData}
                   level={currentLevel}
                   metric={selectedMetric}
-                  onRegionClick={handleRegionClick}
+                  tahun={selectedYear}
                   onRegionDoubleClick={handleRegionDoubleClick}
+                  onRegionSingleClick={handleRegionClick}
                   
                 />
                 <div className="flex justify-between items-center px-4 py-2">
@@ -182,7 +183,7 @@ export default function MapDashboardPage() {
               level={currentLevel}
               code={selectedRegion?.code || null}
               regionName={selectedRegion?.name || null}
-              year={selectedYear}
+              tahun={selectedYear}
             />
           </div>
         </div>

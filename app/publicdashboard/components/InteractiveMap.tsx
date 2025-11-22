@@ -6,14 +6,14 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { RegionGeoJSON } from '@/types/map';
 
-// Warna gradasi untuk grad_value 1–5
 const gradColors: Record<number, string> = {
-  1: '#ffffcc',
-  2: '#a1dab4',
-  3: '#41b6c4',
-  4: '#2c7fb8',
-  5: '#253494',
+  1: '#fecaca', // merah muda agak gelap (darkened light red)
+  2: '#f87171', // merah terang lebih gelap (darkened medium red)
+  3: '#ef4444', // merah intens
+  4: '#b91c1c', // merah tua
+  5: '#7f1d1d', // merah pekat / maroon
 };
+
 
 // Komponen untuk auto-fit bounds
 function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
@@ -34,11 +34,15 @@ function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
 function GeoJSONLayer({
   geojson,
   map_data,
+  onRegionSingleClick,
   onRegionDoubleClick,   // ✅ tambahkan prop
+  
 }: {
   geojson: RegionGeoJSON;
   map_data: any[];
+  onRegionSingleClick?: (code: string, name: string) => void;
   onRegionDoubleClick?: (code: string, name: string) => void;
+   
 }) {
   const map = useMap();
   const layerRef = useRef<L.GeoJSON | null>(null);
@@ -93,7 +97,7 @@ geojson.features.forEach((f) => {
           fillColor: color,
           weight: 1,
           color: '#666',
-          fillOpacity: 0.7,
+          fillOpacity: 0.9,
         };
       },
       onEachFeature: (feature, layer) => {
@@ -114,10 +118,10 @@ geojson.features.forEach((f) => {
         // Hover → biru
         layer.on('mouseover', () => {
           layer.setStyle({
-            fillColor: 'blue',
+            fillColor: 'green',
             weight: 2,
             color: '#000',
-            fillOpacity: 0.9,
+            fillOpacity: 0.7,
           });
         });
         layer.on('mouseout', () => {
@@ -131,12 +135,28 @@ geojson.features.forEach((f) => {
           });
         });
 
-        // Double click → panggil handler dari props
-        layer.on('dblclick', () => {
-          if (onRegionDoubleClick) {
-            onRegionDoubleClick(kode, nama);
+        let clickTimeout: any = null;
+
+        layer.on('click', () => {
+          if (clickTimeout) {
+            // ada klik kedua dalam waktu singkat → anggap double click
+            clearTimeout(clickTimeout);
+            clickTimeout = null;
+            if (onRegionDoubleClick) {
+              onRegionDoubleClick(kode, nama);
+            }
+          } else {
+            // klik pertama → tunggu sebentar, kalau tidak ada klik kedua → anggap single click
+            clickTimeout = setTimeout(() => {
+              if (onRegionSingleClick) {
+                onRegionSingleClick(kode, nama);
+              }
+              clickTimeout = null;
+            }, 250); // 250ms threshold
           }
         });
+
+
       },
     });
 
@@ -156,7 +176,7 @@ geojson.features.forEach((f) => {
 // Legend menggunakan gradation_data
 function MapLegend({ gradation_data }: { gradation_data: any[] }) {
   return (
-    <div className="absolute bottom-2 left-2 bg-white p-3 rounded shadow text-sm">
+    <div className="absolute bottom-2 left-2 bg-white p-3 rounded shadow text-sm" style={{ zIndex: 1000 }}>
       <strong>Legenda</strong>
       <ul className="mt-2 space-y-1">
         {gradation_data.map((item, idx) => (
@@ -176,13 +196,17 @@ function MapLegend({ gradation_data }: { gradation_data: any[] }) {
 export default function InteractiveMap({
   geojson,
   map_data,
+  tahun,
   gradation_data,
   onRegionDoubleClick,   // ✅ tambahkan prop di komponen utama
+  onRegionSingleClick,
 }: {
   geojson: RegionGeoJSON;
   map_data: any[];
+  tahun : string;
   gradation_data: any[];
   onRegionDoubleClick?: (code: string, name: string) => void;
+  onRegionSingleClick?: (code: string, name: string) => void;
 }) {
   return (
     <div className="relative w-full h-full">
@@ -200,7 +224,10 @@ export default function InteractiveMap({
         <GeoJSONLayer
           geojson={geojson}
           map_data={map_data}
+          tahun={tahun}
+          gradation_data={gradation_data}
           onRegionDoubleClick={onRegionDoubleClick}   // ✅ pass prop ke layer
+          onRegionSingleClick={onRegionSingleClick}
         />
       </MapContainer>
 
