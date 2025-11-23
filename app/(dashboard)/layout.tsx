@@ -63,7 +63,7 @@ const navigation: NavigationItem[] = [
       { name: 'Pendapatan', href: '/apbdes/pendapatan', icon: TrendingUp },
       { name: 'Belanja', href: '/apbdes/belanja', icon: TrendingDown },
       { name: 'Pembiayaan', href: '/apbdes/pembiayaan', icon: Wallet },
-      { name: 'Perpajakan', href: '/apbdes/pembiayaan/pajak', icon: Receipt },
+      { name: 'Perpajakan', href: '/apbdes/pajak', icon: Receipt },
     ]
   },
   {

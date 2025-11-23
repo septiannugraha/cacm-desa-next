@@ -35,23 +35,43 @@ export interface ChartDataItem {
   Nilai2: number;
 }
 
+// Extended properties untuk setiap feature
+export interface ExtendedProperties {
+  // kode unik wilayah
+  code: string;
+
+  // nama wilayah
+  kode?: string;
+
+  nama?: string;
+
+  // nilai gradasi untuk pewarnaan
+  grad_value?: number;
+
+  // nilai anggaran dan realisasi
+  anggaran?: number;
+  realisasi?: number;
+
+  // field bawaan dari GeoJSON
+  namobj?: string;
+  Kd_Prov?: string;
+  Kd_Pemda?: string;
+  Kd_Kec?: string;
+  Kd_Desa?: string;
+  Nama_Provinsi?: string;
+  Nama_Kabkot?: string;
+  Nama_Kecamatan?: string;
+  Nama_Desa?: string;
+
+  // metric lain untuk choropleth
+  budget?: number;
+  idm?: number;
+  auditCount?: number;
+}
+
 export interface RegionFeature {
   type: 'Feature';
-  properties: {
-    namobj?: string;
-    Kd_Prov?: string;
-    Kd_Pemda?: string;
-    Kd_Kec?: string;
-    Kd_Desa?: string;
-    Nama_Provinsi?: string;
-    Nama_Kabkot?: string;
-    Nama_Kecamatan?: string;
-    Nama_Desa?: string;
-    // Metric values for choropleth coloring
-    budget?: number;
-    idm?: number;
-    auditCount?: number;
-  };
+  properties: ExtendedProperties;
   geometry: GeoJSON.Geometry;
 }
 
@@ -70,30 +90,30 @@ export const METRIC_OPTIONS: MetricOption[] = [
   {
     value: 'budget',
     label: 'Anggaran APBDes',
-    description: 'Pewarnaan berdasarkan total anggaran APBDes'
+    description: 'Pewarnaan berdasarkan total anggaran APBDes',
   },
   {
     value: 'idm',
     label: 'Indeks Desa Membangun (IDM)',
-    description: 'Pewarnaan berdasarkan nilai IDM'
+    description: 'Pewarnaan berdasarkan nilai IDM',
   },
   {
     value: 'audit',
     label: 'Jumlah Desa Diaudit',
-    description: 'Pewarnaan berdasarkan jumlah desa yang sudah diaudit'
-  }
+    description: 'Pewarnaan berdasarkan jumlah desa yang sudah diaudit',
+  },
 ];
 
 export const LEVEL_NAMES: Record<MapLevel, string> = {
   provinsi: 'Provinsi',
   pemda: 'Kabupaten/Kota',
   kecamatan: 'Kecamatan',
-  desa: 'Desa'
+  desa: 'Desa',
 };
 
 export const NEXT_LEVEL: Record<MapLevel, MapLevel | null> = {
   provinsi: 'pemda',
   pemda: 'kecamatan',
   kecamatan: 'desa',
-  desa: null
+  desa: null,
 };

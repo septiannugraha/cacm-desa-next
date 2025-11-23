@@ -30,6 +30,7 @@ interface BarChartDashboardProps {
   nilai1Color?: string;
   nilai2Color?: string;
   mode?: 'normal' | 'stacked';
+  mini?: boolean;
   columnLabels?: {
     Kategori1?: string;
     Kategori2?: string;
@@ -48,6 +49,7 @@ export default function BarChartDashboard({
   nilai2Color = '#10b981',
   columnLabels = {Kategori1: 'Kategori', Nilai1: `${nilai1Label}` , Nilai2: `${nilai2Label}`},
   mode = 'normal',
+  mini = false,
 }: BarChartDashboardProps) {
   const [showTable, setShowTable] = useState(false);
 
@@ -101,7 +103,9 @@ export default function BarChartDashboard({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={400}
+      
+      >
       <BarChart
         data={data}
         margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
@@ -178,7 +182,7 @@ export default function BarChartDashboard({
 
       {/* Modal Table */}
       {showTable && (
-        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-50 bg-transparent shadow  flex items-center justify-center">
+        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-[9999] z-50 bg-transparent shadow  flex items-center justify-center">
           <div className="bg-gray-100 rounded-xl shadow-2xl max-w-4xl w-full p-6 border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-800">

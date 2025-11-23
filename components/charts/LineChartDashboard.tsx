@@ -28,6 +28,7 @@ interface LineChartDashboardProps {
   nilai2Label?: string;
   nilai1Color?: string;
   nilai2Color?: string;
+  mini?: boolean;
   columnLabels?: {
     Kategori1?: string;
     Kategori2?: string;
@@ -44,6 +45,7 @@ export default function LineChartDashboard({
   nilai2Label = 'Realisasi',
   nilai1Color = '#3b82f6',
   nilai2Color = '#10b981',
+  mini = false,
   columnLabels = {Kategori1: 'Kategori', Nilai1: `${nilai1Label}` , Nilai2: `${nilai2Label}`},
 }: LineChartDashboardProps) {
   const [showTable, setShowTable] = useState(false);
@@ -67,7 +69,9 @@ export default function LineChartDashboard({
   const showPersen = columnLabels.Nilai1 && columnLabels.Nilai2;
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative"
+    style={mini ? {height: '250px', scale: 0.8 , transformOrigin: 'top center'} : {height: '400px'}}
+    >
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
@@ -81,7 +85,9 @@ export default function LineChartDashboard({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={400}
+   
+      >
         <LineChart
           data={data}
           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
