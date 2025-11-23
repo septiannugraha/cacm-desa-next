@@ -6,15 +6,18 @@ import { prisma } from '@/lib/prisma'
 // [GET] Ambil detail grafik berdasarkan No
 export async function GET(
   request: Request,
-  { params }: { params: { no: string } }
+  { params }: { params: Promise<{ no: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { no } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const rawNo = params.no
+    const rawNo = no
     const nomor = Number(rawNo)
 
     if (!rawNo || isNaN(nomor)) {
@@ -39,15 +42,18 @@ export async function GET(
 // [PUT] Update grafik berdasarkan No
 export async function PUT(
   request: Request,
-  { params }: { params: { no: string } }
+  { params }: { params: Promise<{ no: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { no } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const rawNo = params.no
+    const rawNo = no
     const nomor = Number(rawNo)
 
     if (!rawNo || isNaN(nomor)) {
@@ -77,15 +83,18 @@ export async function PUT(
 // [DELETE] Hapus grafik berdasarkan No
 export async function DELETE(
   request: Request,
-  { params }: { params: { no: string } }
+  { params }: { params: Promise<{ no: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { no } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const rawNo = params.no
+    const rawNo = no
     const nomor = Number(rawNo)
 
     if (!rawNo || isNaN(nomor)) {
