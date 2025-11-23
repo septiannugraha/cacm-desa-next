@@ -68,7 +68,6 @@ export async function PUT(
         No: body.No,
         Nama_Grafik: body.Nama_Grafik,
         Keterangan: body.Keterangan,
-        Nama_Kolom: body.Nama_Kolom,
         Syntax: body.Syntax,
       },
     })

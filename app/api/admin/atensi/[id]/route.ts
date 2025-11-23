@@ -39,7 +39,7 @@ export async function GET(
         },
       },
       include: {
-        CACM_Atensi_Desa: {
+        CACM_Atensi_Desa_CACM_Atensi_Desa_Tahun_Kd_Pemda_No_AtensiToCACM_Atensi: {
           orderBy: {
             Kd_Desa: 'asc',
           },
