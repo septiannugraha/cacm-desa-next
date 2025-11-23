@@ -6,9 +6,12 @@ import { prisma } from '@/lib/prisma'
 // Get a specific village finding with its transaction details
 export async function GET(
   request: Request,
-  { params }: { params: { id: string; Kd_Desa: string } }
+  { params }: { params: Promise<{ id: string; Kd_Desa: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id, Kd_Desa } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,8 +36,8 @@ export async function GET(
         Tahun_Kd_Pemda_No_Atensi_Kd_Desa: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
-          Kd_Desa: params.Kd_Desa,
+          No_Atensi: id,
+          Kd_Desa: Kd_Desa,
         },
       },
       include: {
@@ -61,9 +64,12 @@ export async function GET(
 // Update a village finding
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string; Kd_Desa: string } }
+  { params }: { params: Promise<{ id: string; Kd_Desa: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id, Kd_Desa } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -92,8 +98,8 @@ export async function PUT(
         Tahun_Kd_Pemda_No_Atensi_Kd_Desa: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
-          Kd_Desa: params.Kd_Desa,
+          No_Atensi: id,
+          Kd_Desa: Kd_Desa,
         },
       },
       data: {
@@ -114,9 +120,12 @@ export async function PUT(
 // Delete a village finding
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; Kd_Desa: string } }
+  { params }: { params: Promise<{ id: string; Kd_Desa: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id, Kd_Desa } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -141,8 +150,8 @@ export async function DELETE(
         Tahun_Kd_Pemda_No_Atensi_Kd_Desa: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
-          Kd_Desa: params.Kd_Desa,
+          No_Atensi: id,
+          Kd_Desa: Kd_Desa,
         },
       },
     })
