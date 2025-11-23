@@ -1,10 +1,15 @@
 # CACMDesa-Next Docker Deployment Makefile
 # Convenient commands for managing Docker deployment
 
-.PHONY: help build up down logs restart clean backup restore health test-connection
+.PHONY: help build up down logs restart clean backup restore health test-connection deploy
 
 # Default target
 .DEFAULT_GOAL := help
+
+# Deployment configuration (customize these)
+REMOTE_USER := pwserver
+REMOTE_HOST := srv468259
+REMOTE_PATH := ~/cacmdesa-next
 
 # Color output
 YELLOW := \033[1;33m
@@ -231,6 +236,6 @@ setup-external: ## Setup with external database
 	@echo "$(GREEN)Setup complete!$(NC)"
 	@echo "$(GREEN)========================================$(NC)"
 	@echo ""
-	@echo "Application: $(YELLOW)http://localhost:3000$(NC)"
+	@echo "Application: $(YELLOW)http://localhost:3030$(NC)"
 	@echo "Using external database from .env.production"
 	@echo ""
