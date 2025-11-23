@@ -182,7 +182,7 @@ export default function BarChartDashboard({
 
       {/* Modal Table */}
       {showTable && (
-        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-50 bg-transparent shadow  flex items-center justify-center">
+        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-[9999] z-50 bg-transparent shadow  flex items-center justify-center">
           <div className="bg-gray-100 rounded-xl shadow-2xl max-w-4xl w-full p-6 border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-800">
