@@ -6,15 +6,16 @@ import { prisma } from '@/lib/prisma'
 // --- [GET] Ambil detail koneksi berdasarkan ID ---
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const id = params.id
 
     const connection = await prisma.cACM_Koneksi.findUnique({
       where: { id },
@@ -48,15 +49,16 @@ export async function GET(
 // --- [PUT] Update koneksi berdasarkan ID ---
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const id = params.id
     const { id_Koneksi } = await request.json()
     if (!id_Koneksi) {
       return NextResponse.json({ error: 'id_Koneksi is required' }, { status: 400 })
@@ -89,15 +91,16 @@ export async function PUT(
 // --- [DELETE] Hapus koneksi berdasarkan ID ---
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const id = params.id
 
     await prisma.cACM_Koneksi.delete({
       where: { id },
