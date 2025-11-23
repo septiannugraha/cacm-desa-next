@@ -1,7 +1,7 @@
 # CACMDesa-Next Docker Deployment Makefile
 # Convenient commands for managing Docker deployment
 
-.PHONY: help build rebuild up down logs restart clean backup restore health test-connection deploy
+.PHONY: help build rebuild rebuild-external up down logs restart clean backup restore health test-connection deploy
 
 # Default target
 .DEFAULT_GOAL := help
@@ -83,10 +83,10 @@ restart-app: ## Restart only the application
 	docker compose restart app
 	@echo "$(GREEN)Application restarted!$(NC)"
 
-rebuild: ## Rebuild and restart the application
-	@echo "$(GREEN)Rebuilding application...$(NC)"
-	docker compose build --no-cache app
-	docker compose up -d app
+rebuild-external: ## Rebuild and restart app (external database mode)
+	@echo "$(GREEN)Rebuilding application (external DB mode)...$(NC)"
+	docker compose -f docker-compose.prod.yml build --no-cache app
+	docker compose -f docker-compose.prod.yml up -d app
 	@echo "$(GREEN)Application rebuilt and restarted!$(NC)"
 
 shell-app: ## Open shell in application container
@@ -227,8 +227,7 @@ setup-external: ## Setup with external database (force rebuild)
 		echo "  3. Run 'make setup-external' again"; \
 		exit 1; \
 	fi
-	@make rebuild
-	docker compose -f docker-compose.prod.yml up -d
+	@make rebuild-external
 	@echo "$(YELLOW)Waiting for application to start...$(NC)"
 	@sleep 5
 	@echo "$(GREEN)Initializing database schema...$(NC)"
