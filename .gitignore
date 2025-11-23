@@ -95,3 +95,10 @@ Siswaskeudes_Baru
 
 # Windows zone identifiers
 *:Zone.Identifier
+
+# GeoJSON data files (large files)
+/public/data/**/*.json
+/public/data/desa/
+/public/data/kecamatan/
+/public/data/pemda/
+/public/data/provinsi/

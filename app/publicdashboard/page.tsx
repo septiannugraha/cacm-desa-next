@@ -124,9 +124,9 @@ export default function MapDashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="p-4 space-y-4">
-        {/* Navigation and Controls */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="p-2 md:p-4 space-y-2 md:space-y-4">
+        {/* Navigation and Controls - Compact on Mobile */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 md:gap-4">
           <Breadcrumb items={breadcrumb} onNavigate={handleBreadcrumbNavigate} />
           <MetricSelector
             selectedMetric={selectedMetric}
@@ -134,20 +134,20 @@ export default function MapDashboardPage() {
           />
         </div>
 
-        {/* Map and Statistics Panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-[calc(100vh-250px)]">
-          {/* Map Container */}
-          <div className="lg:col-span-2 relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+        {/* Map and Statistics Panel - Stack on Mobile, Side-by-Side on Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4">
+          {/* Map Container - Fixed Height on Mobile */}
+          <div className="lg:col-span-2 relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden h-[40vh] md:h-[calc(100vh-250px)]">
             {loading && <MapLoadingState />}
 
             {error && (
-              <div className="w-full h-full flex items-center justify-center p-6">
+              <div className="w-full h-full flex items-center justify-center p-3 md:p-6">
                 <div className="text-center max-w-md">
-                  <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-3" />
-                  <p className="text-gray-900 font-medium mb-2">Data Peta Belum Tersedia</p>
-                  <p className="text-sm text-gray-600">{error}</p>
-                  <p className="text-xs text-gray-500 mt-4">
-                    Pastikan file GeoJSON sudah ditempatkan di folder <code className="bg-gray-100 px-1 rounded">public/data/{currentLevel}/</code>
+                  <AlertCircle className="w-8 h-8 md:w-12 md:h-12 text-orange-500 mx-auto mb-2 md:mb-3" />
+                  <p className="text-sm md:text-base text-gray-900 font-medium mb-1 md:mb-2">Data Peta Belum Tersedia</p>
+                  <p className="text-xs md:text-sm text-gray-600">{error}</p>
+                  <p className="text-[10px] md:text-xs text-gray-500 mt-2 md:mt-4">
+                    Pastikan file GeoJSON sudah ditempatkan di folder <code className="bg-gray-100 px-1 rounded text-[10px] md:text-xs">public/data/{currentLevel}/</code>
                   </p>
                 </div>
               </div>
@@ -169,8 +169,8 @@ export default function MapDashboardPage() {
             )}
           </div>
 
-          {/* Statistics Panel */}
-          <div className="lg:col-span-1">
+          {/* Statistics Panel - Fixed Height on Mobile */}
+          <div className="lg:col-span-1 h-[50vh] md:h-[calc(100vh-250px)]">
             <StatisticsPanel
               level={currentLevel}
               code={selectedRegion?.code || null}
@@ -179,14 +179,14 @@ export default function MapDashboardPage() {
           </div>
         </div>
 
-        {/* Instructions */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-sm font-semibold text-blue-900 mb-2">Cara Menggunakan Peta:</h3>
-          <ul className="text-sm text-blue-800 space-y-1 list-disc list-inside">
-            <li><strong>Klik</strong> pada region untuk melihat statistik keuangan di panel kanan</li>
-            <li><strong>Double-klik</strong> pada region untuk melihat detail lebih lanjut (drill down ke level yang lebih rendah)</li>
-            <li><strong>Gunakan breadcrumb</strong> di atas untuk kembali ke level sebelumnya</li>
-            <li><strong>Pilih metrik pewarnaan</strong> untuk mengubah visualisasi choropleth (Anggaran, IDM, atau Jumlah Audit)</li>
+        {/* Instructions - Compact on Mobile */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-2 md:p-4">
+          <h3 className="text-xs md:text-sm font-semibold text-blue-900 mb-1 md:mb-2">Cara Menggunakan Peta:</h3>
+          <ul className="text-[10px] md:text-sm text-blue-800 space-y-0.5 md:space-y-1 list-disc list-inside">
+            <li><strong>Klik</strong> pada region untuk melihat statistik keuangan<span className="hidden md:inline"> di panel kanan</span></li>
+            <li><strong>Double-klik</strong> pada region untuk drill down<span className="hidden md:inline"> ke level yang lebih rendah</span></li>
+            <li className="hidden md:list-item"><strong>Gunakan breadcrumb</strong> di atas untuk kembali ke level sebelumnya</li>
+            <li className="hidden md:list-item"><strong>Pilih metrik pewarnaan</strong> untuk mengubah visualisasi choropleth (Anggaran, IDM, atau Jumlah Audit)</li>
           </ul>
         </div>
       </div>

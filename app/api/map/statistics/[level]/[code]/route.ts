@@ -4,10 +4,10 @@ import type { RegionStatistics, MapLevel } from '@/types/map';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { level: string; code: string } }
+  { params }: { params: Promise<{ level: string; code: string }> }
 ) {
   try {
-    const { level, code } = params;
+    const { level, code } = await params;
 
     // Validate level
     if (!['provinsi', 'pemda', 'kecamatan', 'desa'].includes(level)) {
