@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { randomUUID } from 'crypto'
 
 export async function GET() {
   try {
@@ -12,7 +13,7 @@ export async function GET() {
 
     const roles = await prisma.cACM_Role.findMany({
       include: {
-        users: {
+        CACM_User: {
           select: {
             id: true,
             name: true,
@@ -25,19 +26,19 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
-    // Parse permissions from JSON string
-    const rolesWithParsedPermissions = roles.map((role) => ({
+    // Parse permission from JSON string
+    const rolesWithParsedPermission = roles.map((role) => ({
       ...role,
-      permissions: (() => {
+      permission: (() => {
         try {
-          return JSON.parse(role.permissions)
+          return role.permission ? JSON.parse(role.permission) : []
         } catch {
           return []
         }
       })(),
     }))
 
-    return NextResponse.json(rolesWithParsedPermissions)
+    return NextResponse.json(rolesWithParsedPermission)
   } catch (error) {
     console.error('Failed to fetch roles:', error)
     return NextResponse.json({ error: 'Failed to fetch roles' }, { status: 500 })
@@ -52,26 +53,27 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, code, permissions } = body
+    const { name, code, permission } = body
 
-    if (!name || !code || !permissions) {
+    if (!name || !code || !permission) {
       return NextResponse.json(
-        { error: 'Name, code, and permissions are required' },
+        { error: 'Name, code, and permission are required' },
         { status: 400 }
       )
     }
 
-    // Convert permissions array to JSON string
-    const permissionsString = JSON.stringify(permissions)
+    // Convert permission array to JSON string
+    const permissionString = JSON.stringify(permission)
 
     const role = await prisma.cACM_Role.create({
       data: {
+        id: randomUUID(),
         name,
         code,
-        permissions: permissionsString,
+        permission: permissionString,
       },
       include: {
-        users: {
+        CACM_User: {
           select: {
             id: true,
             name: true,
@@ -83,13 +85,13 @@ export async function POST(request: Request) {
       },
     })
 
-    // Parse permissions back to array for response
-    const roleWithParsedPermissions = {
+    // Parse permission back to array for response
+    const roleWithParsedPermission = {
       ...role,
-      permissions: JSON.parse(role.permissions),
+      permission: role.permission ? JSON.parse(role.permission) : [],
     }
 
-    return NextResponse.json(roleWithParsedPermissions, { status: 201 })
+    return NextResponse.json(roleWithParsedPermission, { status: 201 })
   } catch (error) {
     console.error('Failed to create role:', error)
     return NextResponse.json({ error: 'Failed to create role' }, { status: 500 })

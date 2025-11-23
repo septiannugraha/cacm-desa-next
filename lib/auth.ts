@@ -91,14 +91,12 @@ export const authOptions: NextAuthOptions = {
           const user = userResult.recordset[0]
 
           if (!user || !user.active) {
-            await sql.close()
             throw new Error('User tidak ditemukan atau tidak aktif')
           }
 
           // Verify password
           const isValidPassword = await bcrypt.compare(password, user.password)
           if (!isValidPassword) {
-            await sql.close()
             throw new Error('Password salah')
           }
 
@@ -128,7 +126,6 @@ export const authOptions: NextAuthOptions = {
           `
 
           // Close SQL connection
-          await sql.close()
 
           return {
             id: user.id,
@@ -148,7 +145,6 @@ export const authOptions: NextAuthOptions = {
           console.error('Login error:', error)
           // Make sure to close connection on error
           try {
-            await sql.close()
           } catch {}
           return null
         }

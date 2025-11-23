@@ -168,14 +168,14 @@ export default function LineChartDashboard({
         {columnLabels.Kategori1 && <td className="px-4 py-2 border">{item.Kategori1}</td>}
         {columnLabels.Kategori2 && <td className="px-4 py-2 border">{item.Kategori2}</td>}
         {columnLabels.Nilai1 && (
-          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1)}</td>
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1 ?? 0)}</td>
         )}
         {columnLabels.Nilai2 && (
-          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2)}</td>
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2 ?? 0)}</td>
         )}
         {showPersen && (
           <td className="px-4 py-2 border text-center">
-            {item.Nilai1 > 0 ? `${((item.Nilai2 / item.Nilai1) * 100).toFixed(1)}%` : '-'}
+            {item.Nilai1 > 0 ? `${(((item.Nilai2 ?? 0) / item.Nilai1) * 100).toFixed(1)}%` : '-'}
           </td>
         )}
       </tr>
@@ -191,19 +191,19 @@ export default function LineChartDashboard({
     )}
     {columnLabels.Nilai1 && (
       <td className="px-4 py-2 border text-right">
-        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai1, 0))}
+        {formatCurrency(data.reduce((sum, item) => sum + (item.Nilai1 ?? 0), 0))}
       </td>
     )}
     {columnLabels.Nilai2 && (
       <td className="px-4 py-2 border text-right">
-        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai2, 0))}
+        {formatCurrency(data.reduce((sum, item) => sum + (item.Nilai2 ?? 0), 0))}
       </td>
     )}
     {showPersen && (
       <td className="px-4 py-2 border text-center">
         {(() => {
-          const totalNilai1 = data.reduce((sum, item) => sum + item.Nilai1, 0);
-          const totalNilai2 = data.reduce((sum, item) => sum + item.Nilai2, 0);
+          const totalNilai1 = data.reduce((sum, item) => sum + (item.Nilai1 ?? 0), 0);
+          const totalNilai2 = data.reduce((sum, item) => sum + (item.Nilai2 ?? 0), 0);
           return totalNilai1 > 0
             ? `${((totalNilai2 / totalNilai1) * 100).toFixed(1)}%`
             : '-';

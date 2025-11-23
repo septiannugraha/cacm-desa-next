@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { randomUUID } from 'crypto'
 
 export async function GET() {
   try {
@@ -11,7 +12,7 @@ export async function GET() {
     }
 
     const pemda = await prisma.cACM_Pemda.findMany({
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createAt: 'desc' }
     })
 
     return NextResponse.json(pemda)
@@ -33,6 +34,7 @@ export async function POST(request: Request) {
 
     const pemda = await prisma.cACM_Pemda.create({
       data: {
+        id: randomUUID(),
         name,
         code,
         level,

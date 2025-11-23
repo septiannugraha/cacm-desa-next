@@ -95,9 +95,9 @@ export default function StatisticsPanel({
   const lineData = useMemo(() => {
     if (!data?.trend_belanja_bulanan) return [];
     return data.trend_belanja_bulanan.map((d: any) => ({
-      label: d.Bulan ?? d.bulan ?? 'N/A',
-      series1: toNumber(d.Anggaran),
-      series2: toNumber(d.Realisasi),
+      Kategori1: d.Bulan ?? d.bulan ?? 'N/A',
+      Nilai1: toNumber(d.Anggaran),
+      Nilai2: toNumber(d.Realisasi),
     }));
   }, [data]);
 
@@ -334,9 +334,9 @@ export default function StatisticsPanel({
                       <LineChartDashboard
                         data={lineData}
                         title="Trend Belanja Bulanan"
-                        xAxisKey="label"
-                        series1Label="Anggaran"
-                        series2Label="Realisasi"
+                        xAxisKey="Kategori1"
+                        nilai1Label="Anggaran"
+                        nilai2Label="Realisasi"
                       />
                     </div>
                   </div>

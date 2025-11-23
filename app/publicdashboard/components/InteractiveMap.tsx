@@ -34,15 +34,19 @@ function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
 function GeoJSONLayer({
   geojson,
   map_data,
+  tahun,
+  gradation_data,
   onRegionSingleClick,
   onRegionDoubleClick,   // ✅ tambahkan prop
-  
+
 }: {
   geojson: RegionGeoJSON;
   map_data: any[];
+  tahun?: string;
+  gradation_data?: any[];
   onRegionSingleClick?: (code: string, name: string) => void;
   onRegionDoubleClick?: (code: string, name: string) => void;
-   
+
 }) {
   const map = useMap();
   const layerRef = useRef<L.GeoJSON | null>(null);
@@ -105,6 +109,7 @@ geojson.features.forEach((f) => {
         const nama = feature.properties.name;
         const anggaran = feature.properties.anggaran;
         const realisasi = feature.properties.realisasi;
+        const pathLayer = layer as L.Path;
 
         // Tooltip saat hover
         layer.bindTooltip(
@@ -117,7 +122,7 @@ geojson.features.forEach((f) => {
 
         // Hover → biru
         layer.on('mouseover', () => {
-          layer.setStyle({
+          pathLayer.setStyle({
             fillColor: 'green',
             weight: 2,
             color: '#000',
@@ -127,7 +132,7 @@ geojson.features.forEach((f) => {
         layer.on('mouseout', () => {
           const grad = feature?.properties?.grad_value;
           const color = grad ? gradColors[grad] : '#ccc';
-          layer.setStyle({
+          pathLayer.setStyle({
             fillColor: color,
             weight: 1,
             color: '#666',
@@ -198,6 +203,8 @@ export default function InteractiveMap({
   map_data,
   tahun,
   gradation_data,
+  level,
+  metric,
   onRegionDoubleClick,   // ✅ tambahkan prop di komponen utama
   onRegionSingleClick,
 }: {
@@ -205,6 +212,8 @@ export default function InteractiveMap({
   map_data: any[];
   tahun : string;
   gradation_data: any[];
+  level?: 'provinsi' | 'pemda' | 'kecamatan' | 'desa';
+  metric?: 'budget' | 'idm' | 'audit';
   onRegionDoubleClick?: (code: string, name: string) => void;
   onRegionSingleClick?: (code: string, name: string) => void;
 }) {

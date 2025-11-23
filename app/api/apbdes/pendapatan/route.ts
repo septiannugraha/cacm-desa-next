@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     if (kdPemda) where.Kd_Pemda = kdPemda
 
     // Fetch revenue realization data
-    const pendapatanData = await prisma.taAR3RealisasiPendapatan.findMany({
+    const pendapatanData = await prisma.ta_AR3_RealisasiPendapatan.findMany({
       where,
       orderBy: [
         { Kd_Rincian: 'asc' },

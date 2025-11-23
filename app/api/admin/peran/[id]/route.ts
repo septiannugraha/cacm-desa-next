@@ -18,7 +18,7 @@ export async function GET(
     const role = await prisma.cACM_Role.findUnique({
       where: { id },
       include: {
-        users: {
+        CACM_User: {
           select: {
             id: true,
             name: true,
@@ -37,19 +37,19 @@ export async function GET(
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
     }
 
-    // Parse permissions from JSON string
-    const roleWithParsedPermissions = {
+    // Parse permission from JSON string
+    const roleWithParsedPermission = {
       ...role,
-      permissions: (() => {
+      permission: (() => {
         try {
-          return JSON.parse(role.permissions)
+          return role.permission ? JSON.parse(role.permission) : []
         } catch {
           return []
         }
       })(),
     }
 
-    return NextResponse.json(roleWithParsedPermissions)
+    return NextResponse.json(roleWithParsedPermission)
   } catch (error) {
     console.error('Failed to fetch role:', error)
     return NextResponse.json({ error: 'Failed to fetch role' }, { status: 500 })
@@ -69,22 +69,22 @@ export async function PUT(
     }
 
     const body = await request.json()
-    const { name, code, permissions } = body
+    const { name, code, permission } = body
 
     const updateData: any = {}
 
     if (name) updateData.name = name
     if (code) updateData.code = code
-    if (permissions) {
-      // Convert permissions array to JSON string
-      updateData.permissions = JSON.stringify(permissions)
+    if (permission) {
+      // Convert permission array to JSON string
+      updateData.permission = JSON.stringify(permission)
     }
 
     const role = await prisma.cACM_Role.update({
       where: { id },
       data: updateData,
       include: {
-        users: {
+        CACM_User: {
           select: {
             id: true,
             name: true,
@@ -96,19 +96,19 @@ export async function PUT(
       },
     })
 
-    // Parse permissions back to array for response
-    const roleWithParsedPermissions = {
+    // Parse permission back to array for response
+    const roleWithParsedPermission = {
       ...role,
-      permissions: (() => {
+      permission: (() => {
         try {
-          return JSON.parse(role.permissions)
+          return role.permission ? JSON.parse(role.permission) : []
         } catch {
           return []
         }
       })(),
     }
 
-    return NextResponse.json(roleWithParsedPermissions)
+    return NextResponse.json(roleWithParsedPermission)
   } catch (error) {
     console.error('Failed to update role:', error)
     return NextResponse.json({ error: 'Failed to update role' }, { status: 500 })
@@ -131,7 +131,7 @@ export async function DELETE(
     const role = await prisma.cACM_Role.findUnique({
       where: { id },
       include: {
-        users: true,
+        CACM_User: true,
       },
     })
 
@@ -139,7 +139,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
     }
 
-    if (role.users.length > 0) {
+    if (role.CACM_User.length > 0) {
       return NextResponse.json(
         { error: 'Cannot delete role with assigned users' },
         { status: 400 }

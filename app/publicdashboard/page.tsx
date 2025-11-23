@@ -168,12 +168,12 @@ export default function MapDashboardPage() {
                   gradation_data={gradationData}
                   level={currentLevel}
                   metric={selectedMetric}
-                  tahun={selectedYear}
+                  tahun={selectedYear.toString()}
                   onRegionDoubleClick={handleRegionDoubleClick}
                   onRegionSingleClick={handleRegionClick}
                 />
                 <div className="flex justify-between items-center px-2 py-1 md:px-4 md:py-2">
-                  <MapLegend gradation_data={gradationData} />
+                  <MapLegend metric={selectedMetric} breaks={null} />
                   <div className="hidden md:block">
                     <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
                   </div>

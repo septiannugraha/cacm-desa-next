@@ -18,9 +18,9 @@ export async function GET(
     const pemda = await prisma.cACM_Pemda.findUnique({
       where: { id },
       include: {
-        parent: true,
-        children: true,
-        users: {
+        CACM_Pemda: true,
+        other_CACM_Pemda: true,
+        CACM_User: {
           select: {
             id: true,
             name: true,
