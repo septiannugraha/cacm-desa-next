@@ -17,15 +17,15 @@ import {
 // --- [GET] Ambil detail koneksi berdasarkan ID ---
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await context.params;
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { id } = context.params;
 
     const result = await prisma.$queryRaw<
       {
@@ -96,9 +96,11 @@ export async function GET(
 // --- [PUT] Update koneksi berdasarkan ID ---
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -117,7 +119,7 @@ export async function PUT(
     } = body;
 
     const existing = await prisma.ta_KoneksiDB.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -138,7 +140,7 @@ export async function PUT(
     };
 
     const updated = await prisma.ta_KoneksiDB.update({
-      where: { id: params.id },
+      where: { id },
       data: updatedData,
     });
 
@@ -155,16 +157,18 @@ export async function PUT(
 // --- [DELETE] Hapus koneksi berdasarkan ID ---
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const existing = await prisma.ta_KoneksiDB.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
@@ -172,7 +176,7 @@ export async function DELETE(
     }
 
     await prisma.ta_KoneksiDB.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ message: 'Connection deleted successfully' });

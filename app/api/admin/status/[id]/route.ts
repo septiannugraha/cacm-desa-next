@@ -67,15 +67,17 @@ let statuses: Array<{
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const status = statuses.find((s) => s.id === params.id)
+    const status = statuses.find((s) => s.id === id)
 
     if (!status) {
       return NextResponse.json({ error: 'Status not found' }, { status: 404 })
@@ -90,9 +92,11 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -101,7 +105,7 @@ export async function PUT(
     const body = await request.json()
     const { code, name, description, color, icon, order, active } = body
 
-    const index = statuses.findIndex((s) => s.id === params.id)
+    const index = statuses.findIndex((s) => s.id === id)
 
     if (index === -1) {
       return NextResponse.json({ error: 'Status not found' }, { status: 404 })
@@ -130,15 +134,17 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const index = statuses.findIndex((s) => s.id === params.id)
+    const index = statuses.findIndex((s) => s.id === id)
 
     if (index === -1) {
       return NextResponse.json({ error: 'Status not found' }, { status: 404 })

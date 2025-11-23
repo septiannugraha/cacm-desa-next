@@ -497,7 +497,7 @@ export default function DashboardBelanjaPage() {
         <>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.belanja_perkelompok} mode="stacked" title="Proporsi Anggaran per Kelompok Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    
+              <BarChartDashboard data={chartData.belanja_perkelompok || []} mode="stacked" title="Proporsi Anggaran per Kelompok Belanja" nilai1Label="Anggaran" nilai2Label='Realisasi'    
                 columnLabels={{
                   Kategori1: 'Kelompok Belanja',
                   Nilai1: 'Anggaran',

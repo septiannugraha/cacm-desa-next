@@ -146,7 +146,6 @@ export default function UserManagementPage() {
       password: '', // Don't populate password for security
       roleId: user.role.id,
       pemdaId: user.pemda?.code || '',
-      fiscalYear: user.fiscalYear,
     });
     setShowModal(true);
   };
@@ -161,7 +160,6 @@ export default function UserManagementPage() {
       password: '',
       roleId: '',
       pemdaId: '',
-      fiscalYear: new Date().getFullYear(),
     });
   };
 
@@ -296,9 +294,6 @@ export default function UserManagementPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Pemda
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tahun Anggaran
-                </th>
                 <th className="relative px-6 py-3">
                   <span className="sr-only">Actions</span>
                 </th>
@@ -351,9 +346,6 @@ export default function UserManagementPage() {
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {user.fiscalYear}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
@@ -482,21 +474,6 @@ export default function UserManagementPage() {
                         </option>
                       ))}
                     </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Tahun Anggaran *
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      min={2020}
-                      max={2099}
-                      value={formData.fiscalYear}
-                      onChange={(e) => setFormData({ ...formData, fiscalYear: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
                   </div>
                 </div>
 

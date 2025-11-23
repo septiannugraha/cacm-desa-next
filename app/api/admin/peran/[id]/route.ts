@@ -5,16 +5,18 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const role = await prisma.cACM_Role.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         users: {
           select: {
@@ -56,9 +58,11 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -77,7 +81,7 @@ export async function PUT(
     }
 
     const role = await prisma.cACM_Role.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         users: {
@@ -113,9 +117,11 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -123,7 +129,7 @@ export async function DELETE(
 
     // Check if role has users
     const role = await prisma.cACM_Role.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         users: true,
       },
@@ -141,7 +147,7 @@ export async function DELETE(
     }
 
     await prisma.cACM_Role.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Role deleted successfully' })

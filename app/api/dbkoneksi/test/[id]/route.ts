@@ -13,9 +13,11 @@ import {
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     const session = await getServerSession(authOptions);
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -35,7 +37,7 @@ export async function GET(
         'ANSI[' + dbo.fn_StringToAnsiBytes(Pwd) + ']' AS Pwd,
         'ANSI[' + dbo.fn_StringToAnsiBytes(DB) + ']' AS DB
       FROM dbo.Ta_KoneksiDB
-      WHERE id = ${params.id}
+      WHERE id = ${id}
     `);
 
     const koneksi = result[0];
