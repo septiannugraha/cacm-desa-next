@@ -13,9 +13,10 @@ import { FiEye } from 'react-icons/fi';
 
 interface ChartData {
   Kategori1: string;
-  Kategori2: string;
+  Kategori2?: string;
   Nilai1: number;
-  Nilai2: number;
+  Nilai2?: number;
+  Nilai3?: number;
 }
 
 interface PieChartDashboardProps {
