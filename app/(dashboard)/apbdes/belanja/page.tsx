@@ -612,19 +612,19 @@ export default function DashboardBelanjaPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_pegawai_tinggi} mode="stacked" title="Desa Belanja Pegawai Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_pegawai_tinggi} mode="stacked" title="Desa Belanja Pegawai Tertinggi" xAxisKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_pegawai_rendah} mode="stacked" title="Desa Belanja Pegawai Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_pegawai_rendah} mode="stacked" title="Desa Belanja Pegawai Terendah" xAxisKey="Kategori1"   />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_modal_tinggi} mode="stacked" title="Desa Belanja Modal Tertinggi" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_modal_tinggi} mode="stacked" title="Desa Belanja Modal Tertinggi" xAxisKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.desa_belanja_modal_rendah} mode="stacked" title="Desa Belanja Modal Terendah" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.desa_belanja_modal_rendah} mode="stacked" title="Desa Belanja Modal Terendah" xAxisKey="Kategori1"   />
             </div>
           </div>
        

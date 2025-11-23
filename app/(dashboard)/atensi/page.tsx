@@ -159,14 +159,14 @@ export default function AtensiPage() {
                           Cutoff: {format(new Date(atensi.Tgl_CutOff), 'dd MMM yyyy', { locale: id })}
                         </div>
 
-                        {atensi.Jlh_Desa !== null && atensi.Jlh_Desa > 0 && (
+                        {atensi.Jlh_Desa != null && atensi.Jlh_Desa > 0 && (
                           <div className="flex items-center gap-1">
                             <FileText className="w-4 h-4" />
                             {atensi.Jlh_Desa} Desa
                           </div>
                         )}
 
-                        {atensi.Jlh_RF !== null && atensi.Jlh_RF > 0 && (
+                        {atensi.Jlh_RF != null && atensi.Jlh_RF > 0 && (
                           <div className="flex items-center gap-1 text-red-600">
                             <AlertCircle className="w-4 h-4" />
                             {atensi.Jlh_RF} Red Flag
