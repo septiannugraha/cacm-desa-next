@@ -1,10 +1,25 @@
 import { prisma } from '@/lib/prisma'
 import { PrismaAdapter } from '@auth/prisma-adapter'
 import bcrypt from 'bcryptjs'
+import sql from 'mssql'
 import { NextAuthOptions, User } from 'next-auth'
 import { Adapter } from 'next-auth/adapters'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { z } from 'zod'
+
+// Direct SQL connection config
+const dbConfig = {
+  server: '31.220.73.89',
+  port: 14317,
+  database: 'Siswaskeudes_Baru',
+  user: 'sa',
+  password: '1',
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    enableArithAbort: true,
+  },
+}
 
 
 
@@ -55,91 +70,86 @@ export const authOptions: NextAuthOptions = {
 
           console.log("Received credentials:", credentials);
 
- 
+          // Connect to database with direct SQL
+          await sql.connect(dbConfig)
 
+          // Find user with role and pemda data
+          const userResult = await sql.query`
+            SELECT TOP 1
+              u.*,
+              r.name as roleName,
+              r.code as roleCode,
+              r.permission as rolePermissions,
+              p.name as pemdaName,
+              p.code as pemdaCode
+            FROM CACM_User u
+            LEFT JOIN CACM_Role r ON u.roleId = r.id
+            LEFT JOIN CACM_Pemda p ON u.pemdaId = p.id
+            WHERE u.username = ${username}
+          `
 
-          // Find user in local User table (use CACM_User when on Dian's network)
-          const user = await prisma.cACM_User.findUnique({
-            where: { username },
-            include: {
-              role: true,
-              pemda: true,
-            },
-          })
+          const user = userResult.recordset[0]
 
           if (!user || !user.active) {
+            await sql.close()
             throw new Error('User tidak ditemukan atau tidak aktif')
           }
 
           // Verify password
-          const isValidPassword =  await bcrypt.compare(password, user.password)
+          const isValidPassword = await bcrypt.compare(password, user.password)
           if (!isValidPassword) {
+            await sql.close()
             throw new Error('Password salah')
           }
 
           // Update last login
-          await prisma.cACM_User.update({
-            where: { id: user.id },
-            data: { lastLogin: new Date() },
-          })
+          await sql.query`
+            UPDATE CACM_User
+            SET lastLogin = ${new Date()}
+            WHERE id = ${user.id}
+          `
 
           // Parse permissions from JSON string
           let permissions = []
           try {
-            permissions = JSON.parse(user.role.permissions)
+            permissions = JSON.parse(user.rolePermissions || '[]')
           } catch {
             permissions = []
           }
 
           // Create session with fiscal year
-          const session = await prisma.cACM_Session.create({
-            data: {
-              id: crypto.randomUUID(),
-              userId: user.id,
-              fiscalYear,
-              sessionToken: crypto.randomUUID(),
-              expires: new Date(Date.now() + 8 * 60 * 60 * 1000),
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            },
-          })
-          
+          const sessionId = crypto.randomUUID()
+          const sessionToken = crypto.randomUUID()
+          const expiresAt = new Date(Date.now() + 8 * 60 * 60 * 1000)
+
+          await sql.query`
+            INSERT INTO CACM_Session (id, userId, fiscalYear, sessionToken, expires, createdAt, updatedAt)
+            VALUES (${sessionId}, ${user.id}, ${fiscalYear}, ${sessionToken}, ${expiresAt}, ${new Date()}, ${new Date()})
+          `
+
+          // Close SQL connection
+          await sql.close()
 
           return {
             id: user.id,
             username: user.username,
             email: user.email || '',
             name: user.name,
-            role: user.role.name,
-            roleCode: user.role.code,
+            role: user.roleName,
+            roleCode: user.roleCode,
             permissions,
             pemdaId: user.pemdaId || '',
-            pemdaName: user.pemda?.name || '',
-            pemdakd:user.pemda?.code || '',
+            pemdaName: user.pemdaName || '',
+            pemdakd: user.pemdaCode || '',
             fiscalYear,
-            sessionId: session.id,
-
-
-        //    id: 'cmfw7ckv20004claf66v5rkbe',
-        //    username: 'admin',
-        //    email: 'admin@cacmdesa.id',
-        //    name: 'Administrator Dummy',
-        //    role: 'cmfw7ckrq0000clafijzpgaxr',
-         //   roleCode: 'ADMIN',
-        //    permissions: ["all"],
-        //    pemdaId: 'cmfw7ckx0000cclafpnj9ilg7',
-        //    pemdaName: 'Kabupaten Bandung',
-        //    fiscalYear: 2025,
-        //    sessionId: crypto.randomUUID(),
-          
-
-
-
-
-
+            sessionId: sessionId,
           } as CustomUser
         } catch (error) {
           console.error('Login error:', error)
+          // Make sure to close connection on error
+          try {
+            await sql.close()
+          } catch {}
           return null
         }
       },

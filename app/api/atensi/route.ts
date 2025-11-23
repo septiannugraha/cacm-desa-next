@@ -6,25 +6,21 @@ import { z } from 'zod'
 
 // Validation schemas
 const createAtensiSchema = z.object({
-  title: z.string().min(1).max(200),
-  description: z.string().min(1),
-  categoryId: z.string(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']),
-  villageId: z.string(),
-  fiscalYear: z.number().int(),
-  amount: z.number().optional(),
-  accountCode: z.string().optional(),
-  dueDate: z.string().datetime().optional(),
+  Kd_Pemda: z.string().min(1).max(4),
+  No_Atensi: z.string().min(1).max(50),
+  Tgl_Atensi: z.string().datetime(),
+  Tgl_CutOff: z.string().datetime(),
+  Keterangan: z.string().optional(),
 })
 
 const querySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   limit: z.coerce.number().int().positive().max(100).default(10),
-  status: z.string().optional(),
-  priority: z.string().optional(),
-  villageId: z.string().optional(),
+  tahun: z.string().optional(),
+  kdPemda: z.string().optional(),
   search: z.string().optional(),
-  sortBy: z.enum(['createdAt', 'priority', 'status', 'dueDate']).default('createdAt'),
+  isSent: z.string().optional(),
+  sortBy: z.enum(['Tgl_Atensi', 'No_Atensi', 'Jlh_RF']).default('Tgl_Atensi'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 })
 
@@ -42,60 +38,42 @@ export async function GET(request: NextRequest) {
 
     // Build where clause
     const where: Record<string, unknown> = {
-      fiscalYear: session.fiscalYear,
+      Tahun: query.tahun || session.fiscalYear?.toString() || new Date().getFullYear().toString(),
     }
 
-    // Role-based filtering
-    if (session.user.roleCode === 'USER') {
-      where.OR = [
-        { reportedById: session.user.id },
-        { assignedToId: session.user.id },
-      ]
-    } else if (session.user.roleCode === 'INSPECTOR' && session.user.pemdaId) {
-      where.pemdaId = session.user.pemdaId
+    // Role-based filtering - filter by user's Pemda if not admin
+    if (session.user.roleCode !== 'ADMIN' && session.user.pemdaId) {
+      where.id_Pemda = session.user.pemdaId
     }
 
     // Apply filters
-    if (query.status) where.status = query.status
-    if (query.priority) where.priority = query.priority
-    if (query.villageId) where.villageId = query.villageId
+    if (query.kdPemda) where.Kd_Pemda = query.kdPemda
+    if (query.isSent !== undefined && query.isSent !== '') {
+      where.isSent = query.isSent === 'true'
+    }
     if (query.search) {
       where.OR = [
-        { title: { contains: query.search } },
-        { code: { contains: query.search } },
-        { description: { contains: query.search } },
+        { No_Atensi: { contains: query.search } },
+        { Keterangan: { contains: query.search } },
       ]
     }
 
     // Execute query with pagination
     const [atensiList, totalCount] = await Promise.all([
-      prisma.atensi.findMany({
+      prisma.cACM_Atensi.findMany({
         where,
         include: {
-          category: true,
-          village: {
-            include: {
-              pemda: true,
+          Ta_Pemda_CACM_Atensi_id_PemdaToTa_Pemda: {
+            select: {
+              Nama_Pemda: true,
+              Kd_Pemda: true,
             },
           },
-          reportedBy: {
+          CACM_Atensi_Desa_CACM_Atensi_Desa_id_AtensiToCACM_Atensi: {
             select: {
-              id: true,
-              name: true,
-              username: true,
-            },
-          },
-          assignedTo: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-            },
-          },
-          _count: {
-            select: {
-              responses: true,
-              attachments: true,
+              Kd_Desa: true,
+              StatusTL: true,
+              StatusVer: true,
             },
           },
         },
@@ -105,7 +83,7 @@ export async function GET(request: NextRequest) {
         skip: (query.page - 1) * query.limit,
         take: query.limit,
       }),
-      prisma.atensi.count({ where }),
+      prisma.cACM_Atensi.count({ where }),
     ])
 
     // Calculate pagination metadata
@@ -147,105 +125,73 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createAtensiSchema.parse(body)
 
-    // Generate unique code
-    const lastAtensi = await prisma.atensi.findFirst({
-      where: { fiscalYear: validatedData.fiscalYear },
-      orderBy: { createdAt: 'desc' },
+    const Tahun = session.fiscalYear?.toString() || new Date().getFullYear().toString()
+    const { Kd_Pemda, No_Atensi, Tgl_Atensi, Tgl_CutOff, Keterangan } = validatedData
+
+    // Check if Atensi already exists
+    const existingAtensi = await prisma.cACM_Atensi.findFirst({
+      where: {
+        Tahun,
+        Kd_Pemda,
+        No_Atensi,
+      },
     })
 
-    const sequenceNumber = lastAtensi
-      ? parseInt(lastAtensi.code.split('/')[0]) + 1
-      : 1
-
-    const code = `${sequenceNumber.toString().padStart(5, '0')}/ATENSI/${validatedData.fiscalYear}`
-
-    // Get village's pemda
-    const village = await prisma.village.findUnique({
-      where: { id: validatedData.villageId },
-      include: { pemda: true },
-    })
-
-    if (!village) {
+    if (existingAtensi) {
       return NextResponse.json(
-        { error: 'Village not found' },
+        { error: 'Atensi dengan nomor ini sudah ada' },
         { status: 400 }
       )
     }
 
-    // Create Atensi with transaction
-    const atensi = await prisma.$transaction(async (tx) => {
-      // Create Atensi
-      const newAtensi = await tx.atensi.create({
-        data: {
-          code,
-          title: validatedData.title,
-          description: validatedData.description,
-          categoryId: validatedData.categoryId,
-          priority: validatedData.priority,
-          villageId: validatedData.villageId,
-          pemdaId: village.pemdaId,
-          fiscalYear: validatedData.fiscalYear,
-          amount: validatedData.amount,
-          accountCode: validatedData.accountCode,
-          dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-          reportedById: session.user.id,
-          status: 'OPEN',
-        },
-        include: {
-          category: true,
-          village: true,
-          reportedBy: {
-            select: {
-              id: true,
-              name: true,
-              username: true,
-            },
+    // Get Pemda data
+    const pemda = await prisma.ta_Pemda.findFirst({
+      where: {
+        Tahun,
+        Kd_Pemda,
+      },
+    })
+
+    if (!pemda) {
+      return NextResponse.json(
+        { error: 'Pemda tidak ditemukan' },
+        { status: 400 }
+      )
+    }
+
+    // Create Atensi
+    const { randomUUID } = require('crypto')
+    const atensi = await prisma.cACM_Atensi.create({
+      data: {
+        id: randomUUID(),
+        id_Pemda: pemda.id,
+        Tahun,
+        Kd_Pemda,
+        No_Atensi,
+        Tgl_Atensi: new Date(Tgl_Atensi),
+        Tgl_CutOff: new Date(Tgl_CutOff),
+        Keterangan,
+        Jlh_Desa: 0,
+        Jlh_RF: 0,
+        Jlh_TL: 0,
+        isSent: false,
+        create_at: new Date(),
+        create_by: session.user.username,
+      },
+      include: {
+        Ta_Pemda_CACM_Atensi_id_PemdaToTa_Pemda: {
+          select: {
+            Nama_Pemda: true,
+            Kd_Pemda: true,
           },
         },
-      })
-
-      // Create activity log
-      await tx.activity.create({
-        data: {
-          atensiId: newAtensi.id,
-          action: 'created',
-          details: JSON.stringify({
-            title: newAtensi.title,
-            priority: newAtensi.priority,
-          }),
-          performedById: session.user.id,
-        },
-      })
-
-      // Create notifications for relevant users
-      const inspectors = await tx.user.findMany({
-        where: {
-          role: {
-            code: 'INSPECTOR',
-          },
-          pemdaId: village.pemdaId,
-        },
-      })
-
-      if (inspectors.length > 0) {
-        await tx.notification.createMany({
-          data: inspectors.map(inspector => ({
-            type: 'new_atensi',
-            title: 'Atensi Baru',
-            message: `Atensi baru "${validatedData.title}" telah dibuat untuk ${village.name}`,
-            data: JSON.stringify({ atensiId: newAtensi.id }),
-            userId: inspector.id,
-          })),
-        })
-      }
-
-      return newAtensi
+      },
     })
 
     return NextResponse.json({
       message: 'Atensi berhasil dibuat',
       data: atensi,
-    })
+    }, { status: 201 })
   } catch (error) {
     console.error('Error creating atensi:', error)
     if (error instanceof z.ZodError) {

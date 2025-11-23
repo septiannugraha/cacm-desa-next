@@ -104,7 +104,7 @@ export default function LoginPage() {
                   {...register('username')}
                   type="text"
                   id="username"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Masukkan username"
                   disabled={isLoading}
                 />
@@ -125,7 +125,7 @@ export default function LoginPage() {
                   {...register('password')}
                   type="password"
                   id="password"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                   placeholder="Masukkan password"
                   disabled={isLoading}
                 />
@@ -145,7 +145,7 @@ export default function LoginPage() {
                 <select
                   {...register('fiscalYear', { valueAsNumber: true })}
                   id="fiscalYear"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none text-gray-900"
                   disabled={isLoading}
                 >
                   {[...Array(11)].map((_, i) => {
