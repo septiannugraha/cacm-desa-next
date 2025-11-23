@@ -97,11 +97,11 @@ shell-db: ## Open SQL Server CLI
 
 db-push: ## Push Prisma schema to database
 	@echo "$(GREEN)Pushing schema to database...$(NC)"
-	docker compose exec app npx prisma db push
+	docker compose exec app node_modules/.bin/prisma db push
 
 db-seed: ## Seed database with initial data
 	@echo "$(GREEN)Seeding database...$(NC)"
-	docker compose exec app npx prisma db seed
+	docker compose exec app node_modules/.bin/prisma db seed
 
 db-setup: ## Complete database setup (push + seed)
 	@echo "$(GREEN)Setting up database...$(NC)"
@@ -231,9 +231,9 @@ setup-external: ## Setup with external database (force rebuild)
 	@echo "$(YELLOW)Waiting for application to start...$(NC)"
 	@sleep 5
 	@echo "$(GREEN)Initializing database schema...$(NC)"
-	docker compose -f docker-compose.prod.yml exec app npx prisma db push
+	docker compose -f docker-compose.prod.yml exec app node_modules/.bin/prisma db push
 	@echo "$(GREEN)Seeding database...$(NC)"
-	docker compose -f docker-compose.prod.yml exec app npx prisma db seed
+	docker compose -f docker-compose.prod.yml exec app node_modules/.bin/prisma db seed
 	@echo ""
 	@echo "$(GREEN)========================================$(NC)"
 	@echo "$(GREEN)Setup complete!$(NC)"

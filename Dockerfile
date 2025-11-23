@@ -50,6 +50,10 @@ COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
+# Install Prisma CLI for database operations (locked to 6.17.1)
+# We install it fresh in the runner stage to avoid dependency issues
+RUN npm install prisma@6.17.1 && npm cache clean --force
+
 # Set ownership
 RUN chown -R nextjs:nodejs /app
 
