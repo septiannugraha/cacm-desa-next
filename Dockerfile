@@ -9,15 +9,16 @@ WORKDIR /app
 # Copy package files
 COPY package.json package-lock.json* ./
 
-# Install dependencies
-RUN npm ci --only=production && \
+# Install ALL dependencies (needed for build stage)
+# Use --legacy-peer-deps for Next.js 16 canary + NextAuth compatibility
+RUN npm ci --legacy-peer-deps && \
     npm cache clean --force
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Copy dependencies from deps stage
+# Copy dependencies from deps stage (includes devDependencies for building)
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
