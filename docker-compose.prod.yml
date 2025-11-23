@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Next.js Application Only (no database)
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    container_name: cacmdesa-app
+    environment:
+      # Database - Point to your existing database
+      # Replace with your actual database host/IP
+      - DATABASE_URL=${DATABASE_URL}
+
+      # NextAuth
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+
+      # Node Environment
+      - NODE_ENV=production
+      - PORT=3000
+
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - cacmdesa-network
+    volumes:
+      # Mount public data if needed (optional)
+      - ./public/data:/app/public/data:ro
+
+  # Nginx Reverse Proxy (Optional)
+  nginx:
+    image: nginx:alpine
+    container_name: cacmdesa-nginx
+    ports:
+      - "${NGINX_HTTP_PORT:-80}:80"
+      - "${NGINX_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+    networks:
+      - cacmdesa-network
+    profiles:
+      - with-nginx
+
+networks:
+  cacmdesa-network:
+    driver: bridge

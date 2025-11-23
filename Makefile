@@ -182,3 +182,55 @@ dev: ## Start in development mode (database only)
 	@echo "$(GREEN)Starting database for development...$(NC)"
 	docker compose up -d mssql
 	@echo "$(GREEN)Database started! Run 'npm run dev' to start the application.$(NC)"
+
+# ============================================================================
+# EXTERNAL DATABASE COMMANDS (when you already have SQL Server running)
+# ============================================================================
+
+up-external: ## Start app only (use existing database)
+	@echo "$(GREEN)Starting application with external database...$(NC)"
+	@if [ ! -f .env.production ]; then \
+		echo "$(RED)Error: .env.production not found!$(NC)"; \
+		echo "$(YELLOW)Copy .env.production.external-db.example to .env.production$(NC)"; \
+		exit 1; \
+	fi
+	docker compose -f docker-compose.prod.yml up -d
+	@echo "$(GREEN)Application started! Using external database.$(NC)"
+
+down-external: ## Stop app only (keep external database)
+	@echo "$(YELLOW)Stopping application...$(NC)"
+	docker compose -f docker-compose.prod.yml down
+
+logs-external: ## View logs (external database mode)
+	docker compose -f docker-compose.prod.yml logs -f
+
+restart-external: ## Restart app (external database mode)
+	@echo "$(YELLOW)Restarting application...$(NC)"
+	docker compose -f docker-compose.prod.yml restart app
+
+setup-external: ## Setup with external database
+	@echo "$(GREEN)Setting up with external database...$(NC)"
+	@if [ ! -f .env.production ]; then \
+		echo "$(RED)Error: .env.production not found!$(NC)"; \
+		echo "$(YELLOW)Please configure:$(NC)"; \
+		echo "  1. cp .env.production.external-db.example .env.production"; \
+		echo "  2. Edit DATABASE_URL in .env.production"; \
+		echo "  3. Run 'make setup-external' again"; \
+		exit 1; \
+	fi
+	@make build
+	docker compose -f docker-compose.prod.yml up -d
+	@echo "$(YELLOW)Waiting for application to start...$(NC)"
+	@sleep 5
+	@echo "$(GREEN)Initializing database schema...$(NC)"
+	docker compose -f docker-compose.prod.yml exec app npx prisma db push
+	@echo "$(GREEN)Seeding database...$(NC)"
+	docker compose -f docker-compose.prod.yml exec app npx prisma db seed
+	@echo ""
+	@echo "$(GREEN)========================================$(NC)"
+	@echo "$(GREEN)Setup complete!$(NC)"
+	@echo "$(GREEN)========================================$(NC)"
+	@echo ""
+	@echo "Application: $(YELLOW)http://localhost:3000$(NC)"
+	@echo "Using external database from .env.production"
+	@echo ""
