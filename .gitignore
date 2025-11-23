@@ -34,6 +34,7 @@ yarn-error.log*
 .env
 .env.*
 !.env.example
+!.env.*.example
 
 # vercel
 .vercel
@@ -52,11 +53,17 @@ MIGRATION_GUIDE.md
 /screenshots
 # Docker and database setup files
 docker-mssql-setup.sh
-docker-compose.yml
+docker-compose.example.yml
 DOCKER_COMMANDS.md
 setup-database.sh
 test-db-connection.js
 DATABASE_SETUP.md
+
+# Docker deployment files (production)
+/backups/*.bak
+/nginx/ssl/*.pem
+/nginx/ssl/*.key
+/nginx/ssl/*.crt
 
 # Environment files
 .env
