@@ -1,7 +1,7 @@
 # CACMDesa-Next Docker Deployment Makefile
 # Convenient commands for managing Docker deployment
 
-.PHONY: help build up down logs restart clean backup restore health test-connection deploy
+.PHONY: help build rebuild up down logs restart clean backup restore health test-connection deploy
 
 # Default target
 .DEFAULT_GOAL := help
@@ -26,6 +26,10 @@ help: ## Show this help message
 build: ## Build Docker images
 	@echo "$(GREEN)Building Docker images...$(NC)"
 	docker compose build
+
+rebuild: ## Rebuild Docker images without cache (force fresh build)
+	@echo "$(GREEN)Rebuilding Docker images without cache...$(NC)"
+	docker compose build --no-cache
 
 up: ## Start all services (app + database)
 	@echo "$(GREEN)Starting services...$(NC)"
@@ -213,7 +217,7 @@ restart-external: ## Restart app (external database mode)
 	@echo "$(YELLOW)Restarting application...$(NC)"
 	docker compose -f docker-compose.prod.yml restart app
 
-setup-external: ## Setup with external database
+setup-external: ## Setup with external database (force rebuild)
 	@echo "$(GREEN)Setting up with external database...$(NC)"
 	@if [ ! -f .env.production ]; then \
 		echo "$(RED)Error: .env.production not found!$(NC)"; \
@@ -223,7 +227,7 @@ setup-external: ## Setup with external database
 		echo "  3. Run 'make setup-external' again"; \
 		exit 1; \
 	fi
-	@make build
+	@make rebuild
 	docker compose -f docker-compose.prod.yml up -d
 	@echo "$(YELLOW)Waiting for application to start...$(NC)"
 	@sleep 5
