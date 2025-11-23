@@ -5,16 +5,19 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const village = await prisma.cACM_Village.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         pemda: {
           select: {
@@ -51,9 +54,12 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -63,7 +69,7 @@ export async function PUT(
     const { name, code, pemdaId } = body
 
     const village = await prisma.cACM_Village.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         code,
@@ -90,16 +96,19 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await prisma.cACM_Village.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Village deleted successfully' })
