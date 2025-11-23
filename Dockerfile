@@ -6,12 +6,12 @@ FROM node:20-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy package files
-COPY package.json package-lock.json* ./
+# Copy package files and npm config
+COPY package.json package-lock.json* .npmrc ./
 
 # Install ALL dependencies (needed for build stage)
-# Use --legacy-peer-deps for Next.js 16 canary + NextAuth compatibility
-RUN npm ci --legacy-peer-deps && \
+# .npmrc contains legacy-peer-deps=true for Next.js 16 canary + NextAuth compatibility
+RUN npm ci && \
     npm cache clean --force
 
 # Stage 2: Builder
