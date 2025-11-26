@@ -13,7 +13,6 @@ export async function GET() {
     }
 
     const pemda = await prisma.cACM_Pemda.findMany({
-<<<<<<< HEAD
       select: {
         id: true,
         name: true,
@@ -21,9 +20,6 @@ export async function GET() {
         level: true,
       },
       orderBy: { code: 'asc' },
-=======
-      orderBy: { createAt: 'desc' }
->>>>>>> 0ebb74fd4d772b8d7314761951cadcedabb1b6a2
     })
 
     return NextResponse.json(pemda)
