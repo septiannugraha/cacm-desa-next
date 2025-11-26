@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET detail role by id
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -17,19 +18,11 @@ export async function GET(
 
     const role = await prisma.cACM_Role.findUnique({
       where: { id },
-      include: {
-        CACM_User: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true,
-            nip: true,
-            active: true,
-            lastLogin: true,
-            pemdaId: true,
-          },
-        },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        permission: true,
       },
     })
 
@@ -56,6 +49,7 @@ export async function GET(
   }
 }
 
+// UPDATE role
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -72,31 +66,23 @@ export async function PUT(
     const { name, code, permission } = body
 
     const updateData: any = {}
-
-    if (name) updateData.name = name
-    if (code) updateData.code = code
-    if (permission) {
-      // Convert permission array to JSON string
+    if (name !== undefined) updateData.name = name
+    if (code !== undefined) updateData.code = code
+    if (permission !== undefined) {
       updateData.permission = JSON.stringify(permission)
     }
 
     const role = await prisma.cACM_Role.update({
       where: { id },
       data: updateData,
-      include: {
-        CACM_User: {
-          select: {
-            id: true,
-            name: true,
-            username: true,
-            email: true,
-            active: true,
-          },
-        },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        permission: true,
       },
     })
 
-    // Parse permission back to array for response
     const roleWithParsedPermission = {
       ...role,
       permission: (() => {
@@ -115,6 +101,7 @@ export async function PUT(
   }
 }
 
+// DELETE role
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -127,23 +114,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if role has users
     const role = await prisma.cACM_Role.findUnique({
       where: { id },
-      include: {
-        CACM_User: true,
-      },
+      select: { id: true },
     })
 
     if (!role) {
       return NextResponse.json({ error: 'Role not found' }, { status: 404 })
-    }
-
-    if (role.CACM_User.length > 0) {
-      return NextResponse.json(
-        { error: 'Cannot delete role with assigned users' },
-        { status: 400 }
-      )
     }
 
     await prisma.cACM_Role.delete({

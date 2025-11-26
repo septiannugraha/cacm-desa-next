@@ -4,49 +4,48 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
-interface Peran {
+interface Role {
   id: string
-  name: string
-  code: string
-  permissions: string
-  createdAt: string
+  name: string | null
+  code: string | null
+  permission: string | null
 }
 
-export default function PeranPage() {
+export default function RolePage() {
   const router = useRouter()
-  const [peran, setPeran] = useState<Peran[]>([])
+  const [roles, setRoles] = useState<Role[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchPeran()
+    fetchRoles()
   }, [])
 
-  const fetchPeran = async () => {
+  const fetchRoles = async () => {
     try {
       const response = await fetch('/api/admin/peran')
       if (response.ok) {
         const data = await response.json()
-        setPeran(data)
+        setRoles(data)
       }
     } catch (error) {
-      console.error('Failed to fetch peran:', error)
+      console.error('Failed to fetch roles:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (roleId: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
 
     try {
-      const response = await fetch(`/api/admin/peran/${id}`, {
+      const response = await fetch(`/api/admin/peran/${roleId}`, {
         method: 'DELETE',
       })
       if (response.ok) {
-        fetchPeran()
+        fetchRoles()
       }
     } catch (error) {
-      console.error('Failed to delete peran:', error)
+      console.error('Failed to delete role:', error)
     }
   }
 
@@ -62,15 +61,15 @@ export default function PeranPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manajemen Peran</h1>
-          <p className="text-gray-600 mt-1">Kelola peran dan hak akses pengguna</p>
+          <h1 className="text-2xl font-bold text-gray-900">Manajemen Role</h1>
+          <p className="text-gray-600 mt-1">Kelola role pengguna</p>
         </div>
         <button
           onClick={() => router.push('/admin/peran/create')}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Tambah Peran
+          Tambah Role
         </button>
       </div>
 
@@ -80,16 +79,13 @@ export default function PeranPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kode
+                  Name
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama
+                  Code
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Permissions
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dibuat
+                  Permission
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
@@ -97,44 +93,23 @@ export default function PeranPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {peran.length === 0 ? (
+              {roles.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                     Tidak ada data
                   </td>
                 </tr>
               ) : (
-                peran.map((item) => (
+                roles.map((item) => (
                   <tr key={item.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.code}
+                      {item.name ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.name}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {item.permissions ? (
-                        <div className="flex flex-wrap gap-1">
-                          {item.permissions.split(',').slice(0, 3).map((perm, idx) => (
-                            <span
-                              key={idx}
-                              className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs"
-                            >
-                              {perm.trim()}
-                            </span>
-                          ))}
-                          {item.permissions.split(',').length > 3 && (
-                            <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded text-xs">
-                              +{item.permissions.split(',').length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-gray-400">No permissions</span>
-                      )}
+                      {item.code ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(item.createdAt).toLocaleDateString('id-ID')}
+                      {item.permission ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

@@ -5,12 +5,8 @@ import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
 interface Status {
-  id: string
-  name: string
-  code: string
-  color: string
-  description: string
-  createdAt: string
+  StatusTL: number
+  Keterangan: string | null
 }
 
 export default function StatusPage() {
@@ -36,11 +32,11 @@ export default function StatusPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (statusId: number) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
 
     try {
-      const response = await fetch(`/api/admin/status/${id}`, {
+      const response = await fetch(`/api/admin/status/${statusId}`, {
         method: 'DELETE',
       })
       if (response.ok) {
@@ -81,16 +77,10 @@ export default function StatusPage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kode
+                  StatusTL
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Warna
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Deskripsi
+                  Keterangan
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
@@ -100,40 +90,28 @@ export default function StatusPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {status.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
                     Tidak ada data
                   </td>
                 </tr>
               ) : (
                 status.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                  <tr key={item.StatusTL} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.code}
+                      {item.StatusTL}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className="w-6 h-6 rounded"
-                          style={{ backgroundColor: item.color }}
-                        />
-                        <span className="text-gray-500">{item.color}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {item.description}
+                      {item.Keterangan ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => router.push(`/admin/status/${item.id}`)}
+                        onClick={() => router.push(`/admin/status/${item.StatusTL}`)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <Edit className="w-4 h-4 inline" />
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.StatusTL)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-4 h-4 inline" />

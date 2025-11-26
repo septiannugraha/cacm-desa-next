@@ -1,77 +1,23 @@
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 
-// In-memory store for status configurations (temporary implementation)
-// In production, this should use a proper Prisma model
-let statuses: Array<{
-  id: string
-  code: string
-  name: string
-  description: string
-  color: string
-  icon: string
-  order: number
-  active: boolean
-  createdAt: Date
-  updatedAt: Date
-}> = [
-  {
-    id: '1',
-    code: 'OPEN',
-    name: 'Terbuka',
-    description: 'Atensi baru yang belum ditangani',
-    color: '#3b82f6',
-    icon: 'inbox',
-    order: 1,
-    active: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '2',
-    code: 'IN_PROGRESS',
-    name: 'Sedang Ditangani',
-    description: 'Atensi sedang dalam proses penanganan',
-    color: '#f59e0b',
-    icon: 'clock',
-    order: 2,
-    active: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '3',
-    code: 'RESOLVED',
-    name: 'Selesai',
-    description: 'Atensi telah diselesaikan',
-    color: '#10b981',
-    icon: 'check-circle',
-    order: 3,
-    active: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  {
-    id: '4',
-    code: 'CLOSED',
-    name: 'Ditutup',
-    description: 'Atensi ditutup dan diarsipkan',
-    color: '#6b7280',
-    icon: 'archive',
-    order: 4,
-    active: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-]
-
+// GET: ambil daftar status (hanya StatusTL, Keterangan)
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+
+    const statuses = await prisma.cACM_StatusTL.findMany({
+      select: {
+        StatusTL: true,
+        Keterangan: true,
+      },
+      orderBy: { StatusTL: 'asc' },
+    })
 
     return NextResponse.json(statuses)
   } catch (error) {
@@ -80,6 +26,7 @@ export async function GET() {
   }
 }
 
+// POST: tambah status baru (hanya StatusTL, Keterangan)
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -88,30 +35,25 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { code, name, description, color, icon, order, active } = body
+    const { StatusTL, Keterangan } = body
 
-    if (!code || !name) {
+    if (StatusTL === undefined || StatusTL === null) {
       return NextResponse.json(
-        { error: 'Code and name are required' },
+        { error: 'StatusTL wajib diisi' },
         { status: 400 }
       )
     }
 
-    const newStatus = {
-      id: Date.now().toString(),
-      code,
-      name,
-      description: description || '',
-      color: color || '#3b82f6',
-      icon: icon || 'circle',
-      order: order || statuses.length + 1,
-      active: active !== undefined ? active : true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    statuses.push(newStatus)
-    statuses.sort((a, b) => a.order - b.order)
+    const newStatus = await prisma.cACM_StatusTL.create({
+      data: {
+        StatusTL,
+        Keterangan,
+      },
+      select: {
+        StatusTL: true,
+        Keterangan: true,
+      },
+    })
 
     return NextResponse.json(newStatus, { status: 201 })
   } catch (error) {
