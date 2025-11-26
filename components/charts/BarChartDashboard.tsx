@@ -16,9 +16,10 @@ import { FiEye } from 'react-icons/fi';
 
 interface ChartData {
   Kategori1: string;
-  Kategori2: string;
+  Kategori2?: string;
   Nilai1: number;
-  Nilai2: number;
+  Nilai2?: number;
+  Nilai3?: number;
 }
 
 interface BarChartDashboardProps {
@@ -30,6 +31,7 @@ interface BarChartDashboardProps {
   nilai1Color?: string;
   nilai2Color?: string;
   mode?: 'normal' | 'stacked';
+  mini?: boolean;
   columnLabels?: {
     Kategori1?: string;
     Kategori2?: string;
@@ -48,6 +50,7 @@ export default function BarChartDashboard({
   nilai2Color = '#10b981',
   columnLabels = {Kategori1: 'Kategori', Nilai1: `${nilai1Label}` , Nilai2: `${nilai2Label}`},
   mode = 'normal',
+  mini = false,
 }: BarChartDashboardProps) {
   const [showTable, setShowTable] = useState(false);
 
@@ -101,7 +104,9 @@ export default function BarChartDashboard({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%" height={400}
+      
+      >
       <BarChart
         data={data}
         margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
@@ -110,8 +115,10 @@ export default function BarChartDashboard({
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis
           dataKey={xAxisKey}
-          tick={{ fill: '#6b7280', fontSize: 12, angle: -45, textAnchor: 'end', width: 150 }}
+          tick={{ fill: '#6b7280', fontSize: 12 }}
           tickLine={{ stroke: '#9ca3af' }}
+          angle={-45}
+          textAnchor="end"
           interval={0}
           tickFormatter={(value: string) => {
             const cleaned = value.replace('PEMERINTAH DESA ', '');
@@ -178,7 +185,7 @@ export default function BarChartDashboard({
 
       {/* Modal Table */}
       {showTable && (
-        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-50 bg-transparent shadow  flex items-center justify-center">
+        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-[9999] z-50 bg-transparent shadow  flex items-center justify-center">
           <div className="bg-gray-100 rounded-xl shadow-2xl max-w-4xl w-full p-6 border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-800">
@@ -209,14 +216,14 @@ export default function BarChartDashboard({
         {columnLabels.Kategori1 && <td className="px-4 py-2 border">{item.Kategori1}</td>}
         {columnLabels.Kategori2 && <td className="px-4 py-2 border">{item.Kategori2}</td>}
         {columnLabels.Nilai1 && (
-          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1)}</td>
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1 ?? 0)}</td>
         )}
         {columnLabels.Nilai2 && (
-          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2)}</td>
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2 ?? 0)}</td>
         )}
         {showPersen && (
           <td className="px-4 py-2 border text-center">
-            {item.Nilai1 > 0 ? `${((item.Nilai2 / item.Nilai1) * 100).toFixed(1)}%` : '-'}
+            {item.Nilai1 > 0 ? `${(((item.Nilai2 ?? 0) / item.Nilai1) * 100).toFixed(1)}%` : '-'}
           </td>
         )}
       </tr>
@@ -232,19 +239,19 @@ export default function BarChartDashboard({
     )}
     {columnLabels.Nilai1 && (
       <td className="px-4 py-2 border text-right">
-        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai1, 0))}
+        {formatCurrency(data.reduce((sum, item) => sum + (item.Nilai1 ?? 0), 0))}
       </td>
     )}
     {columnLabels.Nilai2 && (
       <td className="px-4 py-2 border text-right">
-        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai2, 0))}
+        {formatCurrency(data.reduce((sum, item) => sum + (item.Nilai2 ?? 0), 0))}
       </td>
     )}
     {showPersen && (
       <td className="px-4 py-2 border text-center">
         {(() => {
-          const totalNilai1 = data.reduce((sum, item) => sum + item.Nilai1, 0);
-          const totalNilai2 = data.reduce((sum, item) => sum + item.Nilai2, 0);
+          const totalNilai1 = data.reduce((sum, item) => sum + (item.Nilai1 ?? 0), 0);
+          const totalNilai2 = data.reduce((sum, item) => sum + (item.Nilai2 ?? 0), 0);
           return totalNilai1 > 0
             ? `${((totalNilai2 / totalNilai1) * 100).toFixed(1)}%`
             : '-';

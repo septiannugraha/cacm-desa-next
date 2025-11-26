@@ -5,20 +5,22 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
-        parent: true,
-        children: true,
-        users: {
+        CACM_Pemda: true,
+        other_CACM_Pemda: true,
+        CACM_User: {
           select: {
             id: true,
             name: true,
@@ -42,9 +44,11 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -54,7 +58,7 @@ export async function PUT(
     const { name, code, level, parentId } = body
 
     const pemda = await prisma.cACM_Pemda.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name,
         code,
@@ -72,16 +76,18 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await prisma.cACM_Pemda.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return NextResponse.json({ message: 'Pemda deleted successfully' })

@@ -3,12 +3,14 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-/
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -33,11 +35,11 @@ export async function GET(
         Tahun_Kd_Pemda_No_Atensi: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id, // params.id is No_Atensi
+          No_Atensi: id, // id is No_Atensi
         },
       },
       include: {
-        CACM_Atensi_Desa: {
+        CACM_Atensi_Desa_CACM_Atensi_Desa_Tahun_Kd_Pemda_No_AtensiToCACM_Atensi: {
           orderBy: {
             Kd_Desa: 'asc',
           },
@@ -58,9 +60,12 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -89,7 +94,7 @@ export async function PUT(
         Tahun_Kd_Pemda_No_Atensi: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
+          No_Atensi: id,
         },
       },
       data: {
@@ -111,9 +116,12 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -138,7 +146,7 @@ export async function DELETE(
         Tahun_Kd_Pemda_No_Atensi: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
+          No_Atensi: id,
         },
       },
     })

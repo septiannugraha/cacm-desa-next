@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { randomUUID } from 'crypto'
 
 // GET: ambil daftar pemda (hanya nama, kode, level)
 export async function GET() {
@@ -12,6 +13,7 @@ export async function GET() {
     }
 
     const pemda = await prisma.cACM_Pemda.findMany({
+<<<<<<< HEAD
       select: {
         id: true,
         name: true,
@@ -19,6 +21,9 @@ export async function GET() {
         level: true,
       },
       orderBy: { code: 'asc' },
+=======
+      orderBy: { createAt: 'desc' }
+>>>>>>> 0ebb74fd4d772b8d7314761951cadcedabb1b6a2
     })
 
     return NextResponse.json(pemda)
@@ -48,6 +53,7 @@ export async function POST(request: Request) {
 
     const pemda = await prisma.cACM_Pemda.create({
       data: {
+        id: randomUUID(),
         name,
         code,
         level,

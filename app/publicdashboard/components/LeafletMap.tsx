@@ -18,7 +18,7 @@ function GeoLayer({ data, highlight }: { data: FeatureCollection; highlight: str
 
     const layer = L.geoJSON(data, {
       style: (feature) => {
-        const isMatch = feature.properties?.namobj?.toLowerCase().includes(highlight.toLowerCase());
+        const isMatch = feature?.properties?.namobj?.toLowerCase().includes(highlight.toLowerCase());
         const color = isMatch ? '#ff6600' : '#3388ff';
         return {
           color,

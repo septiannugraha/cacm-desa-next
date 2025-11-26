@@ -9,33 +9,26 @@ export interface AtensiListParams {
   page?: number
   limit?: number
   search?: string
-  status?: string
-  priority?: string
-  villageId?: string
+  tahun?: string
+  kdPemda?: string
+  isSent?: string
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
 }
 
 export interface CreateAtensiData {
-  title: string
-  description: string
-  categoryId: string
-  priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  villageId: string
-  fiscalYear: number
-  amount?: number
-  accountCode?: string
-  dueDate?: string
+  Kd_Pemda: string
+  No_Atensi: string
+  Tgl_Atensi: string
+  Tgl_CutOff: string
+  Keterangan?: string
 }
 
 export interface UpdateAtensiData {
-  title?: string
-  description?: string
-  categoryId?: string
-  priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
-  status?: 'OPEN' | 'IN_PROGRESS' | 'WAITING_RESPONSE' | 'RESOLVED' | 'CLOSED' | 'CANCELLED'
-  assignedToId?: string | null
-  dueDate?: string | null
+  Tgl_Atensi?: string
+  Tgl_CutOff?: string
+  Keterangan?: string
+  isSent?: boolean
 }
 
 export interface CreateResponseData {

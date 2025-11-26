@@ -45,6 +45,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { redirect, usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
+import MobileResponMenu from '@/components/layouts/MobileResponMenu'
 
 interface NavigationItem {
   name: string
@@ -229,7 +230,7 @@ export default function DashboardLayout({
           </button>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto pb-24">
             {/* Regular Navigation */}
             {navigation.map((item) => {
               const Icon = item.icon
@@ -377,6 +378,56 @@ export default function DashboardLayout({
               </>
             )}
           </nav>
+
+          {/* Bottom Menu - Fixed at bottom of sidebar */}
+          <div className="absolute bottom-0 left-0 right-0 border-t border-gray-700" style={{ backgroundColor: '#051923' }}>
+            <div className="px-2 py-3 grid grid-cols-4 gap-1">
+              <Link
+                href="/profile"
+                className="flex flex-col items-center justify-center gap-1.5 py-3 px-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors active:scale-95"
+                title="Profil"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <User className="h-6 w-6 lg:h-5 lg:w-5" />
+                <span className="text-xs lg:text-[10px] font-medium">Profil</span>
+              </Link>
+              <Link
+                href="/settings"
+                className="flex flex-col items-center justify-center gap-1.5 py-3 px-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors active:scale-95"
+                title="Pengaturan"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <Settings className="h-6 w-6 lg:h-5 lg:w-5" />
+                <span className="text-xs lg:text-[10px] font-medium">Settings</span>
+              </Link>
+              <Link
+                href="/help"
+                className="flex flex-col items-center justify-center gap-1.5 py-3 px-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors active:scale-95"
+                title="Bantuan"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <FileText className="h-6 w-6 lg:h-5 lg:w-5" />
+                <span className="text-xs lg:text-[10px] font-medium">Bantuan</span>
+              </Link>
+              <button
+                onClick={async () => {
+                  setSidebarOpen(false)
+                  try {
+                    await fetch('/api/auth/logout', { method: 'POST' })
+                    await signOut({ callbackUrl: '/login', redirect: true })
+                  } catch (error) {
+                    console.error('Logout error:', error)
+                    window.location.href = '/login'
+                  }
+                }}
+                className="flex flex-col items-center justify-center gap-1.5 py-3 px-1 text-gray-400 hover:text-red-400 hover:bg-gray-800 rounded-lg transition-colors active:scale-95"
+                title="Keluar"
+              >
+                <LogOut className="h-6 w-6 lg:h-5 lg:w-5" />
+                <span className="text-xs lg:text-[10px] font-medium">Keluar</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -473,10 +524,13 @@ export default function DashboardLayout({
 
       {/* Main content area - with padding for fixed header and sidebar */}
       <main className="min-h-screen pt-14 lg:pl-64 bg-gray-50 ">
-        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto ">
+        <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto pb-20 md:pb-4">
           {children}
         </div>
       </main>
+
+      {/* Mobile Respon Menu - Shows only on mobile for respon routes */}
+      <MobileResponMenu />
     </div>
   )
 }

@@ -488,13 +488,16 @@ export default function DashboardBelanjaPage() {
               <BarChartDashboard data={chartData.pendapatan_perkelompok} title="Pendapatan per Kelompok Pendapatan" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.pendapatan_persumberdana} title="Pendapatan per Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+              <PieChartDashboard
+                data={chartData.pendapatan_persumberdana}
+                title="Pendapatan per Sumber Dana"
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
              <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboard data={chartData.rincian_pades} title="Rincian Pendapatan Asli Desa" dataKey="Nilai1" nameKey="Kategori1"   />
+              <BarChartDashboard data={chartData.rincian_pades} title="Rincian Pendapatan Asli Desa" xAxisKey="Kategori1"   />
             </div>
             <div className="bg-white rounded-lg shadow p-4 sm:p-6">
               <PieChartDashboard data={chartData.rincian_ptransfer} title="Rincian Pendapatan Transfer" dataKey="Nilai1" nameKey="Kategori1"   />

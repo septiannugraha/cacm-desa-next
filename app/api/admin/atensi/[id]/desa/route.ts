@@ -6,9 +6,12 @@ import { prisma } from '@/lib/prisma'
 // Get all village-level findings for an atensi period
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -32,7 +35,7 @@ export async function GET(
       where: {
         Tahun: fiscalYear.toString(),
         Kd_Pemda: kdPemda,
-        No_Atensi: params.id,
+        No_Atensi: id,
       },
       orderBy: {
         Kd_Desa: 'asc',
@@ -49,9 +52,12 @@ export async function GET(
 // Create a new village-level finding for an atensi period
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -76,7 +82,7 @@ export async function POST(
         Tahun_Kd_Pemda_No_Atensi: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
+          No_Atensi: id,
         },
       },
       select: { id: true },
@@ -101,7 +107,7 @@ export async function POST(
         Tahun_Kd_Pemda_No_Atensi_Kd_Desa: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
+          No_Atensi: id,
           Kd_Desa,
         },
       },
@@ -121,7 +127,7 @@ export async function POST(
         id_Atensi: atensi.id,
         Tahun: fiscalYear.toString(),
         Kd_Pemda: kdPemda,
-        No_Atensi: params.id,
+        No_Atensi: id,
         Kd_Desa,
         Jlh_RF: 0, // Will be calculated from child records
         Jlh_TL: 0, // Will be calculated from child records

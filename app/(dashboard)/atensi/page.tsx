@@ -19,52 +19,48 @@ import { format } from 'date-fns'
 import { id } from 'date-fns/locale'
 import { fetchAtensi } from '@/lib/api/atensi'
 
-const priorityConfig = {
-  LOW: { label: 'Rendah', color: 'bg-gray-100 text-gray-800 border-gray-300' },
-  MEDIUM: { label: 'Sedang', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-  HIGH: { label: 'Tinggi', color: 'bg-orange-100 text-orange-800 border-orange-300' },
-  CRITICAL: { label: 'Kritis', color: 'bg-red-100 text-red-800 border-red-300' },
-}
-
-const statusConfig = {
-  OPEN: { label: 'Terbuka', color: 'bg-blue-100 text-blue-800 border-blue-300' },
-  IN_PROGRESS: { label: 'Proses', color: 'bg-indigo-100 text-indigo-800 border-indigo-300' },
-  WAITING_RESPONSE: { label: 'Menunggu', color: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
-  RESOLVED: { label: 'Selesai', color: 'bg-green-100 text-green-800 border-green-300' },
-  CLOSED: { label: 'Ditutup', color: 'bg-gray-100 text-gray-800 border-gray-300' },
-  CANCELLED: { label: 'Dibatalkan', color: 'bg-red-100 text-red-800 border-red-300' },
+const sentStatusConfig = {
+  true: { label: 'Terkirim', color: 'bg-green-100 text-green-800 border-green-300' },
+  false: { label: 'Draft', color: 'bg-gray-100 text-gray-800 border-gray-300' },
 }
 
 interface Atensi {
   id: string
-  code: string
-  title: string
-  description?: string
-  status: string
-  priority: string
-  category: { name: string; color?: string }
-  village: { name: string; pemda?: { name: string } }
-  reportedAt: string
-  createdAt: string
-  responses: { length: number }
-  _count?: { responses: number; attachments?: number }
+  Tahun: string
+  Kd_Pemda: string
+  No_Atensi: string
+  Tgl_Atensi: string
+  Tgl_CutOff: string
+  Keterangan?: string | null
+  Jlh_Desa?: number | null
+  Jlh_RF?: number | null
+  Jlh_TL?: number | null
+  isSent?: boolean | null
+  create_at?: string | null
+  Ta_Pemda_CACM_Atensi_id_PemdaToTa_Pemda?: {
+    Nama_Pemda: string
+    Kd_Pemda: string
+  }
+  CACM_Atensi_Desa_CACM_Atensi_Desa_id_AtensiToCACM_Atensi?: Array<{
+    Kd_Desa: string
+    StatusTL?: number | null
+    StatusVer?: number | null
+  }>
 }
 
 export default function AtensiPage() {
-  useSession()
+  const { data: session } = useSession()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('')
-  const [priorityFilter, setPriorityFilter] = useState<string>('')
+  const [isSentFilter, setIsSentFilter] = useState<string>('')
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ['atensi', { page, search, status: statusFilter, priority: priorityFilter }],
+    queryKey: ['atensi', { page, search, isSent: isSentFilter }],
     queryFn: () => fetchAtensi({
       page,
       limit: 10,
       search,
-      status: statusFilter,
-      priority: priorityFilter,
+      isSent: isSentFilter,
     }),
   })
 
@@ -88,12 +84,12 @@ export default function AtensiPage() {
 
       {/* Filters */}
       <div className="bg-white rounded-lg shadow p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="relative md:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari atensi..."
+              placeholder="Cari berdasarkan nomor atau keterangan atensi..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -101,31 +97,14 @@ export default function AtensiPage() {
           </div>
 
           <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            value={isSentFilter}
+            onChange={(e) => setIsSentFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
             <option value="">Semua Status</option>
-            {Object.entries(statusConfig).map(([value, config]) => (
-              <option key={value} value={value}>{config.label}</option>
-            ))}
+            <option value="false">Draft</option>
+            <option value="true">Terkirim</option>
           </select>
-
-          <select
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Semua Prioritas</option>
-            {Object.entries(priorityConfig).map(([value, config]) => (
-              <option key={value} value={value}>{config.label}</option>
-            ))}
-          </select>
-
-          <button className="flex items-center justify-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-            <Filter className="w-4 h-4" />
-            Filter Lanjutan
-          </button>
         </div>
       </div>
 
@@ -158,45 +137,44 @@ export default function AtensiPage() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs text-gray-500">{atensi.code}</span>
-                        <span className={`px-2 py-1 text-xs rounded-full border ${priorityConfig[atensi.priority as keyof typeof priorityConfig]?.color || ''}`}>
-                          {priorityConfig[atensi.priority as keyof typeof priorityConfig]?.label || atensi.priority}
-                        </span>
-                        <span className={`px-2 py-1 text-xs rounded-full border ${statusConfig[atensi.status as keyof typeof statusConfig]?.color || ''}`}>
-                          {statusConfig[atensi.status as keyof typeof statusConfig]?.label || atensi.status}
+                        <span className="text-xs font-mono text-gray-500">{atensi.No_Atensi}</span>
+                        <span className="text-xs text-gray-500">Tahun {atensi.Tahun}</span>
+                        <span className={`px-2 py-1 text-xs rounded-full border ${sentStatusConfig[atensi.isSent ? 'true' : 'false']?.color || ''}`}>
+                          {sentStatusConfig[atensi.isSent ? 'true' : 'false']?.label}
                         </span>
                       </div>
 
                       <h3 className="text-lg font-medium text-gray-900">
-                        {atensi.title}
+                        {atensi.Keterangan || 'Atensi ' + atensi.No_Atensi}
                       </h3>
-
-                      <p className="text-gray-600 mt-1 line-clamp-2">
-                        {atensi.description}
-                      </p>
 
                       <div className="flex items-center gap-4 mt-3 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {format(new Date(atensi.createdAt || atensi.reportedAt), 'dd MMM yyyy', { locale: id })}
+                          {format(new Date(atensi.Tgl_Atensi), 'dd MMM yyyy', { locale: id })}
                         </div>
 
                         <div className="flex items-center gap-1">
-                          <MessageSquare className="w-4 h-4" />
-                          {atensi._count?.responses || 0} Tanggapan
+                          <AlertCircle className="w-4 h-4" />
+                          Cutoff: {format(new Date(atensi.Tgl_CutOff), 'dd MMM yyyy', { locale: id })}
                         </div>
 
-                        {(atensi._count?.attachments ?? 0) > 0 && (
+                        {atensi.Jlh_Desa != null && atensi.Jlh_Desa > 0 && (
                           <div className="flex items-center gap-1">
-                            <Paperclip className="w-4 h-4" />
-                            {atensi._count?.attachments} Lampiran
+                            <FileText className="w-4 h-4" />
+                            {atensi.Jlh_Desa} Desa
+                          </div>
+                        )}
+
+                        {atensi.Jlh_RF != null && atensi.Jlh_RF > 0 && (
+                          <div className="flex items-center gap-1 text-red-600">
+                            <AlertCircle className="w-4 h-4" />
+                            {atensi.Jlh_RF} Red Flag
                           </div>
                         )}
 
                         <div>
-                          <span className="font-medium">{atensi.village?.name}</span>
-                          {' - '}
-                          {/* {atensi.village?.pemda?.name} */}
+                          <span className="font-medium">{atensi.Ta_Pemda_CACM_Atensi_id_PemdaToTa_Pemda?.Nama_Pemda}</span>
                         </div>
                       </div>
                     </div>

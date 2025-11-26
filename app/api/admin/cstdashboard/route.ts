@@ -31,7 +31,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { No, Nama_Grafik, Keterangan, Nama_Kolom, Syntax } = body
+    const { No, Nama_Grafik, Keterangan, Syntax } = body
 
     if (!No || !Nama_Grafik || !Syntax) {
       return NextResponse.json(
@@ -53,7 +53,6 @@ export async function POST(request: Request) {
         No,
         Nama_Grafik,
         Keterangan: Keterangan ?? '',
-        Nama_Kolom: Nama_Kolom ?? '',
         Syntax,
       },
     })

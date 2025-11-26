@@ -9,7 +9,7 @@ export async function POST() {
     
     if (session?.sessionId) {
       // Clear session from database
-      await prisma.session.deleteMany({
+      await prisma.cACM_Session.deleteMany({
         where: {
           userId: session.user.id,
         },

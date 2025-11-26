@@ -6,9 +6,12 @@ import { prisma } from '@/lib/prisma'
 // Get all transaction evidence for a village finding
 export async function GET(
   request: Request,
-  { params }: { params: { id: string; Kd_Desa: string } }
+  { params }: { params: Promise<{ id: string; Kd_Desa: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id, Kd_Desa } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -32,8 +35,8 @@ export async function GET(
       where: {
         Tahun: fiscalYear.toString(),
         Kd_Pemda: kdPemda,
-        No_Atensi: params.id,
-        Kd_Desa: params.Kd_Desa,
+        No_Atensi: id,
+        Kd_Desa: Kd_Desa,
       },
       orderBy: [
         { Jns_Atensi: 'asc' },
@@ -51,9 +54,12 @@ export async function GET(
 // Create new transaction evidence
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; Kd_Desa: string } }
+  { params }: { params: Promise<{ id: string; Kd_Desa: string }> }
 ) {
   try {
+    // Next.js 15+: params is now a Promise and must be awaited
+    const { id, Kd_Desa } = await params
+
     const session = await getServerSession(authOptions)
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -78,8 +84,8 @@ export async function POST(
         Tahun_Kd_Pemda_No_Atensi_Kd_Desa: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
-          Kd_Desa: params.Kd_Desa,
+          No_Atensi: id,
+          Kd_Desa: Kd_Desa,
         },
       },
       select: { id: true },
@@ -127,8 +133,8 @@ export async function POST(
         Tahun_Kd_Pemda_No_Atensi_Kd_Desa_Jns_Atensi_No_Bukti: {
           Tahun: fiscalYear.toString(),
           Kd_Pemda: kdPemda,
-          No_Atensi: params.id,
-          Kd_Desa: params.Kd_Desa,
+          No_Atensi: id,
+          Kd_Desa: Kd_Desa,
           Jns_Atensi,
           No_Bukti,
         },
@@ -149,8 +155,8 @@ export async function POST(
         id_Atensi_Desa: desaFinding.id,
         Tahun: fiscalYear.toString(),
         Kd_Pemda: kdPemda,
-        No_Atensi: params.id,
-        Kd_Desa: params.Kd_Desa,
+        No_Atensi: id,
+        Kd_Desa: Kd_Desa,
         Jns_Atensi,
         No_Bukti,
         ...(Tgl_Bukti && { Tgl_Bukti: new Date(Tgl_Bukti) }),

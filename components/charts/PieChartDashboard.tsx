@@ -13,9 +13,10 @@ import { FiEye } from 'react-icons/fi';
 
 interface ChartData {
   Kategori1: string;
-  Kategori2: string;
+  Kategori2?: string;
   Nilai1: number;
-  Nilai2: number;
+  Nilai2?: number;
+  Nilai3?: number;
 }
 
 interface PieChartDashboardProps {
@@ -25,6 +26,7 @@ interface PieChartDashboardProps {
   nameKey?: 'Kategori1' | 'Kategori2';
   label?: string;
   colors?: string[];
+  mini?: boolean
   columnLabels?: {
     Kategori1?: string;
     Kategori2?: string;
@@ -46,6 +48,7 @@ export default function PieChartDashboard({
   label = 'Anggaran',
   colors = DEFAULT_COLORS,
   columnLabels = {Kategori1: 'Kategori', Nilai1: `${label}`},
+  mini=false,
 }: PieChartDashboardProps) {
   const [showTable, setShowTable] = useState(false);
 
@@ -62,7 +65,7 @@ export default function PieChartDashboard({
     value: item[dataKey],
   }));
 
-  const total = pieData.reduce((sum, item) => sum + item.value, 0);
+  const total = pieData.reduce((sum, item) => sum + (item.value ?? 0), 0);
 
   const renderCustomizedLabel = ({
     cx, cy, midAngle, innerRadius, outerRadius, percent,
@@ -105,7 +108,10 @@ export default function PieChartDashboard({
       </div>
 
       {/* Chart */}
-      <ResponsiveContainer width="100%" height={400}>
+      <ResponsiveContainer width="100%"  height={400}
+      style={mini ? { transform: 'scale(0.75)', transformOrigin: 'top left' } : {}}
+
+      >
         <PieChart>
           <Pie
             data={pieData}
@@ -159,7 +165,7 @@ export default function PieChartDashboard({
 
       {/* Modal Table */}
       {showTable && (
-        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0  z-50 bg-transparent bg-opacity-30 flex items-center justify-center">
+        <div className="fixed top-0 left-64 right-0 bottom-0  inset-0 z-[9999] z-50 bg-transparent bg-opacity-30 flex items-center justify-center">
           <div className="bg-gray-100 rounded-xl shadow-2xl max-w-4xl w-full p-6 border border-gray-200">
             <div className="flex justify-between items-center mb-4">
               <h4 className="text-lg font-semibold text-gray-800">
@@ -190,14 +196,14 @@ export default function PieChartDashboard({
         {columnLabels.Kategori1 && <td className="px-4 py-2 border">{item.Kategori1}</td>}
         {columnLabels.Kategori2 && <td className="px-4 py-2 border">{item.Kategori2}</td>}
         {columnLabels.Nilai1 && (
-          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1)}</td>
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai1 ?? 0)}</td>
         )}
         {columnLabels.Nilai2 && (
-          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2)}</td>
+          <td className="px-4 py-2 border text-right">{formatCurrency(item.Nilai2 ?? 0)}</td>
         )}
         {showPersen && (
           <td className="px-4 py-2 border text-center">
-            {item.Nilai1 > 0 ? `${((item.Nilai2 / item.Nilai1) * 100).toFixed(1)}%` : '-'}
+            {item.Nilai1 > 0 ? `${(((item.Nilai2 ?? 0) / item.Nilai1) * 100).toFixed(1)}%` : '-'}
           </td>
         )}
       </tr>
@@ -213,19 +219,19 @@ export default function PieChartDashboard({
     )}
     {columnLabels.Nilai1 && (
       <td className="px-4 py-2 border text-right">
-        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai1, 0))}
+        {formatCurrency(data.reduce((sum, item) => sum + (item.Nilai1 ?? 0), 0))}
       </td>
     )}
     {columnLabels.Nilai2 && (
       <td className="px-4 py-2 border text-right">
-        {formatCurrency(data.reduce((sum, item) => sum + item.Nilai2, 0))}
+        {formatCurrency(data.reduce((sum, item) => sum + (item.Nilai2 ?? 0), 0))}
       </td>
     )}
     {showPersen && (
       <td className="px-4 py-2 border text-center">
         {(() => {
-          const totalNilai1 = data.reduce((sum, item) => sum + item.Nilai1, 0);
-          const totalNilai2 = data.reduce((sum, item) => sum + item.Nilai2, 0);
+          const totalNilai1 = data.reduce((sum, item) => sum + (item.Nilai1 ?? 0), 0);
+          const totalNilai2 = data.reduce((sum, item) => sum + (item.Nilai2 ?? 0), 0);
           return totalNilai1 > 0
             ? `${((totalNilai2 / totalNilai1) * 100).toFixed(1)}%`
             : '-';
