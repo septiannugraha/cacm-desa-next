@@ -6,12 +6,9 @@ import { Plus, Edit, Trash2 } from 'lucide-react'
 
 interface Pemda {
   id: string
-  name: string
+  name: string | null
   code: string
-  level: string
-  parentId: string | null
-  createdAt: string
-  updatedAt: string
+  level: string | null
 }
 
 export default function PemdaPage() {
@@ -90,9 +87,6 @@ export default function PemdaPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Level
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Dibuat
-                </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
                 </th>
@@ -101,7 +95,7 @@ export default function PemdaPage() {
             <tbody className="bg-white divide-y divide-gray-200">
               {pemda.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                     Tidak ada data
                   </td>
                 </tr>
@@ -112,13 +106,10 @@ export default function PemdaPage() {
                       {item.code}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.name}
+                      {item.name ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.level}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {new Date(item.createdAt).toLocaleDateString('id-ID')}
+                      {item.level ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button

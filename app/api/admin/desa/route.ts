@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET: ambil daftar desa
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -10,27 +11,25 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const villages = await prisma.cACM_Village.findMany({
-      include: {
-        pemda: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            level: true,
-          },
-        },
+    const villages = await prisma.ta_Desa.findMany({
+      select: {
+        Kd_Desa: true,
+        Nama_Desa: true,
+        Alamat: true,
+        Ibukota: true,
+        HP_Kades: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { Kd_Desa: 'asc' },
     })
 
     return NextResponse.json(villages)
   } catch (error) {
-    console.error('Failed to fetch villages:', error)
-    return NextResponse.json({ error: 'Failed to fetch villages' }, { status: 500 })
+    console.error('Failed to fetch desa:', error)
+    return NextResponse.json({ error: 'Failed to fetch desa' }, { status: 500 })
   }
 }
 
+// POST: tambah desa baru
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -39,36 +38,68 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, code, pemdaId } = body
+    const { Kd_Desa, Nama_Desa, Alamat, Ibukota, HP_Kades } = body
 
-    if (!name || !code || !pemdaId) {
+    if (!Kd_Desa || !Nama_Desa) {
       return NextResponse.json(
-        { error: 'Name, code, and pemdaId are required' },
+        { error: 'Kode desa dan nama desa wajib diisi' },
         { status: 400 }
       )
     }
 
-    const village = await prisma.cACM_Village.create({
+    const desa = await prisma.ta_Desa.create({
       data: {
-        name,
-        code,
-        pemdaId,
+        Kd_Desa,
+        Nama_Desa,
+        Alamat,
+        Ibukota,
+        HP_Kades,
+        Tahun: new Date().getFullYear().toString(), // wajib karena PK composite
+        Kd_Pemda: '0001', // sesuaikan default/ambil dari context
       },
-      include: {
-        pemda: {
-          select: {
-            id: true,
-            name: true,
-            code: true,
-            level: true,
-          },
+      select: {
+        Kd_Desa: true,
+        Nama_Desa: true,
+        Alamat: true,
+        Ibukota: true,
+        HP_Kades: true,
+      },
+    })
+
+    return NextResponse.json(desa, { status: 201 })
+  } catch (error) {
+    console.error('Failed to create desa:', error)
+    return NextResponse.json({ error: 'Failed to create desa' }, { status: 500 })
+  }
+}
+
+// DELETE: hapus desa berdasarkan kode desa
+export async function DELETE(
+  request: Request,
+  { params }: { params: { kdDesa: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { kdDesa } = params
+
+    await prisma.ta_Desa.delete({
+      where: {
+        // karena PK composite, minimal harus isi Tahun + Kd_Pemda + Kd_Desa
+        Tahun_Kd_Pemda_Kd_Desa: {
+          Tahun: new Date().getFullYear().toString(),
+          Kd_Pemda: '0001', // sesuaikan dengan konteks
+          Kd_Desa: kdDesa,
         },
       },
     })
 
-    return NextResponse.json(village, { status: 201 })
+    return NextResponse.json({ message: 'Desa deleted successfully' })
   } catch (error) {
-    console.error('Failed to create village:', error)
-    return NextResponse.json({ error: 'Failed to create village' }, { status: 500 })
+    console.error('Failed to delete desa:', error)
+    return NextResponse.json({ error: 'Failed to delete desa' }, { status: 500 })
   }
 }

@@ -4,17 +4,17 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
-interface Desa {
-  id: string
-  name: string
-  code: string
-  pemdaId: string
-  createdAt: string
+interface TaDesa {
+  Kd_Desa: string
+  Nama_Desa: string | null
+  Alamat: string | null
+  Ibukota: string | null
+  HP_Kades: string | null
 }
 
 export default function DesaPage() {
   const router = useRouter()
-  const [desa, setDesa] = useState<Desa[]>([])
+  const [desa, setDesa] = useState<TaDesa[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -35,11 +35,11 @@ export default function DesaPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (kdDesa: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
 
     try {
-      const response = await fetch(`/api/admin/desa/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/admin/desa/${kdDesa}`, { method: 'DELETE' })
       if (response.ok) fetchDesa()
     } catch (error) {
       console.error('Failed to delete desa:', error)
@@ -75,34 +75,36 @@ export default function DesaPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibuat</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode Desa</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Desa</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alamat</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ibukota</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HP Kades</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {desa.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
                 </tr>
               ) : (
                 desa.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium">{item.code}</td>
-                    <td className="px-6 py-4 text-sm">{item.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {new Date(item.createdAt).toLocaleDateString('id-ID')}
-                    </td>
+                  <tr key={item.Kd_Desa} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 text-sm font-medium">{item.Kd_Desa}</td>
+                    <td className="px-6 py-4 text-sm">{item.Nama_Desa ?? '-'}</td>
+                    <td className="px-6 py-4 text-sm">{item.Alamat ?? '-'}</td>
+                    <td className="px-6 py-4 text-sm">{item.Ibukota ?? '-'}</td>
+                    <td className="px-6 py-4 text-sm">{item.HP_Kades ?? '-'}</td>
                     <td className="px-6 py-4 text-right text-sm">
                       <button
-                        onClick={() => router.push(`/admin/desa/${item.id}`)}
+                        onClick={() => router.push(`/admin/desa/${item.Kd_Desa}`)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <Edit className="w-4 h-4 inline" />
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.Kd_Desa)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-4 h-4 inline" />

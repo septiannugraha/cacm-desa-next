@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET: ambil daftar pemda (hanya nama, kode, level)
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -11,7 +12,13 @@ export async function GET() {
     }
 
     const pemda = await prisma.cACM_Pemda.findMany({
-      orderBy: { createdAt: 'desc' }
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        level: true,
+      },
+      orderBy: { code: 'asc' },
     })
 
     return NextResponse.json(pemda)
@@ -21,6 +28,7 @@ export async function GET() {
   }
 }
 
+// POST: tambah pemda baru (hanya nama, kode, level)
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -29,15 +37,27 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, code, level, parentId } = body
+    const { name, code, level } = body
+
+    if (!name || !code) {
+      return NextResponse.json(
+        { error: 'Nama dan kode wajib diisi' },
+        { status: 400 }
+      )
+    }
 
     const pemda = await prisma.cACM_Pemda.create({
       data: {
         name,
         code,
         level,
-        parentId: parentId || null,
-      }
+      },
+      select: {
+        id: true,
+        name: true,
+        code: true,
+        level: true,
+      },
     })
 
     return NextResponse.json(pemda, { status: 201 })
