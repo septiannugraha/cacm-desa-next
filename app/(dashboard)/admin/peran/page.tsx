@@ -12,7 +12,7 @@ interface Peran {
 
 export default function PeranPage() {
   const router = useRouter()
-  const [peran, setPeran] = useState<Peran[]>([])
+  const [peranList, setPeranList] = useState<Peran[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export default function PeranPage() {
       const response = await fetch('/api/admin/peran')
       if (response.ok) {
         const data = await response.json()
-        setPeran(data)
+        setPeranList(data)
       }
     } catch (error) {
       console.error('Failed to fetch peran:', error)
@@ -77,40 +77,26 @@ export default function PeranPage() {
           <table className="w-full">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Peran
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Keterangan
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Menu
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Peran</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Keterangan</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Menu</th>
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {peran.length === 0 ? (
+              {peranList.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                     Tidak ada data
                   </td>
                 </tr>
               ) : (
-                peran.map((item) => (
+                peranList.map((item) => (
                   <tr key={item.Peran} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.Peran ?? '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.Keterangan ?? '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.Menu ?? '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.Peran}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{item.Keterangan ?? '-'}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{item.Menu ?? '-'}</td>
+                    <td className="px-6 py-4 text-right text-sm font-medium">
                       <button
                         onClick={() => router.push(`/admin/peran/${item.Peran}`)}
                         className="text-blue-600 hover:text-blue-900 mr-4"

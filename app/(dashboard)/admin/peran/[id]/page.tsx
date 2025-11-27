@@ -1,42 +1,40 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Save } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
-interface PeranForm {
-  name: string
-  code: string
-  permissions: string
+interface Peran {
+  Peran: string
+  Keterangan: string | null
+  Menu: string | null
 }
 
-export default function EditPeranPage() {
+export default function EditPeranPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const params = useParams()
-  const id = params.id as string
-
-  const [formData, setFormData] = useState<PeranForm>({
-    name: '',
-    code: '',
-    permissions: '',
-  })
+  const [peran, setPeran] = useState<Peran | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ Keterangan: '', Menu: '' })
+
+  const id = params.id   // ← FIX: gunakan param langsung
 
   useEffect(() => {
-    if (id !== 'create') {
-      fetchPeran()
-    } else {
-      setLoading(false)
-    }
+    fetchPeran()
   }, [id])
 
   const fetchPeran = async () => {
     try {
-      const response = await fetch(`/api/admin/peran/${id}`)
+      setLoading(true)
+      const response = await fetch(`/api/admin/peran/${encodeURIComponent(id)}`)
       if (response.ok) {
         const data = await response.json()
-        setFormData(data)
+        setPeran(data)
+        setForm({
+          Keterangan: data.Keterangan ?? '',
+          Menu: data.Menu ?? ''
+        })
+      } else {
+        setPeran(null)
       }
     } catch (error) {
       console.error('Failed to fetch peran:', error)
@@ -45,27 +43,46 @@ export default function EditPeranPage() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSaving(true)
-
+  const handleSave = async () => {
     try {
-      const url = id === 'create' ? '/api/admin/peran' : `/api/admin/peran/${id}`
-      const method = id === 'create' ? 'POST' : 'PUT'
-
-      const response = await fetch(url, {
-        method,
+      setSaving(true)
+      const response = await fetch(`/api/admin/peran/${encodeURIComponent(id)}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(form),
       })
 
       if (response.ok) {
         router.push('/admin/peran')
+      } else {
+        const err = await response.json()
+        alert(err?.error ?? 'Gagal menyimpan')
       }
     } catch (error) {
-      console.error('Failed to save peran:', error)
+      console.error('Failed to save:', error)
+      alert('Terjadi kesalahan saat menyimpan')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!confirm('Yakin ingin menghapus peran ini?')) return
+
+    try {
+      const response = await fetch(`/api/admin/peran/${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        router.push('/admin/peran')
+      } else {
+        const err = await response.json()
+        alert(err?.error ?? 'Gagal menghapus')
+      }
+    } catch (error) {
+      console.error('Failed to delete:', error)
+      alert('Terjadi kesalahan saat menghapus')
     }
   }
 
@@ -77,87 +94,58 @@ export default function EditPeranPage() {
     )
   }
 
+  if (!peran) {
+    return <div className="p-4">Peran tidak ditemukan.</div>
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => router.back()}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+    <div className="max-w-2xl p-4">
+      <h1 className="text-2xl font-bold mb-4">Edit Peran: {peran.Peran}</h1>
+
+      <div className="space-y-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            {id === 'create' ? 'Tambah' : 'Edit'} Peran
-          </h1>
-          <p className="text-gray-600 mt-1">
-            {id === 'create' ? 'Tambah' : 'Edit'} peran dan hak akses pengguna
-          </p>
+          <label className="block text-sm font-medium">Keterangan</label>
+          <input
+            type="text"
+            value={form.Keterangan}
+            onChange={(e) => setForm({ ...form, Keterangan: e.target.value })}
+            className="mt-1 block w-full border rounded-md px-3 py-2"
+          />
         </div>
-      </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kode
-            </label>
-            <input
-              type="text"
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+        <div>
+          <label className="block text-sm font-medium">Menu</label>
+          <input
+            type="text"
+            value={form.Menu}
+            onChange={(e) => setForm({ ...form, Menu: e.target.value })}
+            className="mt-1 block w-full border rounded-md px-3 py-2"
+          />
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nama
-            </label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            {saving ? 'Menyimpan...' : 'Simpan'}
+          </button>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Permissions
-            </label>
-            <p className="text-xs text-gray-500 mb-2">
-              Masukkan permissions yang dipisahkan dengan koma (contoh: read, write, delete)
-            </p>
-            <textarea
-              value={formData.permissions}
-              onChange={(e) => setFormData({ ...formData, permissions: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={5}
-              placeholder="read, write, delete, manage_users, manage_settings"
-            />
-          </div>
+          <button
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Hapus
+          </button>
 
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={saving}
-              className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? 'Menyimpan...' : 'Simpan'}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Batal
-            </button>
-          </div>
-        </form>
+          <button
+            onClick={() => router.push('/admin/peran')}
+            className="px-4 py-2 border rounded-lg"
+          >
+            Kembali
+          </button>
+        </div>
       </div>
     </div>
   )
