@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
 interface TaDesa {
+  id: string
   Tahun: string
   Kd_Pemda: string
   Kd_Desa: string
@@ -37,10 +38,10 @@ export default function DesaPage() {
     }
   }
 
-  const handleDelete = async (key: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
     try {
-      const response = await fetch(`/api/admin/desa/${key}`, { method: 'DELETE' })
+      const response = await fetch(`/api/admin/desa/${id}`, { method: 'DELETE' })
       if (response.ok) fetchDesa()
     } catch (error) {
       console.error('Failed to delete desa:', error)
@@ -85,9 +86,9 @@ export default function DesaPage() {
             </tr>
           ) : (
             desa.map((item) => {
-              const key = `${item.Tahun}__${item.Kd_Pemda}__${item.Kd_Desa}`
+               
               return (
-                <tr key={key} className="hover:bg-gray-50">
+                <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-sm font-medium">{item.Kd_Desa}</td>
                   <td className="px-6 py-4 text-sm">{item.Nama_Desa ?? '-'}</td>
                   <td className="px-6 py-4 text-sm">{item.Alamat ?? '-'}</td>
@@ -95,13 +96,13 @@ export default function DesaPage() {
                   <td className="px-6 py-4 text-sm">{item.HP_Kades ?? '-'}</td>
                   <td className="px-6 py-4 text-right text-sm">
                     <button
-                      onClick={() => router.push(`/admin/desa/${key}`)}
+                      onClick={() => router.push(`/admin/desa/${item.id}`)}
                       className="text-blue-600 hover:text-blue-900 mr-4"
                     >
                       <Edit className="w-4 h-4 inline" />
                     </button>
                     <button
-                      onClick={() => handleDelete(key)}
+                      onClick={() => handleDelete(item.id)}
                       className="text-red-600 hover:text-red-900"
                     >
                       <Trash2 className="w-4 h-4 inline" />

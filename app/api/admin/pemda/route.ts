@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { randomUUID } from 'crypto'
 
-// GET: ambil daftar pemda (hanya nama, kode, level)
+// GET: ambil daftar jenis atensi
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -12,24 +11,31 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const pemda = await prisma.cACM_Pemda.findMany({
+    const data = await prisma.cACM_Jns_Atensi.findMany({
       select: {
-        id: true,
-        name: true,
-        code: true,
-        level: true,
+        Jns_Atensi: true,
+        Nama_Atensi: true,
+        Singkatan: true,
+        Tipe: true,
+        Kriteria_Jns: true,
+        Kriteria_Nilai: true,
+        Satuan: true,
+        Syntax: true,
+        Std_Caption: true,
+        Real_Caption: true,
+        Dif_Caption: true,
       },
-      orderBy: { code: 'asc' },
+      orderBy: { Jns_Atensi: 'asc' },
     })
 
-    return NextResponse.json(pemda)
+    return NextResponse.json(data)
   } catch (error) {
-    console.error('Failed to fetch pemda:', error)
-    return NextResponse.json({ error: 'Failed to fetch pemda' }, { status: 500 })
+    console.error('Failed to fetch Jns Atensi:', error)
+    return NextResponse.json({ error: 'Failed to fetch Jns Atensi' }, { status: 500 })
   }
 }
 
-// POST: tambah pemda baru (hanya nama, kode, level)
+// POST: tambah jenis atensi baru
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -38,33 +44,59 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { name, code, level } = body
+    const {
+      Jns_Atensi,
+      Nama_Atensi,
+      Singkatan,
+      Tipe,
+      Kriteria_Jns,
+      Kriteria_Nilai,
+      Satuan,
+      Syntax,
+      Std_Caption,
+      Real_Caption,
+      Dif_Caption,
+    } = body
 
-    if (!name || !code) {
+    if (!Jns_Atensi || !Nama_Atensi) {
       return NextResponse.json(
-        { error: 'Nama dan kode wajib diisi' },
+        { error: 'Jns_Atensi dan Nama_Atensi wajib diisi' },
         { status: 400 }
       )
     }
 
-    const pemda = await prisma.cACM_Pemda.create({
+    const data = await prisma.cACM_Jns_Atensi.create({
       data: {
-        id: randomUUID(),
-        name,
-        code,
-        level,
+        Jns_Atensi,
+        Nama_Atensi,
+        Singkatan,
+        Tipe,
+        Kriteria_Jns,
+        Kriteria_Nilai,
+        Satuan,
+        Syntax,
+        Std_Caption,
+        Real_Caption,
+        Dif_Caption,
       },
       select: {
-        id: true,
-        name: true,
-        code: true,
-        level: true,
+        Jns_Atensi: true,
+        Nama_Atensi: true,
+        Singkatan: true,
+        Tipe: true,
+        Kriteria_Jns: true,
+        Kriteria_Nilai: true,
+        Satuan: true,
+        Syntax: true,
+        Std_Caption: true,
+        Real_Caption: true,
+        Dif_Caption: true,
       },
     })
 
-    return NextResponse.json(pemda, { status: 201 })
+    return NextResponse.json(data, { status: 201 })
   } catch (error) {
-    console.error('Failed to create pemda:', error)
-    return NextResponse.json({ error: 'Failed to create pemda' }, { status: 500 })
+    console.error('Failed to create Jns Atensi:', error)
+    return NextResponse.json({ error: 'Failed to create Jns Atensi' }, { status: 500 })
   }
 }

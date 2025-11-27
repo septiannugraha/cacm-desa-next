@@ -13,6 +13,7 @@ export async function GET() {
 
     const villages = await prisma.ta_Desa.findMany({
       select: {
+        id: true,
         Kd_Desa: true,
         Nama_Desa: true,
         Alamat: true,
