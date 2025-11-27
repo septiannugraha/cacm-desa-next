@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma'   // pastikan ada prisma client di lib/pri
 export async function GET() {
   try {
     const pesan = await prisma.cACM_TempPesan.findMany({
-      select: { id: true, Pesan: true },
+      select: { id: true, APIServer: true, Pesan: true },
       orderBy: { id: 'asc' },
     })
     return NextResponse.json(pesan)
@@ -21,9 +21,10 @@ export async function POST(req: Request) {
     const body = await req.json()
     const newPesan = await prisma.cACM_TempPesan.create({
       data: {
+        APIServer: body.APIServer,
         Pesan: body.Pesan,
       },
-      select: { id: true, Pesan: true },
+      select: { id: true, APIServer: true, Pesan: true },
     })
     return NextResponse.json(newPesan, { status: 201 })
   } catch (error) {

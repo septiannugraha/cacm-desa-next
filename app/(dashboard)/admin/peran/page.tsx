@@ -4,48 +4,47 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
-interface Role {
-  id: string
-  name: string | null
-  code: string | null
-  permission: string | null
+interface Peran {
+  Peran: string
+  Keterangan: string | null
+  Menu: string | null
 }
 
-export default function RolePage() {
+export default function PeranPage() {
   const router = useRouter()
-  const [roles, setRoles] = useState<Role[]>([])
+  const [peran, setPeran] = useState<Peran[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchRoles()
+    fetchPeran()
   }, [])
 
-  const fetchRoles = async () => {
+  const fetchPeran = async () => {
     try {
       const response = await fetch('/api/admin/peran')
       if (response.ok) {
         const data = await response.json()
-        setRoles(data)
+        setPeran(data)
       }
     } catch (error) {
-      console.error('Failed to fetch roles:', error)
+      console.error('Failed to fetch peran:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async (roleId: string) => {
+  const handleDelete = async (peranId: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
 
     try {
-      const response = await fetch(`/api/admin/peran/${roleId}`, {
+      const response = await fetch(`/api/admin/peran/${peranId}`, {
         method: 'DELETE',
       })
       if (response.ok) {
-        fetchRoles()
+        fetchPeran()
       }
     } catch (error) {
-      console.error('Failed to delete role:', error)
+      console.error('Failed to delete peran:', error)
     }
   }
 
@@ -61,15 +60,15 @@ export default function RolePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Manajemen Role</h1>
-          <p className="text-gray-600 mt-1">Kelola role pengguna</p>
+          <h1 className="text-2xl font-bold text-gray-900">Manajemen Peran</h1>
+          <p className="text-gray-600 mt-1">Kelola peran pengguna</p>
         </div>
         <button
           onClick={() => router.push('/admin/peran/create')}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           <Plus className="w-5 h-5" />
-          Tambah Role
+          Tambah Peran
         </button>
       </div>
 
@@ -79,13 +78,13 @@ export default function RolePage() {
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                  Peran
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Code
+                  Keterangan
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Permission
+                  Menu
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Aksi
@@ -93,33 +92,33 @@ export default function RolePage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {roles.length === 0 ? (
+              {peran.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                     Tidak ada data
                   </td>
                 </tr>
               ) : (
-                roles.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
+                peran.map((item) => (
+                  <tr key={item.Peran} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.name ?? '-'}
+                      {item.Peran ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.code ?? '-'}
+                      {item.Keterangan ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.permission ?? '-'}
+                      {item.Menu ?? '-'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
-                        onClick={() => router.push(`/admin/peran/${item.id}`)}
+                        onClick={() => router.push(`/admin/peran/${item.Peran}`)}
                         className="text-blue-600 hover:text-blue-900 mr-4"
                       >
                         <Edit className="w-4 h-4 inline" />
                       </button>
                       <button
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item.Peran)}
                         className="text-red-600 hover:text-red-900"
                       >
                         <Trash2 className="w-4 h-4 inline" />
