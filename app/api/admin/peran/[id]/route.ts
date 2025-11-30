@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+// GET by id
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -14,14 +15,13 @@ export async function GET(
     const id = params.id
 
     const peran = await prisma.cACM_Peran.findFirst({
-  where: {
-    Peran: {
-      equals: id,
-      mode: 'insensitive'   // ← FIX TERPENTING
-    }
-  },
-})
-
+      where: {
+        Peran: {
+          equals: id,
+          mode: 'insensitive',
+        },
+      },
+    })
 
     if (!peran) return NextResponse.json({ error: 'Peran tidak ditemukan' }, { status: 404 })
 
@@ -32,7 +32,34 @@ export async function GET(
   }
 }
 
-export async function PATCH(
+// CREATE
+export async function POST(request: Request) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const body = await request.json()
+    const { Peran, Keterangan, Menu } = body
+
+    const created = await prisma.cACM_Peran.create({
+      data: {
+        Peran,
+        Keterangan,
+        Menu,
+        create_at: new Date(),
+        create_by: session.user?.email ?? 'system',
+      },
+    })
+
+    return NextResponse.json(created, { status: 201 })
+  } catch (error) {
+    console.error('Failed to create peran:', error)
+    return NextResponse.json({ error: 'Failed to create peran' }, { status: 500 })
+  }
+}
+
+// UPDATE (PUT)
+export async function PUT(
   request: Request,
   { params }: { params: { id: string } }
 ) {
@@ -42,32 +69,27 @@ export async function PATCH(
 
     const id = params.id
     const body = await request.json()
-    // Hanya perbolehkan update Keterangan dan Menu (jika perlu, bisa tambah Peran rename dengan logika tambahan)
-    const { Keterangan, Menu } = body
+    const { Peran, Keterangan, Menu } = body
 
     const updated = await prisma.cACM_Peran.update({
       where: {
         Peran: {
           equals: id,
-          mode: 'insensitive'
-        }
-      }
-,
+          mode: 'insensitive',
+        },
+      },
       data: {
+        Peran: Peran ?? id, // kalau mau rename
         Keterangan: Keterangan ?? undefined,
         Menu: Menu ?? undefined,
-      },
-      select: {
-        Peran: true,
-        Keterangan: true,
-        Menu: true,
+        update_at: new Date(),
+        update_by: session.user?.email ?? 'system',
       },
     })
 
     return NextResponse.json(updated)
   } catch (error: any) {
     console.error('Failed to update peran:', error)
-    // jika error karena tidak ditemukan
     if (error?.code === 'P2025') {
       return NextResponse.json({ error: 'Peran tidak ditemukan' }, { status: 404 })
     }
@@ -75,6 +97,7 @@ export async function PATCH(
   }
 }
 
+// DELETE
 export async function DELETE(
   request: Request,
   { params }: { params: { id: string } }
@@ -89,10 +112,9 @@ export async function DELETE(
       where: {
         Peran: {
           equals: id,
-          mode: 'insensitive'
-        }
-      }
-,
+          mode: 'insensitive',
+        },
+      },
     })
 
     return NextResponse.json({ message: 'Peran dihapus' }, { status: 200 })
