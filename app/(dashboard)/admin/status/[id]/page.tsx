@@ -4,44 +4,40 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { ArrowLeft, Save } from 'lucide-react'
 
-interface StatusForm {
-  name: string
-  code: string
-  color: string
-  description: string
+interface StatusTLForm {
+  StatusTL: number
+  Keterangan?: string
 }
 
-export default function EditStatusPage() {
+export default function EditStatusTLPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
 
-  const [formData, setFormData] = useState<StatusForm>({
-    name: '',
-    code: '',
-    color: '#3B82F6',
-    description: '',
+  const [formData, setFormData] = useState<StatusTLForm>({
+    StatusTL: 0,
+    Keterangan: '',
   })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     if (id !== 'create') {
-      fetchStatus()
+      fetchStatusTL()
     } else {
       setLoading(false)
     }
   }, [id])
 
-  const fetchStatus = async () => {
+  const fetchStatusTL = async () => {
     try {
-      const response = await fetch(`/api/admin/status/${id}`)
+      const response = await fetch(`/api/admin/status-tl/${id}`)
       if (response.ok) {
         const data = await response.json()
         setFormData(data)
       }
     } catch (error) {
-      console.error('Failed to fetch status:', error)
+      console.error('Failed to fetch status TL:', error)
     } finally {
       setLoading(false)
     }
@@ -52,7 +48,7 @@ export default function EditStatusPage() {
     setSaving(true)
 
     try {
-      const url = id === 'create' ? '/api/admin/status' : `/api/admin/status/${id}`
+      const url = id === 'create' ? '/api/admin/status-tl' : `/api/admin/status-tl/${id}`
       const method = id === 'create' ? 'POST' : 'PUT'
 
       const response = await fetch(url, {
@@ -62,10 +58,10 @@ export default function EditStatusPage() {
       })
 
       if (response.ok) {
-        router.push('/admin/status')
+        router.push('/admin/status-tl')
       }
     } catch (error) {
-      console.error('Failed to save status:', error)
+      console.error('Failed to save status TL:', error)
     } finally {
       setSaving(false)
     }
@@ -90,10 +86,10 @@ export default function EditStatusPage() {
         </button>
         <div>
           <h1 className="text-2xl font-bold text-gray-900">
-            {id === 'create' ? 'Tambah' : 'Edit'} Status
+            {id === 'create' ? 'Tambah' : 'Edit'} Status TL
           </h1>
           <p className="text-gray-600 mt-1">
-            {id === 'create' ? 'Tambah' : 'Edit'} status sistem
+            {id === 'create' ? 'Tambah' : 'Edit'} data status tindak lanjut
           </p>
         </div>
       </div>
@@ -102,60 +98,27 @@ export default function EditStatusPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Kode
+              Status TL
             </label>
             <input
-              type="text"
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              type="number"
+              value={formData.StatusTL}
+              onChange={(e) => setFormData({ ...formData, StatusTL: parseInt(e.target.value) })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
+              disabled={id !== 'create'} // hanya diisi saat create
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nama
+              Keterangan
             </label>
             <input
               type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              value={formData.Keterangan || ''}
+              onChange={(e) => setFormData({ ...formData, Keterangan: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Warna
-            </label>
-            <div className="flex gap-4 items-center">
-              <input
-                type="color"
-                value={formData.color}
-                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="h-10 w-20 border border-gray-300 rounded-lg cursor-pointer"
-              />
-              <input
-                type="text"
-                value={formData.color}
-                onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="#3B82F6"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Deskripsi
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
             />
           </div>
 
