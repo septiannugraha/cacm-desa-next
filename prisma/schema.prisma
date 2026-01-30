@@ -225,14 +225,6 @@ model CACM_StatusTL {
   Keterangan String? @db.VarChar(50)
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
-model CACM_StatusVer {
-  StatusVer  Int     @db.TinyInt
-  Keterangan String? @db.VarChar(50)
-
-  @@ignore
-}
-
 model CACM_TempPesan {
   id                String  @id(map: "PK_CACM_TempPesan") @db.VarChar(36)
   APIServer         String? @db.NVarChar(255)
@@ -1374,7 +1366,7 @@ model Ta_AR3_Uji_SamplePaket_RAB {
 }
 
 model Ta_Desa {
-  id                                        String?   @unique(map: "IX_Ta_Desa") @db.VarChar(36)
+  id                                        String?   @db.VarChar(36)
   id_Pemda                                  String?   @db.VarChar(36)
   Tahun                                     String    @db.VarChar(4)
   Kd_Pemda                                  String    @db.VarChar(4)
@@ -2701,4 +2693,9 @@ model CACM_DataPajak {
   NilaiSetor     Float?
 
   @@index([Grup, KodeProvinsi, KodePemda, KodeKecamatan, KodeDesa, KodePotongan], map: "IX_CACM_DataPajak")
+}
+
+model CACM_StatusVer {
+  StatusVer  Int     @id(map: "PK_CACM_StatusVer") @db.TinyInt
+  Keterangan String? @db.VarChar(50)
 }
