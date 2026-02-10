@@ -12,14 +12,9 @@ async function getPemdaSession() {
   const session = await getServerSession(authOptions)
   if (!session) throw new Error('UNAUTHORIZED')
 
-  const pemda = await prisma.cACM_Pemda.findUnique({
-    where: { id: session.user.pemdaId },
-    select: { code: true },
-  })
-  if (!pemda) throw new Error('PEMDA_NOT_FOUND')
 
-  const kdPemda = pemda.code.substring(0, 4)
-  return { session, pemda, kdPemda }
+  const kdPemda = session.user.pemdakd
+  return { session,   kdPemda }
 }
 
 // --- [GET] Ambil daftar koneksi DB ---

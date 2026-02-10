@@ -1,17 +1,32 @@
+// File: app/api/desa/route.ts  (atau sesuaikan path Anda)
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
-// GET: ambil daftar desa
+// helper scope
+async function getScope() {
+  const session = await getServerSession(authOptions)
+  if (!session) return { session: null, kdPemda: null, fiscalYear: null }
+ 
+  const kdPemda = session.user.pemdakd
+  const fiscalYear = (session.fiscalYear || new Date().getFullYear()).toString()
+
+  return { session, kdPemda, fiscalYear }
+}
+
+// GET: ambil daftar desa (filter Kd_Pemda + Tahun dari session)
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { session, kdPemda, fiscalYear } = await getScope()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!kdPemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
 
     const villages = await prisma.ta_Desa.findMany({
+      where: {
+        Tahun: fiscalYear,
+        Kd_Pemda: kdPemda,
+      },
       select: {
         id: true,
         Kd_Desa: true,
@@ -23,42 +38,50 @@ export async function GET() {
       orderBy: { Kd_Desa: 'asc' },
     })
 
-    return NextResponse.json(villages)
+    return NextResponse.json({ data: villages })
   } catch (error) {
     console.error('Failed to fetch desa:', error)
     return NextResponse.json({ error: 'Failed to fetch desa' }, { status: 500 })
   }
 }
 
-// POST: tambah desa baru
+// POST: tambah desa baru (Kd_Pemda + Tahun otomatis dari session)
 export async function POST(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { session, kdPemda, fiscalYear } = await getScope()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!kdPemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
+
+    let body: any = null
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    const body = await request.json()
-    const { Kd_Desa, Nama_Desa, Alamat, Ibukota, HP_Kades } = body
+    const { Kd_Desa, Nama_Desa, Alamat, Ibukota, HP_Kades } = body || {}
 
     if (!Kd_Desa || !Nama_Desa) {
-      return NextResponse.json(
-        { error: 'Kode desa dan nama desa wajib diisi' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Kode desa dan nama desa wajib diisi' }, { status: 400 })
     }
 
     const desa = await prisma.ta_Desa.create({
       data: {
-        Kd_Desa,
-        Nama_Desa,
-        Alamat,
-        Ibukota,
-        HP_Kades,
-        Tahun: new Date().getFullYear().toString(), // wajib karena PK composite
-        Kd_Pemda: '0001', // sesuaikan default/ambil dari context
+        Kd_Desa: String(Kd_Desa),
+        Nama_Desa: String(Nama_Desa),
+        Alamat: Alamat ?? null,
+        Ibukota: Ibukota ?? null,
+        HP_Kades: HP_Kades ?? null,
+        Tahun: fiscalYear,
+        Kd_Pemda: kdPemda,
+        // kalau tabel Anda punya audit fields, isi di sini
+        // create_at: new Date(),
+        // create_by: (session.user as any)?.username || session.user.email || null,
       },
       select: {
+        id: true,
+        Tahun: true,
+        Kd_Pemda: true,
         Kd_Desa: true,
         Nama_Desa: true,
         Alamat: true,
@@ -67,40 +90,15 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json(desa, { status: 201 })
-  } catch (error) {
+    return NextResponse.json({ data: desa }, { status: 201 })
+  } catch (error: any) {
     console.error('Failed to create desa:', error)
-    return NextResponse.json({ error: 'Failed to create desa' }, { status: 500 })
-  }
-}
 
-// DELETE: hapus desa berdasarkan kode desa
-export async function DELETE(
-  request: Request,
-  { params }: { params: { kdDesa: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // kalau unique constraint composite kena (Tahun,Kd_Pemda,Kd_Desa)
+    if (error?.code === 'P2002') {
+      return NextResponse.json({ error: 'Kode desa sudah ada untuk Pemda & Tahun ini' }, { status: 409 })
     }
 
-    const { kdDesa } = params
-
-    await prisma.ta_Desa.delete({
-      where: {
-        // karena PK composite, minimal harus isi Tahun + Kd_Pemda + Kd_Desa
-        Tahun_Kd_Pemda_Kd_Desa: {
-          Tahun: new Date().getFullYear().toString(),
-          Kd_Pemda: '0001', // sesuaikan dengan konteks
-          Kd_Desa: kdDesa,
-        },
-      },
-    })
-
-    return NextResponse.json({ message: 'Desa deleted successfully' })
-  } catch (error) {
-    console.error('Failed to delete desa:', error)
-    return NextResponse.json({ error: 'Failed to delete desa' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to create desa' }, { status: 500 })
   }
 }

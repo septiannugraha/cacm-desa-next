@@ -9,19 +9,9 @@ export async function GET(request: Request) {
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    // Get user's pemda code for filtering
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
-
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    // Extract Kd_Pemda (first 4 chars of code)
-    const kdPemda = pemda.code.substring(0, 4)
+ 
+   
+    const kdPemda = session.user.pemdakd
 
     // Get fiscal year from session or use current year
     const fiscalYear = session.fiscalYear || new Date().getFullYear()

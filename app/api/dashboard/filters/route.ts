@@ -10,43 +10,53 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url)
     const mode = searchParams.get('mode') // 'initial'
-    const type = (searchParams.get('type') || '').toLowerCase() // normalisasi
-    const kdProv = searchParams.get('kdProv') || ''
-    const kdPemda = searchParams.get('kdPemda') || ''
-    const kdKec = searchParams.get('kdKec') || ''
+    const type = (searchParams.get('type') || '').toLowerCase()
+    const kdProv = (searchParams.get('kdProv') || '').trim()
+    const kdPemda = (searchParams.get('kdPemda') || '').trim()
+    const kdKec = (searchParams.get('kdKec') || '').trim()
 
-    // Log untuk debugging
-    console.log('[filters] params =>', { mode, type, kdProv, kdPemda, kdKec })
+    // ===== ambil kd pemda dari session =====
+    const pemdakdRaw = String((session.user as any)?.pemdakd || '').trim() // contoh: "3521"
+    const userKdProv = pemdakdRaw.length >= 2 ? pemdakdRaw.substring(0, 2) : ''
+    const userKdPemda = pemdakdRaw.length >= 4 ? pemdakdRaw.substring(0, 4) : ''
 
-    // Ambil code Pemda dari session -> derive kdProv(2) & kdPemda(4)
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
-    if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-
-    const userKdProv = pemda.code.substring(0, 2)
-    const userKdPemda = pemda.code.substring(0, 4)
+    // Log untuk debugging (opsional)
+    console.log('[filters] params =>', { mode, type, kdProv, kdPemda, kdKec, userKdProv, userKdPemda })
 
     // ============ INITIAL PRELOAD ============
+    // Dipakai oleh page Anda untuk set filter awal.
     if (mode === 'initial') {
-      const [provRow] = await prisma.$queryRaw<Array<{ nama: string; Kd_Prov: string }>>`
-        SELECT Nama_Provinsi as nama, Kd_Prov
+      // kalau pemdakd kosong, tetap balikin JSON tapi minimal
+      if (!userKdPemda) {
+        return NextResponse.json({
+          type: 'initial',
+          data: {
+            selected: { kdProv: '', provinsi: '', kdPemda: '', pemda: '' },
+            pemda: [],
+          },
+        })
+      }
+
+      const provRows = await prisma.$queryRaw<Array<{ nama: string; Kd_Prov: string }>>`
+        SELECT TOP 1 Nama_Provinsi as nama, Kd_Prov
         FROM Ref_Provinsi
         WHERE Kd_Prov = ${userKdProv}
       `
-      const [pemdaRow] = await prisma.$queryRaw<Array<{ nama: string; Kd_Pemda: string; Kd_Prov: string }>>`
-        SELECT Nama_Pemda as nama, Kd_Pemda, Kd_Prov
+      const provRow = provRows?.[0]
+
+      const pemdaRows = await prisma.$queryRaw<Array<{ nama: string; Kd_Pemda: string; Kd_Prov: string }>>`
+        SELECT TOP 1 Nama_Pemda as nama, Kd_Pemda, Kd_Prov
         FROM Ref_Pemda
         WHERE Kd_Pemda = ${userKdPemda}
       `
-      // perbaikan: hanya pemda user (mis. 3521 = Kab. Ngawi)
+      const pemdaRow = pemdaRows?.[0]
+
+      // ✅ hanya pemda milik user
       const pemdaList = await prisma.$queryRaw<Array<{ namapemda: string; Kd_Pemda: string }>>`
         SELECT (SUBSTRING(Kd_Pemda, 3, 2) + '  ' + Nama_Pemda) as namapemda, Kd_Pemda
         FROM Ref_Pemda
         WHERE Kd_Pemda = ${userKdPemda}
       `
-
 
       return NextResponse.json({
         type: 'initial',
@@ -57,7 +67,7 @@ export async function GET(req: Request) {
             kdPemda: pemdaRow?.Kd_Pemda ?? userKdPemda,
             pemda: pemdaRow?.nama ?? '',
           },
-          pemda: pemdaList,
+          pemda: pemdaList || [],
         },
       })
     }
@@ -69,44 +79,47 @@ export async function GET(req: Request) {
         FROM Ref_Provinsi
         ORDER BY Kd_Prov
       `
-      console.log('[filters] result provinsi:', rows.length)
-      return NextResponse.json({ type: 'provinsi', data: rows })
+      return NextResponse.json({ type: 'provinsi', data: rows || [] })
     }
 
     if (type === 'pemda') {
+      // ✅ supaya aman, saya batasi pemda hanya pemda milik user.
+      // Kalau Anda mau semua pemda dalam provinsi, ganti WHERE jadi `WHERE Kd_Prov = ${baseKdProv}`
       const baseKdProv = kdProv || userKdProv
+      if (!baseKdProv) return NextResponse.json({ type: 'pemda', data: [] })
+
       const rows = await prisma.$queryRaw<Array<{ namapemda: string; Kd_Pemda: string }>>`
         SELECT (SUBSTRING(Kd_Pemda, 3, 2) + '  ' + Nama_Pemda) as namapemda, Kd_Pemda
         FROM Ref_Pemda
-        WHERE Kd_Prov = ${baseKdProv}
+        WHERE Kd_Pemda = ${userKdPemda}
         ORDER BY Kd_Pemda
       `
-      console.log('[filters] result pemda:', rows.length, 'for kdProv:', baseKdProv)
-      return NextResponse.json({ type: 'pemda', data: rows })
+      return NextResponse.json({ type: 'pemda', data: rows || [] })
     }
 
     if (type === 'kecamatan') {
       const baseKdPemda = kdPemda || userKdPemda
+      if (!baseKdPemda) return NextResponse.json({ type: 'kecamatan', data: [] })
+
       const rows = await prisma.$queryRaw<Array<{ kecamatan: string; Kd_Kec: string }>>`
         SELECT (SUBSTRING(Kd_Kec, 6, 2) + '  ' + Nama_Kecamatan) as kecamatan, Kd_Kec
         FROM Ref_Kecamatan
         WHERE Kd_Pemda = ${baseKdPemda}
         ORDER BY Kd_Kec
       `
-      console.log('[filters] result kecamatan:', rows.length, 'for kdPemda:', baseKdPemda)
-      return NextResponse.json({ type: 'kecamatan', data: rows })
+      return NextResponse.json({ type: 'kecamatan', data: rows || [] })
     }
 
     if (type === 'desa') {
       if (!kdKec) return NextResponse.json({ type: 'desa', data: [] })
+
       const rows = await prisma.$queryRaw<Array<{ desa: string; Kd_Desa: string }>>`
         SELECT (SUBSTRING(Kd_Desa, 6, 7) + '  ' + Nama_Desa) as desa, Kd_Desa
         FROM Ref_Desa
         WHERE Kd_Kec = ${kdKec}
         ORDER BY Kd_Desa
       `
-      console.log('[filters] result desa:', rows.length, 'for kdKec:', kdKec)
-      return NextResponse.json({ type: 'desa', data: rows })
+      return NextResponse.json({ type: 'desa', data: rows || [] })
     }
 
     if (type === 'sumberdana') {
@@ -115,13 +128,15 @@ export async function GET(req: Request) {
         FROM Ref_SumberDana
         ORDER BY Urut
       `
-      console.log('[filters] result sumberdana:', rows.length)
-      return NextResponse.json({ type: 'sumberdana', data: rows })
+      return NextResponse.json({ type: 'sumberdana', data: rows || [] })
     }
 
     return NextResponse.json({ error: 'Bad Request' }, { status: 400 })
-  } catch (error) {
-    console.error('Filter lazy fetch error:', error)
-    return NextResponse.json({ error: 'Failed to fetch filter data' }, { status: 500 })
+  } catch (error: any) {
+    console.error('[api/dashboard/filters] error:', error)
+    return NextResponse.json(
+      { error: error?.message || 'Failed to fetch filter data' },
+      { status: 500 }
+    )
   }
 }

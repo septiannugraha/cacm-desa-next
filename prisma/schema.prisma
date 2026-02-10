@@ -171,22 +171,7 @@ model CACM_Koneksi {
   create_by    String?       @db.VarChar(100)
   update_at    DateTime?     @db.DateTime
   update_by    String?       @db.VarChar(100)
-  CACM_Pemda   CACM_Pemda    @relation(fields: [Kd_Pemda], references: [code], onUpdate: NoAction, map: "FK_CACM_Koneksi_CACM_Pemda")
   Ta_KoneksiDB Ta_KoneksiDB? @relation(fields: [id_Koneksi], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_CACM_Koneksi_Ta_KoneksiDB")
-}
-
-model CACM_Pemda {
-  id               String         @id(map: "PK_CACM_Pemda") @db.VarChar(36)
-  name             String?        @db.VarChar(255)
-  code             String         @unique(map: "IX_CACM_Pemda") @db.VarChar(4)
-  level            String?        @db.VarChar(100)
-  parentId         String?        @db.VarChar(36)
-  createAt         DateTime?      @db.DateTime
-  updateAt         DateTime?      @db.DateTime
-  CACM_Koneksi     CACM_Koneksi[]
-  CACM_Pemda       CACM_Pemda?    @relation("CACM_PemdaToCACM_Pemda", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "Pemda_parentId_fkey")
-  other_CACM_Pemda CACM_Pemda[]   @relation("CACM_PemdaToCACM_Pemda")
-  CACM_User        CACM_User[]
 }
 
 model CACM_Peran {
@@ -247,8 +232,8 @@ model CACM_User {
   createdAt DateTime?      @db.DateTime
   updatedAt DateTime?      @db.DateTime
   session   CACM_Session[]
-  pemda     CACM_Pemda?    @relation(fields: [pemdaId], references: [id], onDelete: NoAction, map: "User_pemdaId_fkey")
   role      CACM_Role?     @relation(fields: [roleId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_roleId_fkey")
+  pemda     Ref_Pemda?     @relation(fields: [pemdaId], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "User_pemdaId_fkey")
 }
 
 model Ref_Bayar {
@@ -398,10 +383,12 @@ model Ref_KKU {
 }
 
 model Ref_Pemda {
+  id            String?         @unique(map: "IX_Ref_Pemda") @db.VarChar(36)
   Kd_Pemda      String          @id(map: "PK_Ref_Pemda") @db.VarChar(4)
   Kd_Prov       String          @db.VarChar(2)
   Kd_PWK        String?         @db.VarChar(50)
   Nama_Pemda    String?         @db.VarChar(100)
+  CACM_User     CACM_User[]
   Ref_Kecamatan Ref_Kecamatan[]
   Ref_Provinsi  Ref_Provinsi    @relation(fields: [Kd_Prov], references: [Kd_Prov], map: "FK_Ref_Pemda_Ref_Provinsi")
   Ta_Pemda      Ta_Pemda[]
@@ -1366,7 +1353,7 @@ model Ta_AR3_Uji_SamplePaket_RAB {
 }
 
 model Ta_Desa {
-  id                                        String?   @db.VarChar(36)
+  id                                        String?   @unique(map: "IX_Ta_Desa_id") @db.VarChar(36)
   id_Pemda                                  String?   @db.VarChar(36)
   Tahun                                     String    @db.VarChar(4)
   Kd_Pemda                                  String    @db.VarChar(4)

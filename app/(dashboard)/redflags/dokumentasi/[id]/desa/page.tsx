@@ -104,7 +104,7 @@ export default function DokumentasiAtensiDesaPage() {
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Link href="/dokumentasi">
+            <Link href="/redflags/dokumentasi">
               <Button variant="outline">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Kembali

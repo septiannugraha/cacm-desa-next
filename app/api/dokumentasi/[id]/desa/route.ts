@@ -13,14 +13,8 @@ export async function GET(
 
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
-    if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-
-    const kdPemda = pemda.code.substring(0, 4)
+ 
+    const kdPemda = session.user.pemdakd
     const fiscalYear = (session.fiscalYear || new Date().getFullYear()).toString()
 
     const atensi = await prisma.cACM_Atensi.findUnique({

@@ -16,18 +16,8 @@ export async function GET(
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    // Get user's pemda info
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
-
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    const kdPemda = pemda.code.substring(0, 4)
+ 
+    const kdPemda = session.user.pemdakd
     const fiscalYear = session.fiscalYear || new Date().getFullYear()
 
     // Fetch all village findings for this atensi period
@@ -62,18 +52,8 @@ export async function POST(
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    // Get user's pemda info
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { id: true, code: true },
-    })
-
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    const kdPemda = pemda.code.substring(0, 4)
+ 
+    const kdPemda = session.user.pemdakd
     const fiscalYear = session.fiscalYear || new Date().getFullYear()
 
     // Get the parent atensi to get id_Atensi

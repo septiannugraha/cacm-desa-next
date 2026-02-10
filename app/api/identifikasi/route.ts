@@ -11,13 +11,8 @@ export async function GET() {
   }
 
   const tahun = session.fiscalYear
-  const pemda = await prisma.cACM_Pemda.findUnique({
-    where: { id: session.user.pemdaId },
-    select: { code: true },
-  })
-  if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-
-  const kdPemda = pemda.code.substring(0, 4)
+  
+  const kdPemda = session.user.pemdakd
 
   if (!tahun || !kdPemda) {
     return NextResponse.json({ error: 'Missing Tahun or Kd_Pemda in session' }, { status: 400 })

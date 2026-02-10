@@ -1,32 +1,30 @@
-import 'next-auth'
+// File: next-auth.d.ts (atau src/types/next-auth.d.ts)
+import NextAuth, { DefaultSession, DefaultUser } from 'next-auth'
 
 declare module 'next-auth' {
-  interface User {
-    id: string
-    username: string
-    email?: string
-    name: string
-    role: string
-    roleCode: string
-    permissions: string[]
-    pemdaId?: string
-    pemdaName?: string
-    fiscalYear: number
-    sessionId: string
-  }
-
   interface Session {
     user: {
       id: string
       username: string
-      email?: string
-      name: string
       role: string
       roleCode: string
       permissions: string[]
-      pemdaId?: string
-      pemdaName?: string
-    }
+      pemdaId: string
+      pemdaName: string
+      pemdakd: string
+    } & DefaultSession['user']
+    fiscalYear: number
+    sessionId: string
+  }
+
+  interface User extends DefaultUser {
+    username: string
+    role: string
+    roleCode: string
+    permissions: string[]
+    pemdaId: string
+    pemdaName: string
+    pemdakd: string
     fiscalYear: number
     sessionId: string
   }
@@ -36,11 +34,17 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string
     username: string
+    email?: string
+    name?: string
+
     role: string
     roleCode: string
     permissions: string[]
-    pemdaId?: string
-    pemdaName?: string
+
+    pemdaId: string
+    pemdaName: string
+    pemdakd: string
+
     fiscalYear: number
     sessionId: string
   }

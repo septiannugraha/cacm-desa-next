@@ -4,6 +4,7 @@
  
 import { useEffect, useState } from 'react'
 import axios from 'axios'
+import Link from 'next/link'
 
 export default function IdentifikasiPage() {
   const [data, setData] = useState<any[]>([])
@@ -77,12 +78,14 @@ export default function IdentifikasiPage() {
       >
         Cek Redflags
       </button>
+      <Link href="/redflags/dokumentasi/form">
       <button
-        onClick={handleArsipkan}
+        
         className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
       >
         Arsipkan Redflags
       </button>
+      </Link>
     </div>
   </div>
 

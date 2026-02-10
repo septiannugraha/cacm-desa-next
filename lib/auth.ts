@@ -8,18 +8,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 import { z } from 'zod'
 
 // Direct SQL connection config
-const dbConfig = {
-  server: '31.220.73.89',
-  port: 14317,
-  database: 'Siswaskeudes_Baru',
-  user: 'sa',
-  password: '1',
-  options: {
-    encrypt: false,
-    trustServerCertificate: true,
-    enableArithAbort: true,
-  },
-}
+ 
 
 
 
@@ -40,6 +29,40 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
   fiscalYear: z.number().int().min(2020).max(2030),
 })
+
+function buildMssqlConfigFromDatabaseUrl(): sql.config {
+  const url = process.env.DATABASE_URL
+  if (!url) throw new Error('DATABASE_URL belum diset di environment')
+
+  // format: sqlserver://host:port;database=...;user=...;password=...;encrypt=false;trustServerCertificate=true
+  const raw = url.replace(/^sqlserver:\/\//, '')
+  const parts = raw.split(';').filter(Boolean)
+  const hostPart = parts.shift() || ''
+  const [server, portStr] = hostPart.split(':')
+
+  const kv: Record<string, string> = {}
+  for (const p of parts) {
+    const i = p.indexOf('=')
+    if (i === -1) continue
+    const k = p.slice(0, i).trim().toLowerCase()
+    const v = p.slice(i + 1).trim()
+    kv[k] = v
+  }
+
+  return {
+    server,
+    port: portStr ? Number(portStr) : 1433,
+    database: kv.database,
+    user: kv.user,
+    password: kv.password,
+    options: {
+      encrypt: (kv.encrypt ?? 'false') === 'true',
+      trustServerCertificate: (kv.trustservercertificate ?? 'true') === 'true',
+      enableArithAbort: true,
+    },
+  }
+}
+
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -70,8 +93,9 @@ export const authOptions: NextAuthOptions = {
 
           console.log("Received credentials:", credentials);
 
-          // Connect to database with direct SQL
+          const dbConfig = buildMssqlConfigFromDatabaseUrl()
           await sql.connect(dbConfig)
+          
 
           // Find user with role and pemda data
           const userResult = await sql.query`
@@ -80,11 +104,11 @@ export const authOptions: NextAuthOptions = {
               r.name as roleName,
               r.code as roleCode,
               r.permission as rolePermissions,
-              p.name as pemdaName,
-              p.code as pemdaCode
+              p.Nama_Pemda as pemdaName,
+              p.Kd_Pemda as pemdaCode
             FROM CACM_User u
             LEFT JOIN CACM_Role r ON u.roleId = r.id
-            LEFT JOIN CACM_Pemda p ON u.pemdaId = p.id
+            LEFT JOIN Ref_Pemda p ON u.pemdaId = p.id
             WHERE u.username = ${username}
           `
 
@@ -126,6 +150,7 @@ export const authOptions: NextAuthOptions = {
           `
 
           // Close SQL connection
+          console.log('pemdaId:', user.pemdaId, 'pemdaCode:', user.pemdaCode)
 
           return {
             id: user.id,
@@ -157,6 +182,8 @@ export const authOptions: NextAuthOptions = {
         const customUser = user as CustomUser
         token.id = user.id
         token.username = customUser.username
+        token.email = customUser.email
+        token.name = customUser.name
         token.role = customUser.role
         token.roleCode = customUser.roleCode
         token.permissions = customUser.permissions

@@ -16,30 +16,8 @@ export async function GET(request: Request) {
     console.log('[Dashboard] FiscalYear:', fiscalYear)
     console.log('[Dashboard] User PemdaId:', session.user.pemdaId)
 
-    // Get pemda code from user's CACM_Pemda
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
 
-    if (!pemda) {
-      return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-    }
-
-    // Try to extract numeric code from pemda.code
-    // If code is already numeric (like "3513"), use it
-    // If code is text (like "BANDUNG"), we need to look up the actual code
-    let kdPemda = pemda.code
-    const numericMatch = pemda.code.match(/\d{4}/)
-    if (numericMatch) {
-      kdPemda = numericMatch[0]
-    } else {
-      // For now, we'll try first 4 chars, but log a warning
-      kdPemda = pemda.code.substring(0, 4)
-      console.warn('[Dashboard] Pemda code is not numeric:', pemda.code)
-    }
-    console.log('[Dashboard] Pemda Code (full):', pemda.code)
-    console.log('[Dashboard] Kd_Pemda for query:', kdPemda)
+    let kdPemda = session.user.pemdakd
 
     // Test data for this year
     const activeFiscalYear = fiscalYear

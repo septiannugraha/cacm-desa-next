@@ -1,4 +1,3 @@
-// File: app/api/dokumentasi/route.ts
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -7,16 +6,22 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
  
     const kdPemda = session.user.pemdakd
     const fiscalYear = (session.fiscalYear || new Date().getFullYear()).toString()
 
     const url = new URL(request.url)
     const q = url.searchParams.get('q')?.trim() || ''
-    const isSent = url.searchParams.get('isSent')
 
-    const where: any = { Tahun: fiscalYear, Kd_Pemda: kdPemda }
+ 
+    const where: any = {
+      Tahun: fiscalYear,
+      Kd_Pemda: kdPemda,
+      isSent: true, // ✅ hanya yang sudah dikirim
+    }
 
     if (q) {
       where.OR = [
@@ -24,9 +29,6 @@ export async function GET(request: Request) {
         { Keterangan: { contains: q } },
       ]
     }
-
-    if (isSent === 'true') where.isSent = true
-    if (isSent === 'false') where.isSent = false
 
     const data = await prisma.cACM_Atensi.findMany({
       where,
@@ -49,6 +51,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ data })
   } catch (err) {
     console.error(err)
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Failed to fetch atensi terkirim' },
+      { status: 500 }
+    )
   }
 }

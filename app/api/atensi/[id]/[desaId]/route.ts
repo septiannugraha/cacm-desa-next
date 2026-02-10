@@ -1,4 +1,4 @@
-// File: app/api/dokumentasi/[id]/desa/[desaId]/route.ts
+// File: app/api/atensi/[id]/[desaId]/route.ts
 import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
