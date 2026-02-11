@@ -7,14 +7,8 @@ export async function GET() {
   try {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
-    if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-
-    const kdPemda = pemda.code.substring(0, 4)
+ 
+    const kdPemda = session.user.pemdakd
 
     const connections = await prisma.cACM_Koneksi.findMany({
       where: { Kd_Pemda: kdPemda },
@@ -36,13 +30,8 @@ export async function POST(request: Request) {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const pemda = await prisma.cACM_Pemda.findUnique({
-      where: { id: session.user.pemdaId },
-      select: { code: true },
-    })
-    if (!pemda) return NextResponse.json({ error: 'Pemda not found' }, { status: 404 })
-
-    const kdPemda = pemda.code.substring(0, 4)
+ 
+    const kdPemda = session.user.pemdakd
     const { id_Koneksi, Tahun } = await request.json()
     if (!id_Koneksi || !Tahun) {
       return NextResponse.json({ error: 'id_Koneksi and Tahun are required' }, { status: 400 })

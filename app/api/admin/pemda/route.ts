@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import Link from 'next/link'
 
-// GET: ambil daftar jenis atensi
+// GET: Fetch all Ta_Pemda records filtered by Kd_Pemda from session
 export async function GET() {
   try {
     const session = await getServerSession(authOptions)
@@ -11,92 +12,46 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const data = await prisma.cACM_Jns_Atensi.findMany({
-      select: {
-        Jns_Atensi: true,
-        Nama_Atensi: true,
-        Singkatan: true,
-        Tipe: true,
-        Kriteria_Jns: true,
-        Kriteria_Nilai: true,
-        Satuan: true,
-        Syntax: true,
-        Std_Caption: true,
-        Real_Caption: true,
-        Dif_Caption: true,
-      },
-      orderBy: { Jns_Atensi: 'asc' },
-    })
+    // Get the Kd_Pemda from the session
+    const kdPemda = session.user.pemdakd
 
-    return NextResponse.json(data)
-  } catch (error) {
-    console.error('Failed to fetch Jns Atensi:', error)
-    return NextResponse.json({ error: 'Failed to fetch Jns Atensi' }, { status: 500 })
-  }
-}
-
-// POST: tambah jenis atensi baru
-export async function POST(request: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!kdPemda) {
+      return NextResponse.json({ error: 'Kd_Pemda not found in session' }, { status: 400 })
     }
 
-    const body = await request.json()
-    const {
-      Jns_Atensi,
-      Nama_Atensi,
-      Singkatan,
-      Tipe,
-      Kriteria_Jns,
-      Kriteria_Nilai,
-      Satuan,
-      Syntax,
-      Std_Caption,
-      Real_Caption,
-      Dif_Caption,
-    } = body
-
-    if (!Jns_Atensi || !Nama_Atensi) {
-      return NextResponse.json(
-        { error: 'Jns_Atensi dan Nama_Atensi wajib diisi' },
-        { status: 400 }
-      )
-    }
-
-    const data = await prisma.cACM_Jns_Atensi.create({
-      data: {
-        Jns_Atensi,
-        Nama_Atensi,
-        Singkatan,
-        Tipe,
-        Kriteria_Jns,
-        Kriteria_Nilai,
-        Satuan,
-        Syntax,
-        Std_Caption,
-        Real_Caption,
-        Dif_Caption,
+    // Fetch all Ta_Pemda records where Kd_Pemda matches the session user Kd_Pemda
+    const taPemda = await prisma.ta_Pemda.findMany({
+      where: {
+        Kd_Pemda: kdPemda, // Filtering based on session's Kd_Pemda
       },
       select: {
-        Jns_Atensi: true,
-        Nama_Atensi: true,
-        Singkatan: true,
-        Tipe: true,
-        Kriteria_Jns: true,
-        Kriteria_Nilai: true,
-        Satuan: true,
-        Syntax: true,
-        Std_Caption: true,
-        Real_Caption: true,
-        Dif_Caption: true,
+        id: true,
+        Tahun: true,
+        Kd_Pemda: true,
+        Nama_Pemda: true,
+        Ibukota: true,
+        Alamat: true,
+        Nm_Bupati: true,
+        Jbt_Bupati: true,
+        Nm_Inspektur: true,
+        NIP_Inspektur: true,
+        Jbt_Inspektur: true,
+        Alamat_Inspektorat: true,
+        Nm_Admin: true,
+        HP_Admin: true,
+        email_Admin: true,
+        isactive: true,
+        created_at: true,
+        created_by: true,
+        update_at: true,
+        update_by: true,
       },
+      orderBy: { Nama_Pemda: 'asc' },
     })
 
-    return NextResponse.json(data, { status: 201 })
+    return NextResponse.json(taPemda)
   } catch (error) {
-    console.error('Failed to create Jns Atensi:', error)
-    return NextResponse.json({ error: 'Failed to create Jns Atensi' }, { status: 500 })
+    console.error('Failed to fetch Ta_Pemda records:', error)
+    return NextResponse.json({ error: 'Failed to fetch Ta_Pemda records' }, { status: 500 })
   }
 }

@@ -1,137 +1,129 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
-interface Pemda {
-  id: string
-  name: string | null
-  code: string
-  level: string | null
-}
-
-export default function PemdaPage() {
+export default function TaPemdaPage() {
   const router = useRouter()
-  const [pemda, setPemda] = useState<Pemda[]>([])
+
+  const [taPemda, setTaPemda] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetchPemda()
+    // Fetch data when the page loads
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/api/admin/pemda') // Make sure this endpoint is correct
+        const data = await response.json()
+        setTaPemda(data)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
   }, [])
 
-  const fetchPemda = async () => {
-    try {
-      const response = await fetch('/api/admin/pemda')
-      if (response.ok) {
-        const data = await response.json()
-        setPemda(data)
-      }
-    } catch (error) {
-      console.error('Failed to fetch pemda:', error)
-    } finally {
-      setLoading(false)
-    }
+  const handleEdit = (id: string) => {
+    // Navigate to the edit page
+    router.push(`/admin/pemda/${id}`)
+  }
+
+  const handleAdd = () => {
+    // Navigate to the add page
+    router.push('/admin/pemda/create')
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
+    // Show confirmation before deleting
+    if (window.confirm('Apakah Anda yakin ingin menghapus data ini?')) {
+      try {
+        const response = await fetch(`/api/admin/pemda/${id}`, {
+          method: 'DELETE',
+        })
 
-    try {
-      const response = await fetch(`/api/admin/pemda/${id}`, {
-        method: 'DELETE',
-      })
-      if (response.ok) {
-        fetchPemda()
+        if (response.ok) {
+          // Remove the deleted record from the list
+          setTaPemda((prevData) => prevData.filter((item) => item.id !== id))
+          alert('Data berhasil dihapus')
+        } else {
+          const errorData = await response.json()
+          alert(errorData.error || 'Gagal menghapus data')
+        }
+      } catch (error) {
+        console.error('Failed to delete Ta_Pemda:', error)
+        alert('Gagal menghapus data')
       }
-    } catch (error) {
-      console.error('Failed to delete pemda:', error)
     }
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    )
+    return <div>Loading...</div>
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Manajemen Pemda</h1>
-          <p className="text-gray-600 mt-1">Kelola data pemerintah daerah</p>
+          <p className="text-gray-600">Kelola data Pemda</p>
         </div>
+
         <button
-          onClick={() => router.push('/admin/pemda/create')}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          onClick={handleAdd}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          Tambah Pemda
+          Tambah
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kode
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Nama
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Level
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Aksi
-                </th>
+      <table className="w-full bg-white rounded-lg shadow overflow-hidden">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kode Pemda</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Pemda</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Ibukota</th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alamat</th>
+            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y">
+          {taPemda.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
+            </tr>
+          ) : (
+            taPemda.map((item) => (
+              <tr key={item.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 text-sm font-medium">{item.Kd_Pemda}</td>
+                <td className="px-6 py-4 text-sm">{item.Nama_Pemda}</td>
+                <td className="px-6 py-4 text-sm">{item.Ibukota}</td>
+                <td className="px-6 py-4 text-sm">{item.Alamat}</td>
+                <td className="px-6 py-4 text-right text-sm">
+                  <button
+                    onClick={() => handleEdit(item.id)}
+                    className="text-blue-600 hover:text-blue-900 mr-4"
+                  >
+                    <Edit className="w-4 h-4 inline" />
+                    
+                  </button>
+                  <button
+                    onClick={() => handleDelete(item.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <Trash2 className="w-4 h-4 inline" />
+                    
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {pemda.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                    Tidak ada data
-                  </td>
-                </tr>
-              ) : (
-                pemda.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {item.code}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {item.name ?? '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {item.level ?? '-'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => router.push(`/admin/pemda/${item.id}`)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
-                      >
-                        <Edit className="w-4 h-4 inline" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <Trash2 className="w-4 h-4 inline" />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   )
 }

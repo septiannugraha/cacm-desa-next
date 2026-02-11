@@ -2318,7 +2318,7 @@ model Ta_Pegawai {
 }
 
 model Ta_Pemda {
-  id                                               String        @unique(map: "IX_Ta_Pemda_id") @db.VarChar(36)
+  id                                               String        @unique(map: "IX_Ta_Pemda_id") @default(cuid()) @db.VarChar(36)
   Tahun                                            String        @db.VarChar(4)
   Kd_Pemda                                         String        @db.VarChar(4)
   Nama_Pemda                                       String?       @db.VarChar(200)
