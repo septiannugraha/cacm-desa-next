@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import Header from './components/header';
 import Breadcrumb from './components/Breadcrumb';
@@ -27,8 +27,21 @@ function MapLoadingState() {
   );
 }
 
-// Dropdown Tahun
-function YearSelector({ selectedYear, onYearChange }: { selectedYear: number; onYearChange: (year: number) => void }) {
+// 3521 -> 35.21
+function toDotCode(kd: string) {
+  const raw = (kd || '').trim();
+  if (/^\d{4}$/.test(raw)) return `${raw.slice(0, 2)}.${raw.slice(2, 4)}`;
+  if (/^\d{2}\.\d{2}$/.test(raw)) return raw;
+  return raw;
+}
+
+function YearSelector({
+  selectedYear,
+  onYearChange,
+}: {
+  selectedYear: number;
+  onYearChange: (year: number) => void;
+}) {
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
@@ -49,10 +62,22 @@ function YearSelector({ selectedYear, onYearChange }: { selectedYear: number; on
 }
 
 export default function MapDashboardPage() {
-  const [currentLevel, setCurrentLevel] = useState<MapLevel>('provinsi');
-  const [currentCode, setCurrentCode] = useState<string>('');
+
+  /**
+   * ✅ Ambil ENV
+   */
+  const pemdaRaw = (process.env.NEXT_PUBLIC_PEMDA_CODE || '').trim();
+  const defaultLevelEnv = (process.env.NEXT_PUBLIC_MAP_DEFAULT_LEVEL || 'provinsi').trim() as MapLevel;
+
+  const pemdaDot = useMemo(() => toDotCode(pemdaRaw), [pemdaRaw]);
+
+  const [currentLevel, setCurrentLevel] = useState<MapLevel>(defaultLevelEnv);
+  const [currentCode, setCurrentCode] = useState<string>(
+    defaultLevelEnv === 'provinsi' ? '' : pemdaDot
+  );
+
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbItem[]>([
-    { name: 'Indonesia', level: 'provinsi', code: '' }
+    { name: 'Indonesia', level: 'provinsi', code: '' },
   ]);
 
   const [selectedMetric, setSelectedMetric] = useState<MapMetric>('budget');
@@ -68,19 +93,46 @@ export default function MapDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch GeoJSON dari file statis
+  /**
+   * ✅ Reset state jika ENV berubah
+   */
+  useEffect(() => {
+    if (defaultLevelEnv === 'provinsi') {
+      setCurrentLevel('provinsi');
+      setCurrentCode('');
+      setBreadcrumb([{ name: 'Indonesia', level: 'provinsi', code: '' }]);
+    } else {
+      setCurrentLevel(defaultLevelEnv);
+      setCurrentCode(pemdaDot);
+      setBreadcrumb([
+        { name: 'Indonesia', level: 'provinsi', code: '' },
+        {
+          name: `Pemda ${pemdaDot || pemdaRaw}`,
+          level: defaultLevelEnv,
+          code: pemdaDot,
+        },
+      ]);
+    }
+
+    setSelectedRegion(null);
+  }, [defaultLevelEnv, pemdaDot, pemdaRaw]);
+
+  /**
+   * Fetch GeoJSON
+   */
   useEffect(() => {
     const fetchGeoJSON = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const res = await fetch(`/data/${currentLevel}/${currentCode || 'indonesia'}.json`);
+        const filename = currentCode || 'indonesia';
+        const res = await fetch(`/data/${currentLevel}/${filename}.json`);
         if (!res.ok) throw new Error('File tidak ditemukan');
         const geodata = await res.json();
         setGeojson(geodata);
       } catch (err) {
-        console.error('Error loading GeoJSON:', err);
+        console.error(err);
         setError(`GeoJSON belum tersedia untuk ${currentLevel}/${currentCode || 'indonesia'}.json`);
         setGeojson(null);
       } finally {
@@ -91,17 +143,21 @@ export default function MapDashboardPage() {
     fetchGeoJSON();
   }, [currentLevel, currentCode, selectedYear]);
 
-  // Fetch data gradation dari API
+  /**
+   * Fetch Gradation API
+   */
   useEffect(() => {
     const fetchGradation = async () => {
       try {
-        const res = await fetch(`/api/map/gradasi?tahun=${selectedYear}&level=${currentLevel}&kode=${currentCode}`);
+        const res = await fetch(
+          `/api/map/gradasi?tahun=${selectedYear}&level=${currentLevel}&kode=${encodeURIComponent(currentCode)}`
+        );
         if (!res.ok) throw new Error('API gagal');
         const data = await res.json();
         setMapData(data.map_data || []);
         setGradationData(data.gradation_data || []);
       } catch (err) {
-        console.error('Error fetching gradation:', err);
+        console.error(err);
       }
     };
 
@@ -134,7 +190,6 @@ export default function MapDashboardPage() {
       <Header />
 
       <div className="p-2 md:p-4 space-y-2 md:space-y-4">
-        {/* Navigation and Controls - Compact on Mobile */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
           <Breadcrumb items={breadcrumb} onNavigate={handleBreadcrumbNavigate} />
           <div className="flex items-center justify-end space-x-2 md:space-x-4">
@@ -145,9 +200,7 @@ export default function MapDashboardPage() {
           </div>
         </div>
 
-        {/* Map and Statistics Panel - Stack on Mobile, Side-by-Side on Desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4">
-          {/* Map Container - Fixed Height on Mobile */}
           <div className="lg:col-span-2 relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden h-[40vh] md:h-[calc(100vh-250px)]">
             {loading && <MapLoadingState />}
             {error && (
@@ -182,12 +235,11 @@ export default function MapDashboardPage() {
             )}
           </div>
 
-          {/* Statistics Panel - Fixed Height on Mobile */}
           <div className="lg:col-span-1 h-[50vh] md:h-[calc(100vh-250px)]">
             <StatisticsPanel
               level={currentLevel}
-              code={selectedRegion?.code || null}
-              regionName={selectedRegion?.name || null}
+              code={selectedRegion?.code || currentCode || null}
+              regionName={selectedRegion?.name || `Pemda ${pemdaDot || pemdaRaw}`}
               tahun={selectedYear.toString()}
             />
           </div>
