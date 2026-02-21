@@ -109,7 +109,7 @@ export default function MapDashboardPage() {
         {
           name: `Pemda ${pemdaDot || pemdaRaw}`,
           level: defaultLevelEnv,
-          code: pemdaDot,
+          code: pemdaRaw,
         },
       ]);
     }
