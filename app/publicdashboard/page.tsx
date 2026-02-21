@@ -67,13 +67,15 @@ export default function MapDashboardPage() {
    * ✅ Ambil ENV
    */
   const pemdaRaw = (process.env.NEXT_PUBLIC_PEMDA_CODE || '').trim();
-  const defaultLevelEnv = (process.env.NEXT_PUBLIC_MAP_DEFAULT_LEVEL || 'provinsi').trim() as MapLevel;
+  const pemdaNameEnv = (process.env.NEXT_PUBLIC_PEMDA_NAME || '').trim();
+  const defaultLevelEnv =
+    (process.env.NEXT_PUBLIC_MAP_DEFAULT_LEVEL || 'provinsi').trim() as MapLevel;
 
   const pemdaDot = useMemo(() => toDotCode(pemdaRaw), [pemdaRaw]);
 
   const [currentLevel, setCurrentLevel] = useState<MapLevel>(defaultLevelEnv);
   const [currentCode, setCurrentCode] = useState<string>(
-    defaultLevelEnv === 'provinsi' ? '' : pemdaDot
+    defaultLevelEnv === 'provinsi' ? '' : pemdaRaw
   );
 
   const [breadcrumb, setBreadcrumb] = useState<BreadcrumbItem[]>([
@@ -103,11 +105,11 @@ export default function MapDashboardPage() {
       setBreadcrumb([{ name: 'Indonesia', level: 'provinsi', code: '' }]);
     } else {
       setCurrentLevel(defaultLevelEnv);
-      setCurrentCode(pemdaDot);
+      setCurrentCode(pemdaRaw);
       setBreadcrumb([
         { name: 'Indonesia', level: 'provinsi', code: '' },
         {
-          name: `Pemda ${pemdaDot || pemdaRaw}`,
+          name: pemdaNameEnv || `Pemda ${pemdaRaw || pemdaDot}`,
           level: defaultLevelEnv,
           code: pemdaRaw,
         },
@@ -115,7 +117,7 @@ export default function MapDashboardPage() {
     }
 
     setSelectedRegion(null);
-  }, [defaultLevelEnv, pemdaDot, pemdaRaw]);
+  }, [defaultLevelEnv, pemdaDot, pemdaRaw, pemdaNameEnv]);
 
   /**
    * Fetch GeoJSON
@@ -239,7 +241,7 @@ export default function MapDashboardPage() {
             <StatisticsPanel
               level={currentLevel}
               code={selectedRegion?.code || currentCode || null}
-              regionName={selectedRegion?.name || `Pemda ${pemdaDot || pemdaRaw}`}
+              regionName={selectedRegion?.name || pemdaNameEnv || `Pemda ${pemdaDot}`}
               tahun={selectedYear.toString()}
             />
           </div>
