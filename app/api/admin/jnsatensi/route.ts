@@ -19,7 +19,7 @@ export async function GET() {
         Singkatan: true,
         Tipe: true,
       },
-      orderBy: { Nama_Atensi: 'asc' },
+      orderBy: { Jns_Atensi: 'asc' },
     })
 
     return NextResponse.json(jnsAtensi)
@@ -29,6 +29,7 @@ export async function GET() {
   }
 }
 
+// POST: Create a new Jenis Atensi record
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
@@ -36,18 +37,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Assuming there's a way to fetch `Kd_Pemda` from session or user
-    const kdPemda = session.user.pemdakd
-
     const body = await req.json()
-    const { Nama_Atensi, Singkatan, Tipe, Kriteria_Jns, Kriteria_Nilai, Satuan, Syntax, Std_Caption, Real_Caption, Dif_Caption, create_by } = body
+    const { Jns_Atensi, Nama_Atensi, Singkatan, Tipe, Kriteria_Jns, Kriteria_Nilai, Satuan, Syntax, Std_Caption, Real_Caption, Dif_Caption, create_by } = body
 
     // Ensure Nama_Atensi is provided
     if (!Nama_Atensi) {
       return NextResponse.json({ error: 'Nama Atensi wajib diisi' }, { status: 400 })
     }
 
-    // Check if the entry already exists based on composite key
+    // Check if the entry already exists based on Nama_Atensi
     const existing = await prisma.cACM_Jns_Atensi.findFirst({
       where: {
         Nama_Atensi: Nama_Atensi,  // Assuming unique Nama_Atensi for simplicity
@@ -58,9 +56,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Nama Atensi already exists' }, { status: 409 })
     }
 
-    // Create the new jenis atensi record
+    // Create the new jenis atensi record with manual input for Jns_Atensi
     const newJnsAtensi = await prisma.cACM_Jns_Atensi.create({
       data: {
+        Jns_Atensi,  // User input for Jns_Atensi
         Nama_Atensi,
         Singkatan,
         Tipe,
@@ -72,10 +71,10 @@ export async function POST(req: Request) {
         Real_Caption,
         Dif_Caption,
         create_at: new Date(),
-        create_by,
+        create_by: session.user.username || session.user.email || null,
       },
       select: {
-        Jns_Atensi: true,
+        Jns_Atensi: true, // Prisma will auto-generate the other fields but we allow user to input Jns_Atensi
         Nama_Atensi: true,
         Singkatan: true,
         Tipe: true,
@@ -88,3 +87,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Failed to create jenis atensi' }, { status: 500 })
   }
 }
+

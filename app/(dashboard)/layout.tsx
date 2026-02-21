@@ -115,7 +115,7 @@ const adminNavigation: AdminNavigationItem[] = [
       { name: 'Desa', href: '/admin/desa', icon: Building },
       { name: 'Koneksi', href: '/admin/koneksi', icon: LinkIcon },
       { name: 'Status', href: '/admin/status', icon: Rocket },
-      { name: 'Atensi', href: '/admin/atensi', icon: AlertCircle },
+      { name: 'Atensi', href: '/admin/jnsatensi', icon: AlertCircle },
       { name: 'Pesan', href: '/admin/pesan', icon: Mail },
       { name: 'Peran', href: '/admin/peran', icon: Key },
     ]

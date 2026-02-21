@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Edit, Trash2 } from 'lucide-react'
 
@@ -29,7 +29,7 @@ export default function JnsAtensiPage() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('/api/admin/jns-atensi')
+      const response = await fetch('/api/admin/jnsatensi') // Gantilah dengan endpoint yang sesuai
       if (response.ok) {
         const json = await response.json()
         setData(json)
@@ -41,10 +41,10 @@ export default function JnsAtensiPage() {
     }
   }
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm('Apakah Anda yakin ingin menghapus data ini?')) return
     try {
-      const response = await fetch(`/api/admin/jns-atensi/${id}`, { method: 'DELETE' })
+      const response = await fetch(`/api/admin/jnsatensi/${id}`, { method: 'DELETE' })
       if (response.ok) fetchData()
     } catch (error) {
       console.error('Failed to delete JnsAtensi:', error)
@@ -63,7 +63,7 @@ export default function JnsAtensiPage() {
           <p className="text-gray-600">Kelola data jenis atensi</p>
         </div>
         <button
-          onClick={() => router.push('/admin/jns-atensi/create')}
+          onClick={() => router.push('/admin/jnsatensi/create')}
           className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
@@ -83,7 +83,7 @@ export default function JnsAtensiPage() {
         <tbody className="divide-y">
           {data.length === 0 ? (
             <tr>
-              <td colSpan={11} className="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
+              <td colSpan={4} className="px-6 py-4 text-center text-gray-500">Tidak ada data</td>
             </tr>
           ) : (
             data.map((item) => (
@@ -91,25 +91,20 @@ export default function JnsAtensiPage() {
                 <td className="px-6 py-4 text-sm font-medium">{item.Jns_Atensi}</td>
                 <td className="px-6 py-4 text-sm">{item.Nama_Atensi ?? '-'}</td>
                 <td className="px-6 py-4 text-sm">{item.Singkatan ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Tipe ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Kriteria_Jns ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Kriteria_Nilai ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Satuan ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Std_Caption ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Real_Caption ?? '-'}</td>
-                <td className="px-6 py-4 text-sm">{item.Dif_Caption ?? '-'}</td>
                 <td className="px-6 py-4 text-right text-sm">
                   <button
-                    onClick={() => router.push(`/admin/jns-atensi/${item.Jns_Atensi}`)}
+                    onClick={() => router.push(`/admin/jnsatensi/${item.Jns_Atensi}`)}
                     className="text-blue-600 hover:text-blue-900 mr-4"
                   >
                     <Edit className="w-4 h-4 inline" />
+                    
                   </button>
                   <button
-                    onClick={() => handleDelete(item.Jns_Atensi)}
+                    onClick={() => handleDelete(String(item.Jns_Atensi))}
                     className="text-red-600 hover:text-red-900"
                   >
                     <Trash2 className="w-4 h-4 inline" />
+                    
                   </button>
                 </td>
               </tr>

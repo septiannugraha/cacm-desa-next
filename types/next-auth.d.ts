@@ -15,6 +15,16 @@ declare module 'next-auth' {
     } & DefaultSession['user']
     fiscalYear: number
     sessionId: string
+
+    mobile?: {
+      username: string
+      kd_desa: string
+      nama_desa: string
+      tahun: string
+      kd_pemda?: string
+    }
+
+
   }
 
   interface User extends DefaultUser {
@@ -27,7 +37,19 @@ declare module 'next-auth' {
     pemdakd: string
     fiscalYear: number
     sessionId: string
+
+    mobile?: {
+      username: string
+      kd_desa: string
+      nama_desa: string
+      tahun: string
+      kd_pemda? : string
+    }
+
+
   }
+
+  
 }
 
 declare module 'next-auth/jwt' {
@@ -47,5 +69,15 @@ declare module 'next-auth/jwt' {
 
     fiscalYear: number
     sessionId: string
+
+    mobile?: {
+      username: string
+      kd_desa: string
+      nama_desa: string
+      tahun: string
+      kd_pemda?: string
+    }
+
+    
   }
 }
