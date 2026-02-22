@@ -1,19 +1,30 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { mobileAuthOptions } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(_req: Request, { params }: { params: { atensiDesaId: string } }) {
+type RouteContext = {
+  params: Promise<{ atensiDesaId: string }>
+}
+
+export async function GET(_req: Request, context: RouteContext) {
   const session = await getServerSession(mobileAuthOptions)
-  if (!session?.kd_desa || !session?.tahun) {
+
+  const kd_desa = session?.mobile?.kd_desa
+  const tahun = session?.mobile?.tahun
+
+  if (!kd_desa || !tahun) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
+  // ✅ ambil params via Promise
+  const { atensiDesaId } = await context.params
+
   const desa = await prisma.cACM_Atensi_Desa.findFirst({
     where: {
-      id: params.atensiDesaId,
-      Kd_Desa: session.kd_desa,
-      Tahun: session.tahun,
+      id: atensiDesaId,
+      Kd_Desa: kd_desa,
+      Tahun: tahun,
       StatusTL: 5,
     },
     select: {
@@ -29,11 +40,16 @@ export async function GET(_req: Request, { params }: { params: { atensiDesaId: s
     },
   })
 
-  if (!desa) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  if (!desa) {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  }
 
   const rinc = await prisma.cACM_Atensi_Desa_Rinc.findMany({
     where: { id_Atensi_Desa: desa.id },
-    orderBy: [{ Jns_Atensi: 'asc' }, { No_Bukti: 'asc' }],
+    orderBy: [
+      { Jns_Atensi: 'asc' },
+      { No_Bukti: 'asc' },
+    ],
     select: {
       id: true,
       Jns_Atensi: true,

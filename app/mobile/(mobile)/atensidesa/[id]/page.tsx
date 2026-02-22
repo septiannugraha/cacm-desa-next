@@ -49,7 +49,7 @@ export default function MobileAtensiDetailPage() {
   useEffect(() => {
     ;(async () => {
       setLoading(true)
-      const res = await fetch(`/api/mobile/atensi/${atensiDesaId}`, { cache: 'no-store' })
+      const res = await fetch(`/api/atensi/${atensiDesaId}`, { cache: 'no-store' })
       const json = await res.json().catch(() => ({}))
       if (!res.ok) {
         alert(json?.error || 'Gagal memuat detail')

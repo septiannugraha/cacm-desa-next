@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getServerSession } from 'next-auth/next'
 import { mobileAuthOptions } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   const session = await getServerSession(mobileAuthOptions)
-  if (!session?.kd_desa || !session?.tahun) {
+
+  const kd_desa = session?.mobile?.kd_desa
+  const tahun = session?.mobile?.tahun
+
+  if (!kd_desa || !tahun) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const rows = await prisma.cACM_Atensi_Desa.findMany({
     where: {
-      Kd_Desa: session.kd_desa,
-      Tahun: session.tahun,
+      Kd_Desa: kd_desa,
+      Tahun: tahun,
       StatusTL: 5,
     },
     orderBy: [{ No_Atensi: 'desc' }],

@@ -26,7 +26,7 @@ export default function MobileAtensiListPage() {
 
   async function load() {
     setLoading(true)
-    const res = await fetch('/api/mobile/atensi/list', { cache: 'no-store' })
+    const res = await fetch('mobile/api/atensidesa', { cache: 'no-store' })
     const json = await res.json()
     if (!res.ok) {
       alert(json?.error || 'Gagal memuat atensi')
@@ -39,7 +39,7 @@ export default function MobileAtensiListPage() {
 
   async function refreshTL() {
     setRefreshing(true)
-    const res = await fetch('/api/mobile/atensi/refresh-tl', { method: 'POST' })
+    const res = await fetch('/api/atensidesa/refresh-tl', { method: 'POST' })
     const json = await res.json().catch(() => ({}))
     setRefreshing(false)
 
@@ -58,7 +58,7 @@ export default function MobileAtensiListPage() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <div className="text-base font-semibold">Atensi (StatusTL = 5)</div>
+          <div className="text-base font-semibold">Atensi</div>
           <div className="text-xs text-slate-500">Daftar atensi desa yang perlu ditindaklanjuti.</div>
         </div>
 
@@ -77,7 +77,7 @@ export default function MobileAtensiListPage() {
       ) : (
         <div className="space-y-2">
           {data.map((r) => (
-            <Link key={r.id} href={`/mobile/atensi/${r.id}`}>
+            <Link key={r.id} href={`/mobile/atensidesa/${r.id}`}>
               <div className="rounded-2xl bg-white border shadow-sm p-4 flex items-center justify-between">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">No Atensi: {r.No_Atensi}</div>

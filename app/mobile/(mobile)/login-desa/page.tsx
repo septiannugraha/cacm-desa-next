@@ -17,10 +17,9 @@ export default function MobileLoginPage() {
   const sp = useSearchParams()
 
   const defaultYear = useMemo(() => new Date().getFullYear().toString(), [])
-  const from = sp.get('from') || '/mobile/home'
+  const from = sp.get('from') || '/mobile/atensidesa'
   const tahunFromQS = (sp.get('tahun') || '').trim()
 
-  // ✅ Kd_Pemda dari env client-side
   const pemdaFromEnv = (process.env.NEXT_PUBLIC_PEMDA_CODE || '').trim()
 
   const [kd_pemda, setKdPemda] = useState(pemdaFromEnv)
@@ -31,12 +30,10 @@ export default function MobileLoginPage() {
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // sync tahun dari query string jika berubah
   useEffect(() => {
     setTahun(tahunFromQS || defaultYear)
   }, [tahunFromQS, defaultYear])
 
-  // kalau env berubah (dev hot reload), update state
   useEffect(() => {
     setKdPemda(pemdaFromEnv)
   }, [pemdaFromEnv])
@@ -51,25 +48,15 @@ export default function MobileLoginPage() {
     const y = tahun.trim()
 
     if (!kp) {
-      setErrorMsg(
-        'Kode Pemda belum diset di ENV. Set NEXT_PUBLIC_PEMDA_CODE="3521" pada .env lalu restart server.'
-      )
+      setErrorMsg('Kode Pemda belum diset di ENV. Set NEXT_PUBLIC_PEMDA_CODE lalu restart.')
       return
     }
-    if (!u) {
-      setErrorMsg('Nama User wajib diisi.')
-      return
-    }
-    if (!p) {
-      setErrorMsg('Password wajib diisi.')
-      return
-    }
-    if (!isYear4(y)) {
-      setErrorMsg('Tahun harus 4 digit (mis. 2025).')
-      return
-    }
+    if (!u) return setErrorMsg('Nama User wajib diisi.')
+    if (!p) return setErrorMsg('Password wajib diisi.')
+    if (!isYear4(y)) return setErrorMsg('Tahun harus 4 digit (mis. 2025).')
 
     setLoading(true)
+
     const res = await signIn('credentials', {
       redirect: false,
       username: u,
@@ -77,6 +64,7 @@ export default function MobileLoginPage() {
       tahun: y,
       kd_pemda: kp,
     })
+    
     setLoading(false)
 
     if (!res?.ok) {
@@ -106,15 +94,7 @@ export default function MobileLoginPage() {
                   {errorMsg}
                 </div>
               )}
-
-              {/* ✅ tampilkan kd_pemda (readOnly dari ENV) */}
-              <div className="space-y-1">
-                <div className="text-xs text-slate-600">Kode Pemda</div>
-                <Input value={kd_pemda} readOnly />
-                <div className="text-[11px] text-slate-500">
-                  Kode Pemda diambil dari ENV: <b>NEXT_PUBLIC_PEMDA_CODE</b>
-                </div>
-              </div>
+ 
 
               <div className="space-y-1">
                 <div className="text-xs text-slate-600">Nama User</div>
@@ -143,9 +123,6 @@ export default function MobileLoginPage() {
                   inputMode="numeric"
                   placeholder="2025"
                 />
-                <div className="text-[11px] text-slate-400">
-                  Opsional: set via query string, contoh <b>?tahun=2025</b>
-                </div>
               </div>
 
               <Button type="submit" className="w-full rounded-xl" disabled={loading || !kd_pemda}>
@@ -153,7 +130,7 @@ export default function MobileLoginPage() {
               </Button>
 
               <div className="text-[11px] text-slate-500">
-                Session mobile menyimpan di <b>session.mobile</b>: <b>username, kd_desa, nama_desa, tahun</b>.
+                Session mobile tersimpan di <b>session.mobile</b>: <b>username, kd_desa, nama_desa, tahun</b>.
               </div>
             </form>
           </CardContent>
