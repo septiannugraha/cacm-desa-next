@@ -7,7 +7,8 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { ArrowLeft, MessageCircle , Eye} from 'lucide-react'
+import { ArrowLeft,    Rows3} from 'lucide-react'
+import { FaWhatsapp } from 'react-icons/fa'
 
 type AtensiInfo = {
   id: string
@@ -173,7 +174,7 @@ export default function AtensiDesaWhatsAppPage() {
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
             title="Kirim WhatsApp untuk baris yang dicentang"
           >
-            <MessageCircle className="mr-2 h-4 w-4" />
+            <FaWhatsapp className="mr-2 h-4 w-4" />
             Kirim WA ({selectedRows.length})
           </Button>
         </div>
@@ -240,8 +241,8 @@ export default function AtensiDesaWhatsAppPage() {
                         <td className="p-3">
                           <div className="flex items-center gap-2">
                           <Link href={`/redflags/atensi/${id}/${r.id}`}>
-                            <Button className="bg-slate-900 text-white hover:bg-slate-800">
-                              <Eye className="mr-2 h-4 w-4" />
+                            <Button className="bg-blue-500 text-white hover:bg-blue-800">
+                              <Rows3  className="mr-2 h-4 w-4" />
                               Detail
                             </Button>
                           </Link>
@@ -251,7 +252,7 @@ export default function AtensiDesaWhatsAppPage() {
                               className="bg-emerald-600 hover:bg-emerald-700 text-white"
                               title="Kirim WhatsApp"
                             >
-                              <MessageCircle className="mr-2 h-4 w-4" />
+                              <FaWhatsapp className="mr-2 h-4 w-4" />
                               WA
                             </Button>
                           </div>

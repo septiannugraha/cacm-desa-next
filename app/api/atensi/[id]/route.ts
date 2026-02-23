@@ -64,7 +64,7 @@ export async function GET(
                 AS FLOAT
             ) AS Persen,                                                           -- ✅ FLOAT (bukan BigInt)
             B.HP_Kades,
-            dbo.KirimPesanWA(A.id, B.Nama_Desa, B.HP_Kades) AS Pesan
+            dbo.KirimPesanWA(A.id, B.Nama_Desa, B.HP_Kades, A.Tahun) AS Pesan
             FROM CACM_Atensi_Desa A
             LEFT OUTER JOIN Ta_Desa B
             ON A.Tahun = B.Tahun
