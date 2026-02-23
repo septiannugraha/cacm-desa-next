@@ -1,22 +1,17 @@
 import { NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth/next'
-import { mobileAuthOptions } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
+import { requireMobileAuth } from '@/lib/get-mobile-session'
 
 export async function GET() {
-  const session = await getServerSession(mobileAuthOptions)
+  const auth = await requireMobileAuth()
 
-  const kd_desa = session?.mobile?.kd_desa
-  const tahun = session?.mobile?.tahun
-
-  if (!kd_desa || !tahun) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // 🔐 otomatis 401 jika tidak ada session mobile
+  if (!auth.ok) return auth.response
 
   const rows = await prisma.cACM_Atensi_Desa.findMany({
     where: {
-      Kd_Desa: kd_desa,
-      Tahun: tahun,
+      Kd_Desa: auth.kd_desa,
+      Tahun: auth.tahun,
       StatusTL: 5,
     },
     orderBy: [{ No_Atensi: 'desc' }],

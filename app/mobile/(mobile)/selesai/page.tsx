@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import StatusBadge from '@/components/mobile/ui/StatusBadge'
-import { fmtDate, fmtMoney } from '@/components/mobile/helpers'
+import StatusBadge from '@/app/mobile/(mobile)/components/ui/StatusBadge'
+import { fmtDate, fmtMoney } from '@/app/mobile/(mobile)/components/helpers'
 
 type Row = {
   id: string

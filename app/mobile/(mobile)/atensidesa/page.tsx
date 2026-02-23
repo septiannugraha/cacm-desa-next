@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, ChevronRight } from 'lucide-react'
+import { useMobileBreadcrumb } from '@/app/mobile/(mobile)/components/MobileNavContext'
 
 type Row = {
   id: string
@@ -20,38 +22,75 @@ type Row = {
 }
 
 export default function MobileAtensiListPage() {
+  
+  useMobileBreadcrumb(
+    [
+      { label: 'Home', href: '/mobile/home' },
+      { label: 'Atensi' },
+    ],
+    'Atensi'
+  )
+  
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<Row[]>([])
   const [refreshing, setRefreshing] = useState(false)
 
   async function load() {
     setLoading(true)
-    const res = await fetch('mobile/api/atensidesa', { cache: 'no-store' })
-    const json = await res.json()
-    if (!res.ok) {
-      alert(json?.error || 'Gagal memuat atensi')
+    try {
+      const res = await fetch('/mobile/api/atensidesa', {
+        cache: 'no-store',
+        credentials: 'include', // ✅ pastikan cookie mobile ikut
+      })
+
+      // ✅ kalau unauthorized, arahkan ke login mobile
+      if (res.status === 401) {
+        router.replace(`/mobile/login-desa?from=${encodeURIComponent('/mobile/atensidesa')}`)
+        return
+      }
+
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        alert(json?.error || 'Gagal memuat atensi')
+        return
+      }
+
+      setData(json.data || [])
+    } finally {
       setLoading(false)
-      return
     }
-    setData(json.data || [])
-    setLoading(false)
   }
 
   async function refreshTL() {
     setRefreshing(true)
-    const res = await fetch('/api/atensidesa/refresh-tl', { method: 'POST' })
-    const json = await res.json().catch(() => ({}))
-    setRefreshing(false)
+    try {
+      // ✅ arahkan ke MOBILE API, bukan /api (induk)
+      const res = await fetch('/mobile/api/atensidesa/refresh-tl', {
+        method: 'POST',
+        credentials: 'include',
+      })
 
-    if (!res.ok) {
-      alert(json?.error || 'Gagal refresh TL')
-      return
+      if (res.status === 401) {
+        router.replace(`/mobile/login-desa?from=${encodeURIComponent('/mobile/atensidesa')}`)
+        return
+      }
+
+      const json = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        alert(json?.error || 'Gagal refresh TL')
+        return
+      }
+
+      await load()
+    } finally {
+      setRefreshing(false)
     }
-    await load()
   }
 
   useEffect(() => {
     load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -78,7 +117,7 @@ export default function MobileAtensiListPage() {
         <div className="space-y-2">
           {data.map((r) => (
             <Link key={r.id} href={`/mobile/atensidesa/${r.id}`}>
-              <div className="rounded-2xl bg-white border shadow-sm p-4 flex items-center justify-between">
+              <div className="rounded-2xl bg-white shadow-sm p-4 flex items-center justify-between">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold truncate">No Atensi: {r.No_Atensi}</div>
                   <div className="text-xs text-slate-500 mt-1">

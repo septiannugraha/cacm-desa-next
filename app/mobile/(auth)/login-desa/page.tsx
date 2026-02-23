@@ -12,19 +12,49 @@ function isYear4(y: string) {
   return /^\d{4}$/.test(y.trim())
 }
 
-type PageProps = {
-  params: Promise<{ kd_pemda: string }>
+// ✅ hanya izinkan path internal /mobile/*
+function safeFrom(raw: string | null, fallback = '/mobile/atensidesa') {
+  if (!raw) return fallback
+  let v = raw.trim()
+  try {
+    v = decodeURIComponent(v)
+  } catch {
+    // ignore
+  }
+
+  // kalau user kirim full URL, ambil pathname saja
+  if (/^https?:\/\//i.test(v)) {
+    try {
+      const u = new URL(v)
+      v = u.pathname + (u.search || '')
+    } catch {
+      return fallback
+    }
+  }
+
+  // wajib dimulai dengan "/"
+  if (!v.startsWith('/')) v = '/' + v
+
+  // wajib hanya area mobile
+  if (!v.startsWith('/mobile/')) return fallback
+
+  // hindari dobel "/mobile/mobile"
+  v = v.replace(/^\/mobile\/mobile\//, '/mobile/')
+
+  return v
 }
 
-export default function MobileLoginPage({ params }: PageProps) {
+export default function MobileLoginPage() {
   const router = useRouter()
   const sp = useSearchParams()
 
   const defaultYear = useMemo(() => new Date().getFullYear().toString(), [])
-  const from = sp.get('from') || '/mobile/home'
   const tahunFromQS = (sp.get('tahun') || '').trim()
 
-  const [kd_pemda, setKdPemda] = useState('')
+  const from = useMemo(() => safeFrom(sp.get('from'), '/mobile/atensidesa'), [sp])
+
+  const pemdaFromEnv = (process.env.NEXT_PUBLIC_PEMDA_CODE || '').trim()
+  const [kd_pemda, setKdPemda] = useState(pemdaFromEnv)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [tahun, setTahun] = useState(tahunFromQS || defaultYear)
@@ -32,23 +62,8 @@ export default function MobileLoginPage({ params }: PageProps) {
   const [loading, setLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
-  // ✅ ambil kd_pemda dari param (promise)
-  useEffect(() => {
-    let alive = true
-    ;(async () => {
-      const { kd_pemda } = await params
-      if (!alive) return
-      setKdPemda((kd_pemda || '').trim())
-    })()
-    return () => {
-      alive = false
-    }
-  }, [params])
-
-  // sync tahun dari query string jika berubah
-  useEffect(() => {
-    setTahun(tahunFromQS || defaultYear)
-  }, [tahunFromQS, defaultYear])
+  useEffect(() => setTahun(tahunFromQS || defaultYear), [tahunFromQS, defaultYear])
+  useEffect(() => setKdPemda(pemdaFromEnv), [pemdaFromEnv])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -59,24 +74,13 @@ export default function MobileLoginPage({ params }: PageProps) {
     const p = password.trim()
     const y = tahun.trim()
 
-    if (!kp) {
-      setErrorMsg('Kode Pemda tidak terbaca dari URL. Pastikan membuka /mobile/login-siskeudes/{kd_pemda}.')
-      return
-    }
-    if (!u) {
-      setErrorMsg('Nama User wajib diisi.')
-      return
-    }
-    if (!p) {
-      setErrorMsg('Password wajib diisi.')
-      return
-    }
-    if (!isYear4(y)) {
-      setErrorMsg('Tahun harus 4 digit (mis. 2025).')
-      return
-    }
+    if (!kp) return setErrorMsg('Kode Pemda belum diset di ENV. Set NEXT_PUBLIC_PEMDA_CODE lalu restart.')
+    if (!u) return setErrorMsg('Nama User wajib diisi.')
+    if (!p) return setErrorMsg('Password wajib diisi.')
+    if (!isYear4(y)) return setErrorMsg('Tahun harus 4 digit (mis. 2025).')
 
     setLoading(true)
+
     const res = await signIn('credentials', {
       redirect: false,
       username: u,
@@ -84,14 +88,18 @@ export default function MobileLoginPage({ params }: PageProps) {
       tahun: y,
       kd_pemda: kp,
     })
+
     setLoading(false)
 
     if (!res?.ok) {
-      setErrorMsg('Login gagal. Periksa Nama User / Password / Tahun.')
+      setErrorMsg(res?.error || 'Login gagal.')
       return
     }
 
+    // ✅ pastikan cookie/session kebaca di page berikutnya
+    router.refresh()
     router.replace(from)
+    //window.location.assign(from)
   }
 
   return (
@@ -101,7 +109,7 @@ export default function MobileLoginPage({ params }: PageProps) {
           <Image src="/cacm_logo.png" alt="CACM Desa" width={44} height={44} />
           <div>
             <div className="text-lg font-semibold leading-tight">CACM Desa</div>
-            <div className="text-xs text-slate-500">Login Siskeudes (Mobile)</div>
+            <div className="text-xs text-slate-500">Login dengan Akun Siskeudes</div>
           </div>
         </div>
 
@@ -114,54 +122,27 @@ export default function MobileLoginPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* ✅ tampilkan kd_pemda (readOnly) */}
-              <div className="space-y-1">
-                <div className="text-xs text-slate-600">Kode Pemda</div>
-                <Input value={kd_pemda} readOnly />
-                <div className="text-[11px] text-slate-500">
-                  Kode Pemda diambil dari URL: <b>/mobile/login-siskeudes/{`{kd_pemda}`}</b>
-                </div>
-              </div>
-
               <div className="space-y-1">
                 <div className="text-xs text-slate-600">Nama User</div>
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                />
+                <Input value={username} onChange={(e) => setUsername(e.target.value)} autoCapitalize="none" autoCorrect="off" />
               </div>
 
               <div className="space-y-1">
                 <div className="text-xs text-slate-600">Password</div>
-                <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <Input type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
 
               <div className="space-y-1">
                 <div className="text-xs text-slate-600">Tahun</div>
-                <Input
-                  value={tahun}
-                  onChange={(e) => setTahun(e.target.value)}
-                  inputMode="numeric"
-                  placeholder="2025"
-                />
-                <div className="text-[11px] text-slate-400">
-                  Opsional: set via query string, contoh <b>?tahun=2025</b>
-                </div>
+                <Input value={tahun} onChange={(e) => setTahun(e.target.value)} inputMode="numeric" placeholder="2025" />
               </div>
 
               <Button type="submit" className="w-full rounded-xl" disabled={loading || !kd_pemda}>
                 {loading ? 'Memproses...' : 'Masuk'}
               </Button>
 
-              <div className="text-[11px] text-slate-500">
-                Session mobile menyimpan di <b>session.mobile</b>: <b>username, kd_desa, nama_desa, tahun</b>.
-              </div>
+              {/* debug optional */}
+              {/* <div className="text-[11px] text-slate-400">From: {from}</div> */}
             </form>
           </CardContent>
         </Card>

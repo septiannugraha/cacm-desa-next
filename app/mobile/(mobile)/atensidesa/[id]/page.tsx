@@ -6,8 +6,8 @@ import { useParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { ChevronLeft, ChevronRight, ChevronDown, AlertTriangle, FileText } from 'lucide-react'
-import StatusBadge from '@/components/mobile/ui/StatusBadge'
-import { fmtDate, fmtMoney, fmtNumber, sum } from '@/components/mobile/helpers'
+import StatusBadge from '@/app/mobile/(mobile)/components/ui/StatusBadge'
+import { fmtDate, fmtMoney, fmtNumber, sum } from '@/app/mobile/(mobile)/components/helpers'
 
 type Desa = {
   id: string

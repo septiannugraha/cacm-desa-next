@@ -22,6 +22,6 @@ export const config = {
     '/villages/:path*',
     '/profile/:path*',
     '/settings/:path*',
-    '/mobile/:path*',
+   
   ],
 }
