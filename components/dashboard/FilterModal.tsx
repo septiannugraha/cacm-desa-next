@@ -5,9 +5,9 @@ import { FiSearch, FiX, FiChevronDown } from 'react-icons/fi'
 
 type ProvOpt = { provinsi: string; Kd_Prov: string }
 type PemdaOpt = { namapemda: string; Kd_Pemda: string }
-type KecOpt  = { kecamatan: string; Kd_Kec: string }
+type KecOpt = { kecamatan: string; Kd_Kec: string }
 type DesaOpt = { desa: string; Kd_Desa: string }
-type SDOpt   = { sumberdana: string; Kode: string }
+type SDOpt = { sumberdana: string; Kode: string }
 
 type FilterDataProps = {
   provinsi: ProvOpt[]
@@ -33,7 +33,10 @@ type Loaders = {
   sumberdana?: () => void
 }
 
-/** Reusable searchable select (tanpa library) */
+/* =========================================================
+   Reusable Searchable Select
+========================================================= */
+
 function SearchableSelect<T>({
   label,
   placeholder,
@@ -44,7 +47,7 @@ function SearchableSelect<T>({
   getLabel,
   disabled,
   onOpen,
-  ensureAllLoaded, // <— tambahan: dipanggil saat user mengetik jika list terasa belum penuh
+  ensureAllLoaded,
 }: {
   label: string
   placeholder: string
@@ -64,36 +67,52 @@ function SearchableSelect<T>({
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (!q) return options
-    return options.filter((o) => getLabel(o).toLowerCase().includes(q))
+    return options.filter((o) =>
+      getLabel(o).toLowerCase().includes(q)
+    )
   }, [options, query, getLabel])
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (!containerRef.current) return
-      if (!containerRef.current.contains(e.target as Node)) setOpen(false)
+      if (!containerRef.current.contains(e.target as Node))
+        setOpen(false)
     }
     window.addEventListener('click', handleClickOutside)
-    return () => window.removeEventListener('click', handleClickOutside)
+    return () =>
+      window.removeEventListener('click', handleClickOutside)
   }, [])
 
-  // Ketika panel dibuka, pastikan data diload
   useEffect(() => {
     if (open) onOpen?.()
   }, [open, onOpen])
 
   return (
     <div className="w-full" ref={containerRef}>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
+
       <button
         type="button"
         disabled={disabled}
         onClick={() => setOpen((s) => !s)}
-        className={`w-full border px-3 py-2 rounded-lg flex items-center justify-between ${disabled ? 'bg-gray-100 text-gray-400' : 'bg-white'}`}
-        aria-haspopup="listbox"
-        aria-expanded={open}
+        className={`w-full border px-3 py-2 rounded-lg flex items-center justify-between ${
+          disabled
+            ? 'bg-gray-100 text-gray-400'
+            : 'bg-white'
+        }`}
       >
-        <span className={`truncate ${!value ? 'text-gray-400' : ''}`}>
-          {value ? (getLabel(options.find((o) => getKey(o) === value) as T) || '') : placeholder}
+        <span
+          className={`truncate ${
+            !value ? 'text-gray-400' : ''
+          }`}
+        >
+          {value
+            ? getLabel(
+                options.find((o) => getKey(o) === value) as T
+              ) || ''
+            : placeholder}
         </span>
         <FiChevronDown />
       </button>
@@ -107,23 +126,25 @@ function SearchableSelect<T>({
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value)
-                // kalau opsi masih sedikit (mis. baru seed 1 item), paksa load full list
-                if ((options?.length ?? 0) < 10) ensureAllLoaded?.()
+                if ((options?.length ?? 0) < 10)
+                  ensureAllLoaded?.()
               }}
               placeholder={`Cari ${label.toLowerCase()}...`}
               className="w-full outline-none py-1"
             />
             {query && (
-              <button className="text-gray-500 hover:text-gray-700" onClick={() => setQuery('')} aria-label="Bersihkan pencarian">
+              <button
+                className="text-gray-500 hover:text-gray-700"
+                onClick={() => setQuery('')}
+              >
                 <FiX />
               </button>
             )}
           </div>
-          <ul role="listbox" className="divide-y">
+
+          <ul className="divide-y">
             <li
-              role="option"
-              aria-selected={!value}
-              className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${!value ? 'bg-blue-50' : ''}`}
+              className="px-3 py-2 cursor-pointer hover:bg-gray-50"
               onClick={() => {
                 onChange('')
                 setOpen(false)
@@ -131,28 +152,29 @@ function SearchableSelect<T>({
             >
               Semua {label}
             </li>
+
             {filtered.map((opt) => {
               const k = getKey(opt)
               const lbl = getLabel(opt)
-              const selected = value === k
+
               return (
                 <li
                   key={k}
-                  role="option"
-                  aria-selected={selected}
-                  className={`px-3 py-2 cursor-pointer hover:bg-gray-50 ${selected ? 'bg-blue-50 font-medium' : ''}`}
+                  className="px-3 py-2 cursor-pointer hover:bg-gray-50"
                   onClick={() => {
                     onChange(k)
                     setOpen(false)
                   }}
-                  title={lbl}
                 >
                   {lbl}
                 </li>
               )
             })}
+
             {!filtered.length && (
-              <li className="px-3 py-2 text-gray-500 text-sm">Tidak ada hasil</li>
+              <li className="px-3 py-2 text-gray-500 text-sm">
+                Tidak ada hasil
+              </li>
             )}
           </ul>
         </div>
@@ -161,67 +183,105 @@ function SearchableSelect<T>({
   )
 }
 
+/* =========================================================
+   Filter Modal (SAFE VERSION)
+========================================================= */
+
 export default function FilterModal({
   show,
   onClose,
-  filterData,
-  selected,
-  setSelected,
-  onApply,
-  onClear,
-  loaders
+  filterData = {
+    provinsi: [],
+    pemda: [],
+    kecamatan: [],
+    desa: [],
+    sumberdana: [],
+  },
+  selected = {
+    provinsi: '',
+    pemda: '',
+    kecamatan: '',
+    desa: '',
+    sumberdana: '',
+  },
+  setSelected = () => {},
+  onApply = () => {},
+  onClear = () => {},
+  loaders = {},
 }: {
   show: boolean
   onClose: () => void
-  filterData: FilterDataProps
-  selected: SelectedProps
-  setSelected: (next: SelectedProps) => void
-  onApply: () => void
-  onClear: () => void
+  filterData?: FilterDataProps
+  selected?: SelectedProps
+  setSelected?: (next: SelectedProps) => void
+  onApply?: () => void
+  onClear?: () => void
   loaders?: Loaders
 }) {
-  // Tutup jika klik overlay
   useEffect(() => {
     const handleOutside = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).id === 'modal-overlay') onClose()
+      if ((e.target as HTMLElement).id === 'modal-overlay')
+        onClose()
     }
     window.addEventListener('click', handleOutside)
-    return () => window.removeEventListener('click', handleOutside)
+    return () =>
+      window.removeEventListener('click', handleOutside)
   }, [onClose])
 
-   
- 
-  const update = (key: keyof SelectedProps, value: string) => {
-    const next: SelectedProps = { ...selected, [key]: value }
+  const update = (
+    key: keyof SelectedProps,
+    value: string
+  ) => {
+    const next: SelectedProps = {
+      provinsi: selected?.provinsi || '',
+      pemda: selected?.pemda || '',
+      kecamatan: selected?.kecamatan || '',
+      desa: selected?.desa || '',
+      sumberdana: selected?.sumberdana || '',
+      [key]: value,
+    }
+
     if (key === 'provinsi') {
       next.pemda = ''
       next.kecamatan = ''
       next.desa = ''
     }
+
     if (key === 'pemda') {
       next.kecamatan = ''
       next.desa = ''
     }
+
     if (key === 'kecamatan') {
       next.desa = ''
     }
+
     setSelected(next)
   }
 
-  const pemdaDisabled = !selected.provinsi
-  const kecDisabled   = !selected.pemda
-  const desaDisabled  = !selected.kecamatan
+  const pemdaDisabled = !selected?.provinsi
+  const kecDisabled = !selected?.pemda
+  const desaDisabled = !selected?.kecamatan
 
-  return show ? (
-    <div id="modal-overlay" className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xl animate-fade-in">
+  if (!show) return null
+
+  return (
+    <div
+      id="modal-overlay"
+      className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm bg-white/30"
+    >
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xl">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Filter Data</h3>
-          <button onClick={onClose} aria-label="Tutup"><FiX size={20} /></button>
+          <h3 className="text-lg font-semibold">
+            Filter Data
+          </h3>
+          <button onClick={onClose}>
+            <FiX size={20} />
+          </button>
         </div>
 
         <div className="space-y-4">
-          <SearchableSelect<ProvOpt>
+          <SearchableSelect
             label="Provinsi"
             placeholder="Semua Provinsi"
             value={selected.provinsi}
@@ -229,11 +289,11 @@ export default function FilterModal({
             options={filterData.provinsi}
             getKey={(o) => o.Kd_Prov}
             getLabel={(o) => o.provinsi}
-            onOpen={loaders?.provinsi}
-            ensureAllLoaded={loaders?.provinsi}
+            onOpen={loaders.provinsi}
+            ensureAllLoaded={loaders.provinsi}
           />
 
-          <SearchableSelect<PemdaOpt>
+          <SearchableSelect
             label="Pemda"
             placeholder="Semua Pemda"
             value={selected.pemda}
@@ -242,11 +302,11 @@ export default function FilterModal({
             getKey={(o) => o.Kd_Pemda}
             getLabel={(o) => o.namapemda}
             disabled={pemdaDisabled}
-            onOpen={loaders?.pemda}
-            ensureAllLoaded={loaders?.pemda}
+            onOpen={loaders.pemda}
+            ensureAllLoaded={loaders.pemda}
           />
 
-          <SearchableSelect<KecOpt>
+          <SearchableSelect
             label="Kecamatan"
             placeholder="Semua Kecamatan"
             value={selected.kecamatan}
@@ -255,11 +315,11 @@ export default function FilterModal({
             getKey={(o) => o.Kd_Kec}
             getLabel={(o) => o.kecamatan}
             disabled={kecDisabled}
-            onOpen={loaders?.kecamatan}
-            ensureAllLoaded={loaders?.kecamatan}
+            onOpen={loaders.kecamatan}
+            ensureAllLoaded={loaders.kecamatan}
           />
 
-          <SearchableSelect<DesaOpt>
+          <SearchableSelect
             label="Desa"
             placeholder="Semua Desa"
             value={selected.desa}
@@ -268,11 +328,11 @@ export default function FilterModal({
             getKey={(o) => o.Kd_Desa}
             getLabel={(o) => o.desa}
             disabled={desaDisabled}
-            onOpen={loaders?.desa}
-            ensureAllLoaded={loaders?.desa}
+            onOpen={loaders.desa}
+            ensureAllLoaded={loaders.desa}
           />
 
-          <SearchableSelect<SDOpt>
+          <SearchableSelect
             label="Sumber Dana"
             placeholder="Semua Sumber Dana"
             value={selected.sumberdana}
@@ -280,17 +340,32 @@ export default function FilterModal({
             options={filterData.sumberdana}
             getKey={(o) => o.Kode}
             getLabel={(o) => o.sumberdana}
-            onOpen={loaders?.sumberdana}
-            ensureAllLoaded={loaders?.sumberdana}
+            onOpen={loaders.sumberdana}
+            ensureAllLoaded={loaders.sumberdana}
           />
         </div>
 
         <div className="pt-4 flex justify-end gap-2">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-100">Cancel</button>
-          <button onClick={onClear} className="px-4 py-2 rounded-lg border text-gray-700 hover:bg-gray-100">Clear</button>
-          <button onClick={onApply} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Terapkan Filter</button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border rounded-lg"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onClear}
+            className="px-4 py-2 border rounded-lg"
+          >
+            Clear
+          </button>
+          <button
+            onClick={onApply}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+          >
+            Terapkan Filter
+          </button>
         </div>
       </div>
     </div>
-  ) : null
+  )
 }

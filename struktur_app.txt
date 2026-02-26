@@ -1,0 +1,303 @@
+app
+├── (admin)
+├── (app)
+│   ├── (dashboard)
+│   │   ├── apbdes
+│   │   │   ├── belanja
+│   │   │   │   └── page.tsx
+│   │   │   ├── pajak
+│   │   │   │   └── page.tsx
+│   │   │   ├── pembiayaan
+│   │   │   │   └── page.tsx
+│   │   │   └── pendapatan
+│   │   │       └── page.tsx
+│   │   ├── dashboard
+│   │   │   ├── page copy.tsx
+│   │   │   └── page.tsx
+│   │   ├── layout copy.tsx
+│   │   ├── layoutxxx.tsx
+│   │   ├── profile
+│   │   │   └── page.tsx
+│   │   ├── prorisk
+│   │   │   ├── anomali
+│   │   │   │   └── page.tsx
+│   │   │   ├── keuangan
+│   │   │   │   └── page.tsx
+│   │   │   └── nonkeuangan
+│   │   │       └── page.tsx
+│   │   ├── reports
+│   │   │   └── page.tsx
+│   │   ├── settings
+│   │   │   └── page.tsx
+│   │   └── trend
+│   │       ├── belanja
+│   │       │   └── page.tsx
+│   │       ├── pembiayaan-keluar
+│   │       │   └── page.tsx
+│   │       ├── pembiayaan-terima
+│   │       │   └── page.tsx
+│   │       └── pendapatan
+│   │           └── page.tsx
+│   ├── (pemdes)
+│   │   └── prodesa
+│   │       ├── dataumum
+│   │       │   └── page.tsx
+│   │       ├── potensi
+│   │       │   └── page.tsx
+│   │       └── statistik
+│   │           └── page.tsx
+│   ├── (redflags)
+│   │   └── redflags
+│   │       ├── atensi
+│   │       │   ├── [id]
+│   │       │   │   ├── [desaId]
+│   │       │   │   │   └── page.tsx
+│   │       │   │   ├── page copy.tsx
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── dokumentasi
+│   │       │   ├── [id]
+│   │       │   │   ├── desa
+│   │       │   │   │   ├── [desaId]
+│   │       │   │   │   │   └── page.tsx
+│   │       │   │   │   └── page.tsx
+│   │       │   │   └── page.tsx
+│   │       │   ├── form
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── identifikasi
+│   │       │   └── page.tsx
+│   │       ├── pemantauan
+│   │       │   └── page.tsx
+│   │       └── verifikasi
+│   │           └── page.tsx
+│   ├── (settings)
+│   │   └── admin
+│   │       ├── cstdashboard
+│   │       │   ├── [no]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── desa
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── jnsatensi
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── koneksi
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── page.tsx
+│   │       ├── pemda
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── peran
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── pesan
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       ├── settings
+│   │       │   └── page.tsx
+│   │       ├── status
+│   │       │   ├── [id]
+│   │       │   │   └── page.tsx
+│   │       │   └── page.tsx
+│   │       └── users
+│   │           ├── [id]
+│   │           │   └── edit
+│   │           │       └── page.tsx
+│   │           ├── add
+│   │           │   └── page.tsx
+│   │           └── page.tsx
+│   └── layout.tsx
+├── (auth)
+│   ├── layout.tsx
+│   └── login
+│       └── page.tsx
+├── (dbadmin)
+│   ├── dbkoneksi
+│   │   ├── [id]
+│   │   │   └── page.tsx
+│   │   └── page.tsx
+│   └── layout.tsx
+├── api
+│   ├── admin
+│   │   ├── cstdashboard
+│   │   │   ├── [no]
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── desa
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   ├── copy-prev-year
+│   │   │   │   └── route.ts
+│   │   │   ├── route.ts
+│   │   │   ├── sync-siskeudes
+│   │   │   │   └── route.ts
+│   │   │   └── update-nomor-hp
+│   │   │       └── route.ts
+│   │   ├── jnsatensi
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── koneksi
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   ├── activate
+│   │   │   │   └── [id]
+│   │   │   │       └── route.ts
+│   │   │   └── route.ts
+│   │   ├── pemda
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── peran
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── pesan
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── roles
+│   │   │   └── route.ts
+│   │   ├── status
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   └── users
+│   │       ├── [id]
+│   │       │   └── route.ts
+│   │       └── route.ts
+│   ├── atensi
+│   │   ├── [id]
+│   │   │   ├── [desaId]
+│   │   │   │   └── route.ts
+│   │   │   ├── route.ts
+│   │   │   └── update-status
+│   │   │       └── route.ts
+│   │   └── route.ts
+│   ├── auth
+│   │   ├── [...nextauth]
+│   │   │   └── route.ts
+│   │   └── logout
+│   │       └── route.ts
+│   ├── dashboard
+│   │   ├── chart-data
+│   │   │   ├── belanja
+│   │   │   │   └── route.ts
+│   │   │   ├── pajak
+│   │   │   │   └── route.ts
+│   │   │   ├── pembiayaan
+│   │   │   │   └── route.ts
+│   │   │   ├── pendapatan
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   └── filters
+│   │       └── route.ts
+│   ├── dbkoneksi
+│   │   ├── [id]
+│   │   │   └── route.ts
+│   │   ├── route.ts
+│   │   └── test
+│   │       └── [id]
+│   │           └── route.ts
+│   ├── debug-encrypt
+│   │   └── route.ts
+│   ├── dokumentasi
+│   │   ├── [id]
+│   │   │   ├── desa
+│   │   │   │   ├── [desaId]
+│   │   │   │   │   └── route.ts
+│   │   │   │   └── route.ts
+│   │   │   ├── jenis-atensi
+│   │   │   │   └── route.ts
+│   │   │   ├── kirim
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── new
+│   │   │   └── route.ts
+│   │   └── route.ts
+│   ├── identifikasi
+│   │   ├── arsipkan
+│   │   │   └── route.ts
+│   │   ├── cek
+│   │   │   └── route.ts
+│   │   └── route.ts
+│   └── map
+│       ├── gradasi
+│       │   └── route.ts
+│       └── statistics
+│           └── route.ts
+├── favicon.ico
+├── globals.css
+├── integrated-maps
+│   ├── components
+│   │   ├── Breadcrumb.tsx
+│   │   ├── InteractiveMap.tsx
+│   │   ├── LeafletMap.tsx
+│   │   ├── MapLegend.tsx
+│   │   ├── MetricSelector.tsx
+│   │   ├── StatisticsPanel.tsx
+│   │   └── header.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+├── layout.tsx
+├── mobile
+│   ├── (auth)
+│   │   ├── layout.tsx
+│   │   └── login-desa
+│   │       ├── [kd_pemda]
+│   │       │   └── page.tsx
+│   │       └── page.tsx
+│   ├── (mobile)
+│   │   ├── atensidesa
+│   │   │   ├── [id]
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── components
+│   │   │   ├── MobileBottomNav.tsx
+│   │   │   ├── MobileBreadcrumb.tsx
+│   │   │   ├── MobileNavContext.tsx
+│   │   │   ├── MobileShell.tsx
+│   │   │   ├── MobileTopbar.tsx
+│   │   │   ├── helpers.ts
+│   │   │   └── ui
+│   │   │       └── StatusBadge.tsx
+│   │   ├── home
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   ├── profil
+│   │   │   └── page.tsx
+│   │   ├── providers.tsx
+│   │   ├── respon
+│   │   │   └── [id]
+│   │   │       └── page.tsx
+│   │   └── selesai
+│   │       └── page.tsx
+│   ├── api
+│   │   ├── atensidesa
+│   │   │   ├── [id]
+│   │   │   │   └── route.ts
+│   │   │   ├── refresh-tl
+│   │   │   │   └── route.ts
+│   │   │   └── route.ts
+│   │   ├── mobile-auth
+│   │   │   └── [...nextauth]
+│   │   │       └── route.ts
+│   │   ├── respon
+│   │   │   └── [id]
+│   │   │       └── route.ts
+│   │   └── selesai
+│   │       └── route.ts
+│   └── page.tsx
+├── page.tsx
+└── providers.tsx
+
+151 directories, 150 files

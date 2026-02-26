@@ -46,6 +46,7 @@ import Link from 'next/link'
 import { redirect, usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import MobileResponMenu from '@/components/layouts/MobileResponMenu'
+ 
 
 interface NavigationItem {
   name: string
@@ -520,6 +521,7 @@ export default function DashboardLayout({
               </div>
             </div>
           </div>
+          
       </header>
 
       {/* Main content area - with padding for fixed header and sidebar */}

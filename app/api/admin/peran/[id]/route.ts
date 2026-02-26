@@ -4,15 +4,20 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // GET by id
-export async function GET(_req: NextRequest, context: { params: { id: string } }) {
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = context.params;
+
+    const { id } = await params
+    if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
 
     const peran = await prisma.cACM_Peran.findFirst({
-      where: { Peran: { equals: id, mode: "insensitive" } },
+      where: { Peran: id   },
     });
 
     if (!peran) return NextResponse.json({ error: "Peran tidak ditemukan" }, { status: 404 });
@@ -50,17 +55,21 @@ export async function POST(req: NextRequest) {
 }
 
 // UPDATE
-export async function PUT(req: NextRequest, context: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = context.params;
+    const { id } = await params
+ 
     const body = await req.json();
     const { Peran, Keterangan, Menu } = body;
 
     const updated = await prisma.cACM_Peran.update({
-      where: { Peran: { equals: id, mode: "insensitive" } },
+      where: { Peran: id },
       data: {
         Peran: Peran ?? id,
         Keterangan: Keterangan ?? undefined,
@@ -81,15 +90,17 @@ export async function PUT(req: NextRequest, context: { params: { id: string } })
 }
 
 // DELETE
-export async function DELETE(_req: NextRequest, context: { params: { id: string } }) {
+export async function DELETE(  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { id } = context.params;
+    const { id } = await params
 
     await prisma.cACM_Peran.delete({
-      where: { Peran: { equals: id, mode: "insensitive" } },
+      where:   { Peran: id },
     });
 
     return NextResponse.json({ message: "Peran dihapus" }, { status: 200 });

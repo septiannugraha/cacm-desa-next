@@ -15,17 +15,16 @@ let statuses: Array<{
 
 // GET by StatusTL
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const id = parseInt(params.id)
-    const status = statuses.find((s) => s.StatusTL === id)
+    const { id } = await params
+    const idx = parseInt( id)
+    const status = statuses.find((s) => s.StatusTL === idx)
 
     if (!status) {
       return NextResponse.json({ error: 'StatusTL not found' }, { status: 404 })
@@ -66,20 +65,20 @@ export async function POST(request: Request) {
 
 // UPDATE
 export async function PUT(
-  request: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const id = parseInt(params.id)
-    const body = await request.json()
+    const { id } = await params
+    const idx = parseInt( id)
+
+    const body = await _req.json()
     const { Keterangan } = body
 
-    const index = statuses.findIndex((s) => s.StatusTL === id)
+    const index = statuses.findIndex((s) => s.StatusTL === idx)
     if (index === -1) {
       return NextResponse.json({ error: 'StatusTL not found' }, { status: 404 })
     }
@@ -98,17 +97,16 @@ export async function PUT(
 
 // DELETE
 export async function DELETE(
-  request: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const id = parseInt(params.id)
-    const index = statuses.findIndex((s) => s.StatusTL === id)
+    const { id } = await params
+    const idx = parseInt( id)
+    const index = statuses.findIndex((s) => s.StatusTL === idx)
 
     if (index === -1) {
       return NextResponse.json({ error: 'StatusTL not found' }, { status: 404 })

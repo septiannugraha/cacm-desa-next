@@ -5,14 +5,14 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   const session = await getServerSession(mobileAuthOptions)
-  if (!session?.kd_desa || !session?.tahun) {
+  if (!session?.mobile?.kd_desa || !session?.mobile?.tahun) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const rows = await prisma.cACM_Atensi_Desa_Rinc.findMany({
     where: {
-      Kd_Desa: session.kd_desa,
-      Tahun: session.tahun,
+      Kd_Desa: session.mobile.kd_desa,
+      Tahun: session.mobile.tahun,
       StatusTL: { in: [6, 7] },
     },
     orderBy: [{ update_at: 'desc' }],

@@ -1,5 +1,5 @@
 'use client'
-
+import { Card } from '@/components/ui/card'
 import { useRef, useCallback, useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
@@ -23,6 +23,8 @@ import BarChartDashboardH from '@/components/charts/BarChartDashboardH'
 import LineChartDashboard from '@/components/charts/LineChartDashboard'
 import PieChartDashboard from '@/components/charts/PieChartDashboard'
 import FilterModal from '@/components/dashboard/FilterModal'
+import { motion } from 'framer-motion'
+
 
 /** ==========================
  *  Types
@@ -64,8 +66,11 @@ export default function DashboardBelanjaPage() {
   const initialAppliedRef = useRef<boolean>(false)
 
   // Charts state
-  const [chartData, setChartData] = useState<DashboardChartData | null>(null)
-  const [loadingCharts, setLoadingCharts] = useState(true)
+  const [ringkasanData, setRingkasanData] = useState<ChartData[] | null>(null)
+  const [detailData, setDetailData] = useState<Omit<DashboardChartData, 'ringkasan_apbdes'> | null>(null)
+  
+  const [loadingRingkasan, setLoadingRingkasan] = useState(true)
+  const [loadingDetail, setLoadingDetail] = useState(true)
 
   // Selected filters
   const [selectedProvinsi, setSelectedProvinsi] = useState<string>('')
@@ -150,17 +155,39 @@ export default function DashboardBelanjaPage() {
   }, [selectedProvinsi, selectedPemda, selectedKecamatan, selectedDesa, selectedSumberDana])
 
   const fetchChartData = async () => {
-    setLoadingCharts(true)
     try {
+      setLoadingRingkasan(true)
+      setLoadingDetail(true)
+  
+      // 1️⃣ Fetch all data
       const res = await fetch(`/api/dashboard/chart-data${filterQueryString}`, { cache: 'no-store' })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  
       const data: DashboardChartData = await res.json()
-      setChartData(data)
+  
+      // 2️⃣ Set ringkasan dulu
+      setRingkasanData(data.ringkasan_apbdes || [])
+      setLoadingRingkasan(false)
+  
+      // 3️⃣ Delay microtask agar UI repaint dulu
+      setTimeout(() => {
+        setDetailData({
+          pendapatan_perkelompok: data.pendapatan_perkelompok,
+          pendapatan_persumberdana: data.pendapatan_persumberdana,
+          belanja_persumberdana: data.belanja_persumberdana,
+          belanja_perkelompok: data.belanja_perkelompok,
+          belanja_pertagging_tertinggi: data.belanja_pertagging_tertinggi,
+          belanja_pertagging_terendah: data.belanja_pertagging_terendah
+        })
+        setLoadingDetail(false)
+      }, 0)
+  
     } catch (e) {
       console.error('[Dashboard] chart data error', e)
-      setChartData(null)
-    } finally {
-      setLoadingCharts(false)
+      setRingkasanData([])
+      setDetailData(null)
+      setLoadingRingkasan(false)
+      setLoadingDetail(false)
     }
   }
 
@@ -298,212 +325,199 @@ export default function DashboardBelanjaPage() {
   const colors = ['bg-blue-500', 'bg-green-500', 'bg-red-500', 'bg-yellow-500']
 
 
-
   return (
-    <div className="space-y-4 sm:space-y-6 w-full">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-12 w-full max-w-[1700px] mx-auto pb-16">
+  
+      {/* ================= HEADER ================= */}
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-1">{subtitle}</p>
+          <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">
+            Dashboard Belanja Desa
+          </h1>
+          <p className="text-slate-500 mt-2 text-sm max-w-2xl">
+            {subtitle}
+          </p>
         </div>
+  
         <button
-          onClick={() => { setShowFilterModal(true) }}  // tidak preload provinsi
-          className="p-2 rounded hover:bg-gray-200 transition"
-          aria-label="Open Filter Modal"
+          onClick={() => setShowFilterModal(true)}
+          className="px-5 py-2.5 rounded-xl bg-slate-900 text-white shadow hover:bg-slate-700 transition"
         >
-          <FiMenu size={20} />
+          Filter Data
         </button>
       </div>
-
-      {/* Filter Modal */}
-      <FilterModal
-        show={showFilterModal}
-        onClose={() => setShowFilterModal(false)}
-        filterData={{
-          provinsi: provinsiOptions,
-          pemda: pemdaOptions,
-          kecamatan: kecamatanOptions,
-          desa: desaOptions,
-          sumberdana: sumberdanaOptions,
-        }}
-        selected={{
-          provinsi: selectedProvinsi,
-          pemda: selectedPemda,
-          kecamatan: selectedKecamatan,
-          desa: selectedDesa,
-          sumberdana: selectedSumberDana,
-        }}
-        setSelected={(u) => {
-          setSelectedProvinsi(u.provinsi)
-          setSelectedPemda(u.pemda)
-          setSelectedKecamatan(u.kecamatan)
-          setSelectedDesa(u.desa)
-          setSelectedSumberDana(u.sumberdana)
-        }}
-        loaders={{
-          provinsi: loadProvinsi,      // buka/ketik → load semua provinsi
-          pemda: () => loadPemda(),    // buka pemda → load list by provinsi
-          kecamatan: () => loadKecamatan(),
-          desa: () => loadDesa(),
-          sumberdana: loadSumberdana,
-        }}
-        onApply={() => {
-          setShowFilterModal(false)
-          fetchChartData()
-        }}
-        onClear={() => {
-          setSelectedProvinsi('')
-          setSelectedPemda('')
-          setSelectedKecamatan('')
-          setSelectedDesa('')
-          setSelectedSumberDana('')
-          setPemdaOptions([])
-          setKecamatanOptions([])
-          setDesaOptions([])
-          fetchChartData()
-          // reset guards karena clear dianggap state baru
-          prevProvRef.current = ''
-          prevPemdaRef.current = ''
-          initialAppliedRef.current = true
-        }}
-      />
-
-      {/* Financial Summary Cards - Carousel */}
-      <div className="relative bg-white shadow px-4 sm:px-6 py-4 sm:py-6 rounded-lg w-full">
-        <div className="flex items-center justify-between mb-4 w-full">
-          <h2 className="text-lg font-semibold text-gray-900">Ringkasan Keuangan</h2>
-          <div className="flex gap-2">
-            <button onClick={scrollPrev} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors border border-gray-200" aria-label="Previous slide">
-              <ChevronLeft className="w-5 h-5 text-gray-700" />
-            </button>
-            <button onClick={scrollNext} className="p-2 rounded-lg bg-white shadow-sm hover:bg-gray-50 transition-colors border border-gray-200" aria-label="Next slide">
-              <ChevronRight className="w-5 h-5 text-gray-700" />
-            </button>
+  
+  
+      {/* ================= RINGKASAN ================= */}
+      <div>
+        <h2 className="text-xl font-semibold text-slate-800 mb-6">
+          Ringkasan Realisasi
+        </h2>
+  
+        {loadingRingkasan ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="h-40 rounded-2xl bg-slate-100 animate-pulse" />
+            ))}
           </div>
-        </div>
-
-
-
-        <div className="overflow-hidden max-w-full" ref={emblaRef}>
-          <div className="flex gap-4 max-w-full">
-          {chartData?.ringkasan_apbdes?.map((stat, index) => {
-  const color = colors[index % colors.length] // rotasi warna jika data lebih dari 4
-
-  return (
-    <div
-      key={index}
-      className="flex-[0_0_calc(100%-1rem)] min-w-0 sm:flex-[0_0_calc(50%-0.5rem)] lg:flex-[0_0_calc(40%-0.667rem)] xl:flex-[0_0_calc(25%-0.75rem)]"
-    >
-     <div className="bg-white rounded-lg shadow overflow-hidden h-full">
-  {/* Header dengan background sama seperti kotak persentase */}
-  <div className={`${color} text-white px-4 py-2`}>
-    <h3 className="text-sm sm:text-base font-semibold leading-tight text-center">
-      {stat.Kategori1}
-    </h3>
-  </div>
-
-  {/* Konten utama */}
-  <div className="flex items-center p-4">
-    {/* Kotak persentase */}
-    <div
-      className={`${color} text-white w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center rounded-lg mr-3 sm:mr-4 flex-shrink-0`}
-    >
-      <span className="text-base sm:text-lg font-bold">
-        {stat.Nilai3?.toFixed(2)}%
-      </span>
-    </div>
-
-    {/* Detail anggaran */}
-    <div className="flex-1 min-w-0">
-      <div className="space-y-1 mb-2 text-xs">
-        <div>
-          <span className="text-gray-500">Anggaran:</span>
-          <p className="font-medium text-gray-900 truncate">
-            {formatCurrency(stat.Nilai1)}
-          </p>
-        </div>
-        <div>
-          <span className="text-gray-500">Realisasi:</span>
-          <p className="font-medium text-gray-900 truncate">
-            {formatCurrency(stat.Nilai2 || 0)}
-          </p>
-        </div>
-      </div>
-
-      {/* Progress bar */}
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div
-          className={`${color} h-2 rounded-full transition-all duration-300`}
-          style={{ width: `${stat.Nilai3}%` }}
-        />
-      </div>
-    </div>
-  </div>
-      </div>
-    </div>
-  )
-})}
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+  
+            {ringkasanData?.map((stat, index) => {
+              const color = colors[index % colors.length]
+  
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 hover:shadow-md transition"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-slate-600">
+                      {stat.Kategori1}
+                    </h3>
+                    <div className={`${color} text-white text-xs font-bold px-3 py-1 rounded-full`}>
+                      {stat.Nilai3?.toFixed(2)}%
+                    </div>
+                  </div>
+  
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-slate-400">Anggaran</p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        {formatCurrency(stat.Nilai1)}
+                      </p>
+                    </div>
+  
+                    <div>
+                      <p className="text-xs text-slate-400">Realisasi</p>
+                      <p className="text-lg font-semibold text-slate-900">
+                        {formatCurrency(stat.Nilai2 || 0)}
+                      </p>
+                    </div>
+                  </div>
+  
+                  <div className="mt-5 w-full bg-slate-200 rounded-full h-2">
+                    <div
+                      className={`${color} h-2 rounded-full transition-all duration-500`}
+                      style={{ width: `${stat.Nilai3}%` }}
+                    />
+                  </div>
+                </div>
+              )
+            })}
+  
           </div>
-        </div>
+        )}
       </div>
-
-      {/* Charts */}
-      {loadingCharts ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-full">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="bg-white rounded-lg shadow p-6">
-              <div className="animate-pulse">
-                <div className="h-4 bg-gray-200 rounded w-1/3 mb-4"></div>
-                <div className="h-64 bg-gray-100 rounded"></div>
-              </div>
-            </div>
+  
+  
+      {/* ================= CHART SECTION ================= */}
+      {loadingDetail ? (
+        <div className="space-y-10">
+          {[1,2,3].map(i => (
+            <div key={i} className="min-h-[300px] bg-slate-100 rounded-2xl animate-pulse" />
           ))}
         </div>
-      ) : chartData && (chartData.belanja_persumberdana.length > 0 || chartData.belanja_perkelompok.length > 0) ? (
-        <>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <PieChartDashboard data={chartData.pendapatan_perkelompok} title="Kelompok Pendapatan Desa" dataKey="Nilai1" nameKey="Kategori1"   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-            <BarChartDashboard  data={chartData.pendapatan_persumberdana} title="Pendapatan Per Sumber Dana" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
-            </div>
-          </div>
-
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <PieChartDashboard data={chartData.belanja_persumberdana} title="Distribusi Anggaran per Sumber Dana" dataKey="Nilai1" nameKey="Kategori1"   />
-            </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <PieChartDashboard data={chartData.belanja_perkelompok} title="Distribusi Anggaran per Kelompok Belanja" dataKey="Nilai1" nameKey="Kategori1"   />
+      ) : detailData ? (
+  
+        <div className="space-y-14">
+  
+          {/* ===== HERO CHART (FULL WIDTH) ===== */}
+          <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-10">
+            <h3 className="text-lg font-semibold text-slate-800 mb-6">
+              Distribusi Anggaran per Kelompok Belanja
+            </h3>
+            <div className="min-h-[320px] w-full">
+              <PieChartDashboard
+                data={detailData.belanja_perkelompok}
+                title=""
+                dataKey="Nilai1"
+                nameKey="Kategori1"
+              />
             </div>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-             <BarChartDashboardH  data={chartData.belanja_pertagging_tertinggi} mode="stacked" title="Belanja per Tagging Tertinggi" nilai1Label="Anggaran" nilai2Label='Realisasi'    />
+  
+  
+          {/* ===== SECONDARY CHART GRID ===== */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+  
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+              <h3 className="text-base font-semibold text-slate-800 mb-5">
+                Pendapatan per Kelompok
+              </h3>
+              <div className="min-h-[300px] w-full">
+                <PieChartDashboard
+                  data={detailData.pendapatan_perkelompok}
+                  title=""
+                  dataKey="Nilai1"
+                  nameKey="Kategori1"
+                />
+              </div>
             </div>
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6">
-              <BarChartDashboardH  data={chartData.belanja_pertagging_terendah} mode="stacked" title="Belanja per Tagging Terendah" nilai1Label="Anggaran" nilai2Label='Realisasi'   />
+  
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+              <h3 className="text-base font-semibold text-slate-800 mb-5">
+                Pendapatan per Sumber Dana
+              </h3>
+              <div className="min-h-[300px] w-full">
+                <BarChartDashboard
+                  data={detailData.pendapatan_persumberdana}
+                  title=""
+                  nilai1Label="Anggaran"
+                  nilai2Label="Realisasi"
+                />
+              </div>
             </div>
- 
-          </div>         
-v
-        </>
+          </div>
+  
+  
+          {/* ===== ANALYTICS SECTION ===== */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-12">
+  
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+              <h3 className="text-base font-semibold text-slate-800 mb-5">
+                Belanja per Tagging Tertinggi
+              </h3>
+              <div className="min-h-[320px] w-full">
+                <BarChartDashboardH
+                  data={detailData.belanja_pertagging_tertinggi}
+                  mode="stacked"
+                  title=""
+                  nilai1Label="Anggaran"
+                  nilai2Label="Realisasi"
+                />
+              </div>
+            </div>
+  
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-100 p-8">
+              <h3 className="text-base font-semibold text-slate-800 mb-5">
+                Belanja per Tagging Terendah
+              </h3>
+              <div className="min-h-[320px] w-full">
+                <BarChartDashboardH
+                  data={detailData.belanja_pertagging_terendah}
+                  mode="stacked"
+                  title=""
+                  nilai1Label="Anggaran"
+                  nilai2Label="Realisasi"
+                />
+              </div>
+            </div>
+  
+          </div>
+  
+        </div>
+  
       ) : (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-          <AlertCircle className="w-12 h-12 text-yellow-600 mx-auto mb-3" />
-          <p className="text-yellow-800 font-medium">Data grafik tidak tersedia</p>
-          <p className="text-yellow-600 text-sm mt-2">{!chartData ? 'Gagal memuat data dari server' : 'Tidak ada data untuk periode yang dipilih'}</p>
+        <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-3xl p-12 text-center shadow-sm">
+          <AlertCircle className="w-14 h-14 text-yellow-600 mx-auto mb-5" />
+          <p className="text-yellow-800 font-semibold text-lg">
+            Data grafik tidak tersedia
+          </p>
         </div>
       )}
-
- 
-
- 
     </div>
   )
+ 
+    
 }

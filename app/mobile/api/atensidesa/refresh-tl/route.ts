@@ -5,7 +5,11 @@ import { prisma } from '@/lib/prisma'
 
 export async function POST() {
   const session = await getServerSession(mobileAuthOptions)
-  if (!session?.kd_desa || !session?.tahun) {
+
+
+
+
+  if (!session?.mobile?.kd_desa || !session?.mobile?.tahun) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -15,7 +19,7 @@ export async function POST() {
      * Misal: EXEC sp_refresh_tl @Kd_Desa='...', @Tahun='...'
      */
     await prisma.$executeRawUnsafe(
-      `EXEC sp_refresh_tl @Kd_Desa='${session.kd_desa}', @Tahun='${session.tahun}'`
+      `EXEC sp_refresh_tl @Kd_Desa='${session.mobile?.kd_desa}', @Tahun='${session.mobile?.tahun}'`
     )
 
     return NextResponse.json({ ok: true })

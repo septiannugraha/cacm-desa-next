@@ -40,8 +40,8 @@ export async function GET(request: NextRequest) {
           },
           pemda: {
             select: {
-              code: true,
-              name: true,
+              Kd_Pemda: true,
+              Nama_Pemda: true,
             },
           },
         },
@@ -140,8 +140,8 @@ export async function POST(request: NextRequest) {
         },
         pemda: {
           select: {
-            code: true,
-            name: true,
+            Kd_Pemda: true,
+            Nama_Pemda: true,
           },
         },
       },

@@ -65,7 +65,7 @@ function buildMssqlConfigFromDatabaseUrl(): sql.config {
 
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as Adapter,
+  
   session: {
     strategy: 'jwt',
     maxAge: 8 * 60 * 60, // 8 hours
@@ -156,7 +156,7 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             username: user.username,
             email: user.email || '',
-            name: user.name,
+            name: user.name|| user.username, // ✅ jangan kosong
             role: user.roleName,
             roleCode: user.roleCode,
             permissions,
@@ -182,8 +182,8 @@ export const authOptions: NextAuthOptions = {
         const customUser = user as CustomUser
         token.id = user.id
         token.username = customUser.username
-        token.email = customUser.email
-        token.name = customUser.name
+        token.email = customUser.email || ''
+        token.name = customUser.name ||  customUser.username 
         token.role = customUser.role
         token.roleCode = customUser.roleCode
         token.permissions = customUser.permissions

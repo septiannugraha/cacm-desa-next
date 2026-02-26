@@ -29,8 +29,8 @@ export async function GET(
         },
         pemda: {
           select: {
-            code: true,
-            name: true,
+            Kd_Pemda: true,
+            Nama_Pemda: true,
           },
         },
       },
@@ -132,8 +132,8 @@ export async function PUT(
         },
         pemda: {
           select: {
-            code: true,
-            name: true,
+            Kd_Pemda: true,
+            Nama_Pemda: true,
           },
         },
       },

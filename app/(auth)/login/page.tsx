@@ -1,27 +1,52 @@
-'use client'
+"use client"
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Calendar, Loader2, Lock, User } from 'lucide-react'
-import { signIn } from 'next-auth/react'
-import Image from 'next/image'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Calendar, Loader2, Lock, User } from "lucide-react"
+import { signIn } from "next-auth/react"
+import Image from "next/image"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { motion } from 'framer-motion'
 
+
+// ✅ Skema validasi dengan fiscalYear sebagai number
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username harus diisi'),
-  password: z.string().min(1, 'Password harus diisi'),
-  fiscalYear: z.number().int().min(2020, 'Tahun minimal 2020').max(2030, 'Tahun maksimal 2030'),
+  username: z.string().min(1, "Username harus diisi"),
+  password: z.string().min(1, "Password harus diisi"),
+  fiscalYear: z.number().int().min(2020, "Tahun minimal 2020").max(2030, "Tahun maksimal 2030"),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
+const formContainerVariants = {
+  hidden: {},
+  show: {
+    transition: {
+      staggerChildren: 0.12
+    }
+  }
+}
 
+const fieldVariants = {
+  hidden: {
+    opacity: 0,
+    y: 20
+  },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.35,
+      ease: "easeOut"
+    }
+  }
+}
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [error, setError] = useState("")
   const currentYear = new Date().getFullYear()
 
   const {
@@ -31,61 +56,80 @@ export default function LoginPage() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      fiscalYear: currentYear,
+      username: "",
+      password: "",
+      fiscalYear: currentYear, // ✅ default number
     },
   })
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
-    setError('')
+    setError("")
 
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         username: data.username,
         password: data.password,
-        fiscalYear: data.fiscalYear,
+        fiscalYear: data.fiscalYear, // sudah number
         redirect: false,
       })
 
       if (result?.error) {
         setError(result.error)
       } else if (result?.ok) {
-       
-        
-        router.push('/dashboard')
+        router.push("/dashboard")
       }
-    } catch (error) {
-      setError('Terjadi kesalahan saat login')
-      console.error('Login error:', error)
+    } catch (err) {
+      setError("Terjadi kesalahan saat login")
+      console.error("Login error:", err)
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100"
-    >
-      <div className="w-full max-w-md">
-        {/* Logo and Title Card */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-t-2xl shadow-xl p-8">
-          <div className="text-center">
 
-            
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="w-full max-w-md">
+        {/* Logo & Title */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 80,
+            scale: 0.92,
+            boxShadow: "0px 0px 0px rgba(0,0,0,0)"
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            boxShadow: "0px 25px 60px rgba(0,0,0,0.12)"
+          }}
+          transition={{
+            duration: 0.55,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+          className="rounded-2xl"
+        >
+        <motion.div variants={fieldVariants} className="bg-white/80 backdrop-blur-sm rounded-t-2xl shadow-xl p-8">
+          <div className="text-center">
             <div className="mx-auto w-40 h-10 bg-white rounded-full flex items-center justify-center mb-4">
-                <Image src="/cacm_logo.png" alt="CACM Logo" width={120} height={80} className="object-contain" />
+              <Image
+                src="/cacm_logo.png"
+                alt="CACM Logo"
+                width={120}
+                height={80}
+                className="object-contain"
+              />
             </div>
             <h1 className="text-xl font-bold text-gray-900 mb-2">
               Continuous Audit Continuous Monitoring
             </h1>
-            
-            <p className="text-lg text-gray-700">
-              Pengelolaan Keuangan Desa
-            </p>
+            <p className="text-lg text-gray-700">Pengelolaan Keuangan Desa</p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Login Form Card */}
+        {/* Form */}
         <div className="bg-white/90 backdrop-blur-sm rounded-b-2xl shadow-xl p-8">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
@@ -93,15 +137,21 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {/* Username Field */}
-            <div>
+          <motion.form
+            onSubmit={handleSubmit(onSubmit)}
+            variants={formContainerVariants}
+            initial="hidden"
+            animate="show"
+            className="space-y-4"
+          >
+            {/* Username */}
+            <motion.div variants={fieldVariants}>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
                 Username
               </label>
               <div className="relative">
                 <input
-                  {...register('username')}
+                  {...register("username")}
                   type="text"
                   id="username"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -113,16 +163,16 @@ export default function LoginPage() {
               {errors.username && (
                 <p className="mt-1 text-sm text-red-600">{errors.username.message}</p>
               )}
-            </div>
+            </motion.div>
 
-            {/* Password Field */}
-            <div>
+            {/* Password */}
+            <motion.div variants={fieldVariants}>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                 Password
               </label>
               <div className="relative">
                 <input
-                  {...register('password')}
+                  {...register("password")}
                   type="password"
                   id="password"
                   className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
@@ -134,21 +184,21 @@ export default function LoginPage() {
               {errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
               )}
-            </div>
+            </motion.div>
 
-            {/* Fiscal Year Field */}
-            <div>
+            {/* Fiscal Year */}
+            <motion.div variants={fieldVariants}>
               <label htmlFor="fiscalYear" className="block text-sm font-medium text-gray-700 mb-1">
                 Tahun Anggaran
               </label>
               <div className="relative">
                 <select
-                  {...register('fiscalYear', { valueAsNumber: true })}
+                  {...register("fiscalYear", { valueAsNumber: true })} // ✅ valueAsNumber
                   id="fiscalYear"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none text-gray-900"
                   disabled={isLoading}
+                  className="w-full pl-10 pr-3 py-2 border rounded-lg"
                 >
-                  {[...Array(11)].map((_, i) => {
+                  {Array.from({ length: 11 }, (_, i) => {
                     const year = 2020 + i
                     return (
                       <option key={year} value={year}>
@@ -162,10 +212,10 @@ export default function LoginPage() {
               {errors.fiscalYear && (
                 <p className="mt-1 text-sm text-red-600">{errors.fiscalYear.message}</p>
               )}
-            </div>
+            </motion.div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-4">
+            <motion.div variants={fieldVariants} className="flex items-center justify-between pt-4">
               <Link
                 href="/register"
                 className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
@@ -183,13 +233,16 @@ export default function LoginPage() {
                     Loading...
                   </>
                 ) : (
-                  'Login'
+                  "Login"
                 )}
               </button>
-            </div>
-          </form>
+            </motion.div>
+          </motion.form>
+        
         </div>
+        </motion.div> 
       </div>
     </div>
+
   )
 }

@@ -2,13 +2,17 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { mobileAuthOptions } from '@/lib/mobile-auth'
 import { prisma } from '@/lib/prisma'
+ 
 
-type RouteContext = {
-  params: Promise<{ atensiDesaId: string }>
-}
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await getServerSession(mobileAuthOptions)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-export async function GET(_req: Request, context: RouteContext) {
-  const session = await getServerSession(mobileAuthOptions)
+     
 
   const kd_desa = session?.mobile?.kd_desa
   const tahun = session?.mobile?.tahun
@@ -18,11 +22,11 @@ export async function GET(_req: Request, context: RouteContext) {
   }
 
   // ✅ ambil params via Promise
-  const { atensiDesaId } = await context.params
+  const { id } = await  params 
 
   const desa = await prisma.cACM_Atensi_Desa.findFirst({
     where: {
-      id: atensiDesaId,
+      id: id,
       Kd_Desa: kd_desa,
       Tahun: tahun,
       StatusTL: 5,
@@ -71,4 +75,10 @@ export async function GET(_req: Request, context: RouteContext) {
   })
 
   return NextResponse.json({ desa, rinc })
+ 
+
+} catch (err) {
+  console.error("Failed to fetch atensi desa:", err);
+  return NextResponse.json({ error: "Failed to fetch atensi desa" }, { status: 500 });
+}
 }
