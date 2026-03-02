@@ -7,7 +7,7 @@ import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { ArrowLeft, AlertTriangle, ChevronDown, FileText } from 'lucide-react'
+import { ArrowLeft, Download, AlertTriangle, ChevronDown, FileText } from 'lucide-react'
 
 type Atensi = { id: string; Tahun: string; Kd_Pemda: string; No_Atensi: string }
 
@@ -430,10 +430,26 @@ export default function AtensiDesaDetailPage() {
 
                               <td className="px-4 py-3 text-slate-700">
                                 {r.NamaFile ? (
-                                  <span className="inline-flex items-center text-xs">
-                                    <FileText className="mr-2 h-4 w-4" />
-                                    {r.NamaFile}
-                                  </span>
+                                  <button
+                                      type="button"
+                                      onClick={() =>
+                                        window.open(`/api/file/${r.NamaFile}`, '_blank')
+                                      }
+                                      className="
+                                        inline-flex items-center
+                                        text-xs
+                                        px-3 py-1
+                                        rounded-lg
+                                        border
+                                        bg-blue-50
+                                        text-blue-700
+                                        hover:bg-blue-100
+                                        transition
+                                      "
+                                    >
+                                      <Download className="mr-2 h-4 w-4" />
+                                      Download
+                                    </button>
                                 ) : (
                                   '-'
                                 )}

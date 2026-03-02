@@ -32,19 +32,20 @@ const modules = [
     color: 'text-indigo-600',
     accent: 'bg-indigo-600',
   },
-  {
-    title: 'Compliance Monitoring',
-    icon: ShieldCheck,
-    href: '/compliance-monitoring',
-    color: 'text-emerald-600',
-    accent: 'bg-emerald-600',
-  },
+
   {
     title: 'Early Warning System',
     icon: AlertTriangle,
     href: '/redflags/atensi',
     color: 'text-red-600',
     accent: 'bg-red-600',
+  },
+  {
+    title: 'Response Desa',
+    icon: Bell,
+    href: '/mobile/login-desa',
+    color: 'text-amber-600',
+    accent: 'bg-amber-600',
   },
   {
     title: 'BPD Monitoring',
@@ -61,11 +62,11 @@ const modules = [
     accent: 'bg-teal-600',
   },
   {
-    title: 'Response Desa',
-    icon: Bell,
-    href: '/mobile/login-desa',
-    color: 'text-amber-600',
-    accent: 'bg-amber-600',
+    title: 'Compliance Monitoring',
+    icon: ShieldCheck,
+    href: '/compliance-monitoring',
+    color: 'text-emerald-600',
+    accent: 'bg-emerald-600',
   },
   {
     title: 'Settings',

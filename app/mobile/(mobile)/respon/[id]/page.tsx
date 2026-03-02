@@ -1,113 +1,313 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import { useParams, useRouter } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { ChevronLeft, Upload } from 'lucide-react'
+import { Download, Edit } from 'lucide-react'
 
-type Row = { id: string; No_Bukti: string; NamaTL: string | null; KomenTL: string | null; NamaFile: string | null }
+type Rinc = {
+  id: string
+  No_Bukti: string
+  Tgl_Bukti: string | null
+  Ket_Bukti: string | null
+  Nilai_Std: number | null
+  Nilai_Real: number | null
+  Nilai_Dif: number | null
+  NamaFile: string | null
+  NamaTL: string | null
+  KomenTL: string | null
+  StatusTL: number | null
+  StatusVer: number | null
+}
 
-export default function MobileResponPage() {
-  const { rincId } = useParams<{ rincId: string }>()
-  const router = useRouter()
+type StatusTLMaster = {
+  StatusTL: number
+  Keterangan: string | null
+}
+
+function fmtDate(v: string | null) {
+  if (!v) return '-'
+  const d = new Date(v)
+  if (isNaN(d.getTime())) return v
+  return d.toLocaleDateString('id-ID')
+}
+
+function fmtMoney(v: number | null) {
+  if (v === null || v === undefined) return '-'
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    maximumFractionDigits: 0,
+  }).format(v)
+}
+
+export default function MobileResponDetailPage() {
+  const { id } = useParams<{ id: string }>()
 
   const [loading, setLoading] = useState(true)
-  const [row, setRow] = useState<Row | null>(null)
+  const [rinc, setRinc] = useState<Rinc | null>(null)
+  const [statusMaster, setStatusMaster] = useState<StatusTLMaster[]>([])
+
+  const [showForm, setShowForm] = useState(false)
+  const [processing, setProcessing] = useState(false)
+
   const [namaTL, setNamaTL] = useState('')
   const [komenTL, setKomenTL] = useState('')
-  const [namaFile, setNamaFile] = useState('')
-  const [sending, setSending] = useState(false)
+  const [statusTL, setStatusTL] = useState('')
+  const [file, setFile] = useState<File | null>(null)
+
+  const fileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     ;(async () => {
-      setLoading(true)
-      const res = await fetch(`/api/mobile/respon/${rincId}`, { cache: 'no-store' })
-      const json = await res.json().catch(() => ({}))
+      const res = await fetch(`/mobile/api/respon/${id}`, {
+        cache: 'no-store',
+        credentials: 'include',
+      })
+
+      const json = await res.json()
+
       if (!res.ok) {
-        alert(json?.error || 'Gagal memuat')
-        setLoading(false)
+        alert(json?.error || 'Gagal memuat data')
         return
       }
-      const d = json.data as Row
-      setRow(d)
-      setNamaTL(d.NamaTL || '')
-      setKomenTL(d.KomenTL || '')
-      setNamaFile(d.NamaFile || '')
+
+      setRinc(json.rinc)
+
+      const filteredStatus =
+        (json.statusTLList || []).filter((s: StatusTLMaster) =>
+          [7, 8, 9].includes(s.StatusTL)
+        )
+
+      setStatusMaster(filteredStatus)
+
+      if (json.rinc?.StatusVer !== 1) {
+        setNamaTL(json.rinc?.NamaTL || '')
+        setKomenTL(json.rinc?.KomenTL || '')
+        setStatusTL(String(json.rinc?.StatusTL || ''))
+      }
+
       setLoading(false)
     })()
-  }, [rincId])
+  }, [id])
 
-  async function onSubmit() {
-    setSending(true)
-    const res = await fetch(`/api/mobile/respon/${rincId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ NamaTL: namaTL, KomenTL: komenTL, NamaFile: namaFile }),
-    })
-    const json = await res.json().catch(() => ({}))
-    setSending(false)
-    if (!res.ok) {
-      alert(json?.error || 'Gagal kirim')
+  async function kirimRespon() {
+    if (!namaTL || !statusTL) {
+      alert('Nama dan Status wajib diisi')
       return
     }
-    alert('Terkirim. StatusTL=7 & StatusVer=2.')
-    router.back()
+
+    const formData = new FormData()
+    formData.append('namaTL', namaTL)
+    formData.append('komenTL', komenTL)
+    formData.append('statusTL', statusTL)
+    if (file) formData.append('file', file)
+
+    setProcessing(true)
+
+    const res = await fetch(
+      `/mobile/api/atensidesa/${id}/kirim-respon`,
+      {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      }
+    )
+
+    const json = await res.json()
+    setProcessing(false)
+
+    if (!res.ok) {
+      alert(json?.error || 'Gagal kirim respon')
+      return
+    }
+
+    alert('Respon berhasil disimpan')
+    window.location.reload()
   }
 
+  if (loading) return <div className="p-4">Memuat...</div>
+  if (!rinc) return <div className="p-4">Data tidak ditemukan</div>
+
+  const sudahRespon = rinc.StatusVer !== 1
+
   return (
-    <div className="space-y-3">
-      <Link href="/mobile/atensi">
-        <Button variant="outline" className="rounded-xl">
-          <ChevronLeft className="h-4 w-4 mr-1" />
+    <div className="p-4 space-y-4">
+
+      <Link href="/mobile/respon">
+        <button className="px-3 py-2 border rounded-xl text-sm">
           Kembali
-        </Button>
+        </button>
       </Link>
 
-      {loading ? (
-        <div className="text-sm text-slate-600">Memuat...</div>
-      ) : !row ? (
-        <div className="text-sm text-slate-600">Data tidak ditemukan.</div>
-      ) : (
-        <Card className="rounded-2xl shadow-sm">
-          <CardContent className="p-4 space-y-3">
+      <div className="bg-white shadow-sm rounded-2xl p-4 space-y-3 mt-2">
+
+        <div className="text-sm font-semibold">
+          No Bukti: {rinc.No_Bukti}
+        </div>
+
+        <div className="text-xs text-slate-600">
+          {fmtDate(rinc.Tgl_Bukti)} • {rinc.Ket_Bukti}
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <Value label="Standar" value={fmtMoney(rinc.Nilai_Std)} />
+          <Value label="Realisasi" value={fmtMoney(rinc.Nilai_Real)} />
+          <Value label="Selisih" value={fmtMoney(rinc.Nilai_Dif)} />
+        </div>
+
+        {/* ===== SUDAH RESPON ===== */}
+        {sudahRespon && (
+          <div className="border-t pt-4 space-y-2">
+
+            <div className="flex items-center justify-between">
+              <div className="text-sm font-semibold text-green-700">
+                Respon Telah Dikirim
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowForm(true)}
+                className="text-xs px-3 py-1 rounded-md border bg-yellow-50 text-blue-700 hover:bg-yellow-200 flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Ubah
+              </button>
+            </div>
+
+            <div className="text-xs">
+              <b>Nama:</b> {rinc.NamaTL || '-'}
+            </div>
+
+            <div className="text-xs">
+              <b>Penjelasan:</b> {rinc.KomenTL || '-'}
+            </div>
+
+            {rinc.NamaFile && (
+              <button
+                type="button"
+                onClick={() =>
+                  window.open(`/mobile/api/file/${rinc.NamaFile}`, '_blank')
+                }
+                className="text-xs px-3 py-1 rounded-md border bg-blue-100 text-blue-700 hover:bg-blue-200 flex items-center gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Download Bukti
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* ===== BELUM RESPON ===== */}
+        {!sudahRespon && (
+          <div className="space-y-2 pt-3">
+            <button className="w-full bg-blue-600 text-white py-2 rounded-xl text-sm">
+              Sudah diperbaiki di Siskeudes?, Cek hasilnya!
+            </button>
+
+            <button
+              onClick={() => setShowForm(true)}
+              className="w-full bg-emerald-600 text-white py-2 rounded-xl text-sm"
+            >
+              Tidak dapat diperbaiki?, Input respon!
+            </button>
+          </div>
+        )}
+
+        {/* ===== FORM ===== */}
+        {showForm && (
+          <div className="border-t pt-4 space-y-3">
+
             <div>
-              <div className="text-sm font-semibold">Respon TL</div>
-              <div className="text-xs text-slate-500">No Bukti: {row.No_Bukti}</div>
+              <label className="text-xs text-slate-500">
+                Nama yang Menindaklanjuti
+              </label>
+              <input
+                value={namaTL}
+                onChange={(e) => setNamaTL(e.target.value)}
+                className="w-full mt-1 border rounded-xl p-2 text-sm"
+              />
             </div>
 
-            <div className="space-y-1">
-              <div className="text-xs text-slate-600">Nama TL</div>
-              <Input value={namaTL} onChange={(e) => setNamaTL(e.target.value)} />
+            <div>
+              <label className="text-xs text-slate-500">
+                Jenis Tindak Lanjut
+              </label>
+              <select
+                value={statusTL}
+                onChange={(e) => setStatusTL(e.target.value)}
+                className="w-full mt-1 border rounded-xl p-2 text-sm"
+              >
+                <option value="">Pilih Jenis Tindak Lanjut</option>
+                {statusMaster.map((s) => (
+                  <option key={s.StatusTL} value={s.StatusTL}>
+                    {s.Keterangan}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            <div className="space-y-1">
-              <div className="text-xs text-slate-600">Komen TL</div>
-              <Input value={komenTL} onChange={(e) => setKomenTL(e.target.value)} />
+            <div>
+              <label className="text-xs text-slate-500">
+                Penjelasan Tindak Lanjut
+              </label>
+              <textarea
+                value={komenTL}
+                onChange={(e) => setKomenTL(e.target.value)}
+                className="w-full mt-1 border rounded-xl p-2 text-sm"
+                rows={3}
+              />
             </div>
 
-            <div className="space-y-1">
-              <div className="text-xs text-slate-600">Upload File (nama file saja dulu)</div>
-              <div className="flex gap-2">
-                <Input value={namaFile} onChange={(e) => setNamaFile(e.target.value)} placeholder="contoh: bukti_tl.pdf" />
-                <Button type="button" variant="outline" className="rounded-xl">
-                  <Upload className="h-4 w-4 mr-1" />
-                  Pilih
-                </Button>
-              </div>
-              <div className="text-[11px] text-slate-500">
-                *Upload fisik bisa ditambahkan belakangan (S3/MinIO/local). Sekarang simpan nama file ke kolom <b>NamaFile</b>.
-              </div>
+            <div>
+              <input
+                type="file"
+                hidden
+                ref={fileRef}
+                onChange={(e) => setFile(e.target.files?.[0] || null)}
+              />
+
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                className="w-full border rounded-xl py-2 text-sm"
+              >
+                {file ? file.name : 'Upload Bukti (Max 5MB)'}
+              </button>
             </div>
 
-            <Button className="w-full rounded-xl" onClick={onSubmit} disabled={sending}>
-              {sending ? 'Mengirim...' : 'Kirim'}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+            <div className="flex gap-2 pt-2">
+
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="w-1/2 bg-gray-200 text-gray-800 py-2 rounded-xl text-sm hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={kirimRespon}
+                disabled={processing}
+                className="w-1/2 bg-indigo-600 text-white py-2 rounded-xl text-sm"
+              >
+                {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
+
+            </div>
+
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function Value({ label, value }: any) {
+  return (
+    <div className="bg-slate-50 p-3 rounded-xl">
+      <div className="text-xs text-slate-500">{label}</div>
+      <div className="text-sm font-semibold">{value}</div>
     </div>
   )
 }

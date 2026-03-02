@@ -6,7 +6,7 @@ import dashboardNav from '@/lib/navigation/dashboardNav'
 import pemdesNav from '@/lib/navigation/pemdesNav'
 import redflagsNav from '@/lib/navigation/redflagsNav'
 import settingsNav from '@/lib/navigation/settingsNav'
-
+import { useRouter } from 'next/navigation'
 
 import {
   AlertCircle,
@@ -45,7 +45,7 @@ import {
   Users,
   Wallet,
   Receipt,
-  X,
+  X, ArrowLeft,
 } from 'lucide-react'
 import { LucideIcon } from 'lucide-react'
 import { signOut, useSession } from 'next-auth/react'
@@ -54,7 +54,10 @@ import Link from 'next/link'
 import { redirect, usePathname } from 'next/navigation'
 import { useEffect, useRef, useState, useMemo } from 'react'
 import MobileResponMenu from '@/components/layouts/MobileResponMenu'
- 
+import { themes, ThemeKey } from '@/lib/themes'
+
+
+
 
 export default function DashboardLayout({
   children,
@@ -67,34 +70,7 @@ export default function DashboardLayout({
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({})
   const dropdownRef = useRef<HTMLDivElement>(null)
-
  
-  const themes = {
-    blue: { sidebarHeader: 'bg-blue-400', sidebarMenu: 'bg-blue-800', topbar: 'bg-blue-900', content: 'bg-blue-50', text: 'text-white' },
-    emerald: { sidebarHeader: 'bg-emerald-400', sidebarMenu: 'bg-emerald-800', topbar: 'bg-emerald-900', content: 'bg-emerald-50', text: 'text-white' },
-    violet: { sidebarHeader: 'bg-violet-400', sidebarMenu: 'bg-violet-800', topbar: 'bg-violet-900', content: 'bg-violet-50', text: 'text-white' },
-    rose: { sidebarHeader: 'bg-rose-400', sidebarMenu: 'bg-rose-800', topbar: 'bg-rose-900', content: 'bg-rose-50', text: 'text-white' },
-    amber: { sidebarHeader: 'bg-amber-400', sidebarMenu: 'bg-amber-700', topbar: 'bg-amber-800', content: 'bg-amber-50', text: 'text-white' },
-    cyan: { sidebarHeader: 'bg-cyan-400', sidebarMenu: 'bg-cyan-800', topbar: 'bg-cyan-900', content: 'bg-cyan-50', text: 'text-white' },
-    slate: { sidebarHeader: 'bg-slate-400', sidebarMenu: 'bg-slate-800', topbar: 'bg-slate-900', content: 'bg-slate-100', text: 'text-white' },
-    navy: { sidebarHeader: 'bg-indigo-400', sidebarMenu: 'bg-indigo-900', topbar: 'bg-indigo-950', content: 'bg-indigo-50', text: 'text-white' },
-    teal: { sidebarHeader: 'bg-teal-400', sidebarMenu: 'bg-teal-800', topbar: 'bg-teal-900', content: 'bg-teal-50', text: 'text-white' },
-    forest: { sidebarHeader: 'bg-green-600', sidebarMenu: 'bg-green-950', topbar: 'bg-black', content: 'bg-green-100', text: 'text-white' },
-    lime: { sidebarHeader: 'bg-lime-400', sidebarMenu: 'bg-lime-700', topbar: 'bg-lime-800', content: 'bg-lime-50', text: 'text-white' },
-    orange: { sidebarHeader: 'bg-orange-400', sidebarMenu: 'bg-orange-800', topbar: 'bg-orange-900', content: 'bg-orange-50', text: 'text-white' },
-    red: { sidebarHeader: 'bg-red-400', sidebarMenu: 'bg-red-800', topbar: 'bg-red-900', content: 'bg-red-50', text: 'text-white' },
-    pink: { sidebarHeader: 'bg-pink-400', sidebarMenu: 'bg-pink-800', topbar: 'bg-pink-900', content: 'bg-pink-50', text: 'text-white' },
-    purple: { sidebarHeader: 'bg-purple-400', sidebarMenu: 'bg-purple-800', topbar: 'bg-purple-900', content: 'bg-purple-50', text: 'text-white' },
-    zinc: { sidebarHeader: 'bg-zinc-400', sidebarMenu: 'bg-zinc-800', topbar: 'bg-zinc-900', content: 'bg-zinc-100', text: 'text-white' },
-    neutral: { sidebarHeader: 'bg-neutral-400', sidebarMenu: 'bg-neutral-800', topbar: 'bg-neutral-900', content: 'bg-neutral-100', text: 'text-white' },
-    stone: { sidebarHeader: 'bg-stone-400', sidebarMenu: 'bg-stone-800', topbar: 'bg-stone-900', content: 'bg-stone-100', text: 'text-white' },
-    dark: { sidebarHeader: 'bg-gray-500', sidebarMenu: 'bg-gray-900', topbar: 'bg-black', content: 'bg-gray-200', text: 'text-white' },
-    midnight: { sidebarHeader: 'bg-slate-600', sidebarMenu: 'bg-slate-950', topbar: 'bg-black', content: 'bg-slate-200', text: 'text-white' },
-  }
-  
-  type ThemeKey = keyof typeof themes
-   
-    const { layout, setLayout } = useLayout()
     
     /* ===== Dynamic Navigation ===== */
     let navigation = dashboardNav
@@ -104,28 +80,12 @@ export default function DashboardLayout({
   
     const [collapsed, setCollapsed] = useState(false)
     
-    const [theme, setTheme] = useState<ThemeKey>('blue')
-    const [showTheme, setShowTheme] = useState(false)
-  
-    /* ===== Load Layout + Theme ===== */
-    useEffect(() => {
-      const savedLayout = localStorage.getItem('app-layout')
-      const savedTheme = localStorage.getItem('gov-theme') as ThemeKey
-  
-      if (savedLayout) setLayout(savedLayout as any)
-      if (savedTheme && themes[savedTheme]) setTheme(savedTheme)
-    }, [])
-  
-    useEffect(() => {
-      localStorage.setItem('gov-theme', theme)
-    }, [theme])
-  
-    useEffect(() => {
-      localStorage.setItem('app-layout', layout)
-    }, [layout])
-
  
-
+    const router = useRouter()
+    const { layout, setLayout, theme, setTheme } = useLayout()
+    const activeTheme = themes[theme as ThemeKey]
+    
+    
 
   useEffect(() => {
     if (session?.user?.roleCode == 'DBAdmin') {
@@ -208,9 +168,33 @@ const breadcrumb = useMemo(() => {
   return ['Dashboard']
 }, [pathname])
 
+const [showTheme, setShowTheme] = useState(false)
+ 
 
+/* =========================================
+   DYNAMIC BACK LINK BASED ON BREADCRUMB
+========================================= */
+const backHref = useMemo(() => {
+  if (breadcrumb.length === 1) return '/'
 
+  const parentName = breadcrumb[breadcrumb.length - 2]
 
+  for (const item of navigation) {
+    if (item.name === parentName && item.href) {
+      return item.href
+    }
+
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.name === parentName) {
+          return child.href
+        }
+      }
+    }
+  }
+
+  return '/'
+}, [breadcrumb, navigation])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -232,6 +216,7 @@ const breadcrumb = useMemo(() => {
            
            
           <div className="flex items-center justify-center mb-2 p-2">
+          <Link href="/" passHref>
           <Image 
             src="/logo.png" 
             alt="CACM Logo" 
@@ -242,6 +227,8 @@ const breadcrumb = useMemo(() => {
               filter: 'drop-shadow(0 0 5px rgba(255,255,255,1))' 
             }}
           />
+        </Link>
+
         </div>
             <span className="text-white font-bold text-center text-md">
               {session?.user?.pemdaName || 'Kabupaten/Kota'}
@@ -505,28 +492,45 @@ const breadcrumb = useMemo(() => {
    BREADCRUMB SECTION
 ============================== */}
 <div className="bg-white border-b border-gray-200 px-6 py-3 shadow-sm">
-  <div className="flex items-center gap-2 text-sm text-gray-600">
+  <div className="flex items-center justify-between">
 
-    {/* Home Icon */}
-    <Home className="h-4 w-4 text-gray-500" />
+    {/* LEFT SIDE - BREADCRUMB */}
+    <div className="flex items-center gap-2 text-sm text-gray-600">
 
-    {breadcrumb.map((item, index) => (
-      <div key={index} className="flex items-center gap-2">
+      <Link href="/" passHref>
+        <Home className="h-4 w-4 text-gray-500 cursor-pointer hover:text-gray-700" />
+      </Link>
 
-        <ChevronRight className="h-3 w-3 text-gray-400" />
+      {breadcrumb.map((item, index) => (
+        <div key={index} className="flex items-center gap-2">
 
-        <span
-          className={`${
-            index === breadcrumb.length - 1
-              ? 'font-semibold text-gray-900'
-              : 'text-gray-600'
-          }`}
-        >
-          {item}
-        </span>
+          <ChevronRight className="h-3 w-3 text-gray-400" />
 
-      </div>
-    ))}
+          <span
+            className={`${
+              index === breadcrumb.length - 1
+                ? 'font-semibold text-gray-900'
+                : 'text-gray-600'
+            }`}
+          >
+            {item}
+          </span>
+
+        </div>
+      ))}
+
+    </div>
+
+    {/* RIGHT SIDE - BACK BUTTON */}
+    {breadcrumb.length > 1 && (
+      <Link href={backHref}>
+        <button className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-md border border-gray-300 bg-white hover:bg-gray-50 transition">
+          <ArrowLeft className="h-4 w-4" />
+          Kembali
+        </button>
+      </Link>
+    )}
+
   </div>
 </div>
         <div className="p-4 sm:p-6 lg:p-8 w-full max-w-[1600px] mx-auto pb-20 md:pb-4">

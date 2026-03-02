@@ -6,7 +6,7 @@ import pemdesNav from '@/lib/navigation/pemdesNav'
 import redflagsNav from '@/lib/navigation/redflagsNav'
 import settingsNav from '@/lib/navigation/settingsNav'
 import { useRouter } from 'next/navigation'
-
+import { themes, ThemeKey } from '@/lib/themes'
 
 import {
   Home, User, Key,
@@ -26,36 +26,10 @@ import MobileResponMenu from '@/components/layouts/MobileResponMenu'
 /* =========================================================
    20 CLASSIC THEMES
 ========================================================= */
-
-const themes = {
-  blue: { sidebarHeader: 'bg-blue-400', sidebarMenu: 'bg-blue-800', topbar: 'bg-blue-900', content: 'bg-blue-50', text: 'text-white' },
-  emerald: { sidebarHeader: 'bg-emerald-400', sidebarMenu: 'bg-emerald-800', topbar: 'bg-emerald-900', content: 'bg-emerald-50', text: 'text-white' },
-  violet: { sidebarHeader: 'bg-violet-400', sidebarMenu: 'bg-violet-800', topbar: 'bg-violet-900', content: 'bg-violet-50', text: 'text-white' },
-  rose: { sidebarHeader: 'bg-rose-400', sidebarMenu: 'bg-rose-800', topbar: 'bg-rose-900', content: 'bg-rose-50', text: 'text-white' },
-  amber: { sidebarHeader: 'bg-amber-400', sidebarMenu: 'bg-amber-700', topbar: 'bg-amber-800', content: 'bg-amber-50', text: 'text-white' },
-  cyan: { sidebarHeader: 'bg-cyan-400', sidebarMenu: 'bg-cyan-800', topbar: 'bg-cyan-900', content: 'bg-cyan-50', text: 'text-white' },
-  slate: { sidebarHeader: 'bg-slate-400', sidebarMenu: 'bg-slate-800', topbar: 'bg-slate-900', content: 'bg-slate-100', text: 'text-white' },
-  navy: { sidebarHeader: 'bg-indigo-400', sidebarMenu: 'bg-indigo-900', topbar: 'bg-indigo-950', content: 'bg-indigo-50', text: 'text-white' },
-  teal: { sidebarHeader: 'bg-teal-400', sidebarMenu: 'bg-teal-800', topbar: 'bg-teal-900', content: 'bg-teal-50', text: 'text-white' },
-  forest: { sidebarHeader: 'bg-green-600', sidebarMenu: 'bg-green-950', topbar: 'bg-black', content: 'bg-green-100', text: 'text-white' },
-  lime: { sidebarHeader: 'bg-lime-400', sidebarMenu: 'bg-lime-700', topbar: 'bg-lime-800', content: 'bg-lime-50', text: 'text-white' },
-  orange: { sidebarHeader: 'bg-orange-400', sidebarMenu: 'bg-orange-800', topbar: 'bg-orange-900', content: 'bg-orange-50', text: 'text-white' },
-  red: { sidebarHeader: 'bg-red-400', sidebarMenu: 'bg-red-800', topbar: 'bg-red-900', content: 'bg-red-50', text: 'text-white' },
-  pink: { sidebarHeader: 'bg-pink-400', sidebarMenu: 'bg-pink-800', topbar: 'bg-pink-900', content: 'bg-pink-50', text: 'text-white' },
-  purple: { sidebarHeader: 'bg-purple-400', sidebarMenu: 'bg-purple-800', topbar: 'bg-purple-900', content: 'bg-purple-50', text: 'text-white' },
-  zinc: { sidebarHeader: 'bg-zinc-400', sidebarMenu: 'bg-zinc-800', topbar: 'bg-zinc-900', content: 'bg-zinc-100', text: 'text-white' },
-  neutral: { sidebarHeader: 'bg-neutral-400', sidebarMenu: 'bg-neutral-800', topbar: 'bg-neutral-900', content: 'bg-neutral-100', text: 'text-white' },
-  stone: { sidebarHeader: 'bg-stone-400', sidebarMenu: 'bg-stone-800', topbar: 'bg-stone-900', content: 'bg-stone-100', text: 'text-white' },
-  dark: { sidebarHeader: 'bg-gray-500', sidebarMenu: 'bg-gray-900', topbar: 'bg-black', content: 'bg-gray-200', text: 'text-white' },
-  midnight: { sidebarHeader: 'bg-slate-600', sidebarMenu: 'bg-slate-950', topbar: 'bg-black', content: 'bg-slate-200', text: 'text-white' },
-}
-
-type ThemeKey = keyof typeof themes
-
+  
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
 
-  const { layout, setLayout, theme, setTheme } = useLayout()
-  const activeTheme = themes[theme as ThemeKey]
+
 
   const { data: session } = useSession()
   const pathname = usePathname()
@@ -133,6 +107,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [])
 
   const router = useRouter()
+  const { layout, setLayout, theme, setTheme } = useLayout()
+  const activeTheme = themes[theme as ThemeKey]
+
   
   return (
     <div className={`min-h-screen transition-all duration-500 ${activeTheme.content}`}>
@@ -241,7 +218,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center gap-4">
           <Menu onClick={() => setCollapsed(!collapsed)} className="cursor-pointer" />
           <div className="flex items-center gap-2 text-sm font-semibold">
-            <Home className="h-4 w-4" />
+          <Link href="/" passHref>
+            <Home className="h-4 w-4 text-gray-500 cursor-pointer hover:text-gray-700" />
+          </Link>
             {breadcrumb.map((item, i) => (
               <span key={i} className="flex items-center gap-2">
                 <ChevronRight className="h-4 w-4 opacity-70" />

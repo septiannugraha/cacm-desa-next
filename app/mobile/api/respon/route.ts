@@ -2,13 +2,8 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { requireMobileAuth } from '@/lib/get-mobile-session'
 
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET() {
   try {
-    const { id } = await params
-
     const auth = await requireMobileAuth()
     if (!auth.ok) return auth.response
 
@@ -25,14 +20,23 @@ export async function GET(
     }
 
     // =========================
-    // GET SINGLE RINCIAN BY ID
+    // RINCIAN ATENSI DESA
+    // HANYA StatusTL = 5
+    // DAN StatusVer = 1
     // =========================
-    const rinc = await prisma.cACM_Atensi_Desa_Rinc.findFirst({
+    const rinc = await prisma.cACM_Atensi_Desa_Rinc.findMany({
       where: {
-        id,
         Tahun: fiscalYear,
         Kd_Desa: kdDesa,
+        StatusTL: {
+            in: [7, 8, 9],
+          },
+        StatusVer: 2,
       },
+      orderBy: [
+        { Jns_Atensi: 'asc' },
+        { No_Bukti: 'asc' },
+      ],
       select: {
         id: true,
         id_Atensi_Desa: true,
@@ -59,24 +63,17 @@ export async function GET(
         StatusTL: true,
         StatusVer: true,
         NamaFile: true,
-
- 
-        NamaTL: true,
-        KomenTL: true,
       },
     })
 
-    if (!rinc) {
-      return NextResponse.json(
-        { error: 'Data tidak ditemukan atau bukan milik desa ini' },
-        { status: 404 }
-      )
-    }
-
     // =========================
     // MASTER STATUS TL
+    // (untuk dropdown 7,8,9 saja)
     // =========================
     const statusTLList = await prisma.cACM_StatusTL.findMany({
+      where: {
+        StatusTL: { in: [7, 8, 9] },
+      },
       select: {
         StatusTL: true,
         Keterangan: true,
@@ -96,23 +93,29 @@ export async function GET(
     // =========================
     // METADATA JENIS ATENSI
     // =========================
-    const jnsAtensi = await prisma.cACM_Jns_Atensi.findUnique({
-      where: { Jns_Atensi: rinc.Jns_Atensi },
-      select: {
-        Jns_Atensi: true,
-        Nama_Atensi: true,
-        Singkatan: true,
-        Tipe: true,
-        Satuan: true,
-        Std_Caption: true,
-        Real_Caption: true,
-        Dif_Caption: true,
-      },
-    })
+    const jnsList = Array.from(new Set(rinc.map(r => r.Jns_Atensi)))
+
+    const jnsAtensi =
+      jnsList.length > 0
+        ? await prisma.cACM_Jns_Atensi.findMany({
+            where: { Jns_Atensi: { in: jnsList } },
+            select: {
+              Jns_Atensi: true,
+              Nama_Atensi: true,
+              Singkatan: true,
+              Tipe: true,
+              Satuan: true,
+              Std_Caption: true,
+              Real_Caption: true,
+              Dif_Caption: true,
+            },
+          })
+        : []
 
     return NextResponse.json({
       tahun: fiscalYear,
       kdDesa,
+      total: rinc.length,
       rinc,
       jnsAtensi,
       statusTLList,
@@ -121,7 +124,7 @@ export async function GET(
   } catch (err: any) {
     console.error(err)
     return NextResponse.json(
-      { error: err?.message || 'Failed to fetch detail rincian' },
+      { error: err?.message || 'Failed to fetch rincian atensi' },
       { status: 500 }
     )
   }

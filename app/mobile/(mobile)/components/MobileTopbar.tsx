@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 import { signOut, useSession } from 'next-auth/react'
-import { Button } from '@/components/ui/button'
+ 
 import { LogOut } from 'lucide-react'
 
 export default function MobileTopbar() {
@@ -35,15 +35,22 @@ export default function MobileTopbar() {
             </div>
 
             {/* ✅ tombol keluar gaya light-blue */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-2xl border-blue-200 bg-white/70 hover:bg-white text-blue-700"
-              onClick={() => signOut({ callbackUrl: '/mobile/login-desa' })}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-               
-            </Button>
+            <button
+                onClick={() => signOut({ callbackUrl: '/mobile/login-desa' })}
+                className="
+                  inline-flex items-center justify-center
+                  h-9 px-3
+                  rounded-2xl
+                  border border-blue-200
+                  bg-white/70
+                  hover:bg-white
+                  text-blue-700
+                  text-sm font-medium
+                  transition-colors
+                "
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+              </button>
           </div>
         </div>
       </div>

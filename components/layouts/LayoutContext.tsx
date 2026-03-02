@@ -1,41 +1,47 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useMemo,
+} from 'react'
+import { themes, ThemeKey } from '@/lib/themes'
 
-type LayoutType = 'alt' | 'standard'
-type ThemeType = string
+export type LayoutType = 'alt' | 'standard'
 
 interface LayoutContextType {
   layout: LayoutType
   setLayout: (layout: LayoutType) => void
-  theme: ThemeType
-  setTheme: (theme: ThemeType) => void
+  theme: ThemeKey
+  setTheme: (theme: ThemeKey) => void
+  activeTheme: (typeof themes)[ThemeKey]
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined)
 
-export function LayoutProvider({ children }: { children: React.ReactNode }) {
-  const [layout, setLayout] = useState<LayoutType>('alt')
-  const [theme, setTheme] = useState<ThemeType>('blue')
+export function LayoutProvider({ children }: { children: ReactNode }) {
+  const [layout, setLayout] = useState<LayoutType>('standard')
+  const [theme, setTheme] = useState<ThemeKey>('blue')
   const [mounted, setMounted] = useState(false)
 
-  // LOAD ONCE
   useEffect(() => {
     const savedLayout = localStorage.getItem('app-layout') as LayoutType | null
-    const savedTheme = localStorage.getItem('app-theme')
+    const savedTheme = localStorage.getItem('app-theme') as ThemeKey | null
 
     if (savedLayout === 'alt' || savedLayout === 'standard') {
       setLayout(savedLayout)
     }
 
-    if (savedTheme) {
+    if (savedTheme && themes[savedTheme]) {
       setTheme(savedTheme)
     }
 
     setMounted(true)
   }, [])
 
-  // SAVE
   useEffect(() => {
     if (mounted) {
       localStorage.setItem('app-layout', layout)
@@ -48,10 +54,27 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme, mounted])
 
+  /**
+   * =============================
+   * ADVANCED LAYOUT → THEME MAP
+   * =============================
+   */
+
+  const activeTheme = useMemo(() => {
+    const layoutThemeMap: Record<LayoutType, ThemeKey> = {
+      alt: 'slate',     // ALT selalu dark premium
+      standard: theme,     // STANDARD ikut theme user
+    }
+
+    return themes[layoutThemeMap[layout]]
+  }, [layout, theme])
+
   if (!mounted) return null
 
   return (
-    <LayoutContext.Provider value={{ layout, setLayout, theme, setTheme }}>
+    <LayoutContext.Provider
+      value={{ layout, setLayout, theme, setTheme, activeTheme }}
+    >
       {children}
     </LayoutContext.Provider>
   )
@@ -59,6 +82,8 @@ export function LayoutProvider({ children }: { children: React.ReactNode }) {
 
 export function useLayout() {
   const context = useContext(LayoutContext)
-  if (!context) throw new Error('useLayout must be used inside LayoutProvider')
+  if (!context) {
+    throw new Error('useLayout must be used inside LayoutProvider')
+  }
   return context
 }

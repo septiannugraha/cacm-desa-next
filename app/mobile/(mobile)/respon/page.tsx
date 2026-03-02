@@ -18,13 +18,13 @@ type Row = {
   Nilai_Real: number | null
 }
 
-export default function MobileAtensiListPage() {
+export default function MobileResponListPage() {
   useMobileBreadcrumb(
     [
       { label: 'Home', href: '/mobile/home' },
-      { label: 'Atensi' },
+      { label: 'Respon' },
     ],
-    'Atensi'
+    'Respon'
   )
 
   const router = useRouter()
@@ -35,7 +35,7 @@ export default function MobileAtensiListPage() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch('/mobile/api/atensidesa', {
+      const res = await fetch('/mobile/api/respon', {
         cache: 'no-store',
         credentials: 'include',
       })
@@ -43,7 +43,7 @@ export default function MobileAtensiListPage() {
       if (res.status === 401) {
         router.replace(
           `/mobile/login-desa?from=${encodeURIComponent(
-            '/mobile/atensidesa'
+            '/mobile/respon'
           )}`
         )
         return
@@ -120,7 +120,7 @@ export default function MobileAtensiListPage() {
       ) : (
         <div className="space-y-3">
           {data.map((r) => (
-            <Link key={r.id} href={`/mobile/atensidesa/${r.id}`}>
+            <Link key={r.id} href={`/mobile/respon/${r.id}`}>
               <div className="rounded-2xl bg-white shadow-sm p-4 flex items-center justify-between hover:bg-slate-50 transition mb-2">
 
                 <div className="min-w-0 space-y-1">

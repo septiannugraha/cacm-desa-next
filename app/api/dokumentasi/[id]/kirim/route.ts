@@ -74,6 +74,22 @@ export async function POST(
     await prisma.$transaction(async (tx) => {
       await tx.$executeRaw(
         Prisma.sql`
+          UPDATE CACM_Atensi_Desa 
+          SET
+            StatusTL = 4,
+            StatusVer = 1
+             
+          WHERE
+            Tahun = ${Tahun}
+            AND Kd_Pemda = ${Kd_Pemda}
+            AND No_Atensi = ${No_Atensi}
+             
+        `
+      )
+
+
+      await tx.$executeRaw(
+        Prisma.sql`
           UPDATE CACM_Atensi_Desa_Rinc
           SET
             StatusTL = 4,

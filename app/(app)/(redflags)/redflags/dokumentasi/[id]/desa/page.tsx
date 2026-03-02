@@ -7,12 +7,23 @@ import { useParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { ArrowLeft, Eye, Search, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Menu, Search, AlertTriangle } from 'lucide-react'
 
-type Atensi = { Tahun: string; Kd_Pemda: string; No_Atensi: string; id: string }
+
+import { useLayout } from '@/components/layouts/LayoutContext'
+import { themes, ThemeKey } from '@/lib/themes'
+
+
+
+type Atensi = {
+  Tahun: string
+  Kd_Pemda: string
+  No_Atensi: string
+  id: string
+}
 
 type DesaRow = {
-  id: string // desaId
+  id: string
   id_Atensi: string
   Tahun: string
   Kd_Pemda: string
@@ -23,6 +34,7 @@ type DesaRow = {
   Jlh_TL: number | null
   StatusTL: number | null
   StatusVer: number | null
+  singkatanString: string | null
 }
 
 function Pill({
@@ -38,6 +50,7 @@ function Pill({
       : tone === 'warn'
       ? 'bg-amber-100 text-amber-900'
       : 'bg-slate-200 text-slate-800'
+
   return (
     <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>
       {children}
@@ -45,9 +58,24 @@ function Pill({
   )
 }
 
+// 🔥 Badge jenis dengan angka kecil tanpa kurung
+function BadgeJenis({ label, count }: { label: string; count: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-indigo-100 text-indigo-800 px-2 py-0.5 text-xs font-semibold">
+      {label}
+      <span className="text-[10px] font-bold">{count}</span>
+    </span>
+  )
+}
+
 export default function DokumentasiAtensiDesaPage() {
   const params = useParams<{ id: string }>()
   const id = params.id
+
+
+  const { layout, setLayout, theme, setTheme } = useLayout()
+  const activeTheme = themes[theme as ThemeKey]
+
 
   const [loading, setLoading] = useState(true)
   const [atensi, setAtensi] = useState<Atensi | null>(null)
@@ -61,6 +89,7 @@ export default function DokumentasiAtensiDesaPage() {
         const res = await fetch(`/api/dokumentasi/${id}/desa`, { cache: 'no-store' })
         const json = await res.json()
         if (!res.ok) throw new Error(json?.error || 'Gagal memuat desa')
+
         setRows(json.data || [])
         setAtensi(json.atensi || null)
       } catch (e: any) {
@@ -84,8 +113,8 @@ export default function DokumentasiAtensiDesaPage() {
 
   const totals = useMemo(() => {
     const totalDesa = filtered.length
-    const totalRF = filtered.reduce((acc, r) => acc + (typeof r.Jlh_RF === 'number' ? r.Jlh_RF : 0), 0)
-    const totalTL = filtered.reduce((acc, r) => acc + (typeof r.Jlh_TL === 'number' ? r.Jlh_TL : 0), 0)
+    const totalRF = filtered.reduce((acc, r) => acc + (r.Jlh_RF ?? 0), 0)
+    const totalTL = filtered.reduce((acc, r) => acc + (r.Jlh_TL ?? 0), 0)
     return { totalDesa, totalRF, totalTL }
   }, [filtered])
 
@@ -98,9 +127,45 @@ export default function DokumentasiAtensiDesaPage() {
     )
   }
 
+
+  function BadgeJenis({
+    label,
+    count,
+    index,
+  }: {
+    label: string
+    count: string
+    index: number
+  }) {
+    // 🎨 Palette warna cerah modern
+    const palette = [
+      'bg-sky-100 text-sky-700',
+      'bg-emerald-100 text-emerald-700',
+      'bg-violet-100 text-violet-700',
+      'bg-pink-100 text-pink-700',
+      'bg-amber-100 text-amber-700',
+      'bg-cyan-100 text-cyan-700',
+      'bg-fuchsia-100 text-fuchsia-700',
+      'bg-lime-100 text-lime-700',
+    ]
+  
+    const color = palette[index % palette.length]
+  
+    return (
+      <span
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${color}`}
+      >
+        {label}
+        <span className="text-[10px] font-bold">{count}</span>
+      </span>
+    )
+  }
+
+  
   return (
     <div className="space-y-5">
-      {/* Header */}
+
+      {/* ================= HEADER ================= */}
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -114,17 +179,13 @@ export default function DokumentasiAtensiDesaPage() {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            {atensi ? (
+            {atensi && (
               <>
-                <span className="font-medium">Atensi {atensi.No_Atensi}</span> • Tahun {atensi.Tahun} • Pemda{' '}
-                {atensi.Kd_Pemda}
+                <span className="font-medium">Atensi {atensi.No_Atensi}</span> • Tahun {atensi.Tahun} • Pemda {atensi.Kd_Pemda}
               </>
-            ) : (
-              ''
             )}
           </p>
 
-          {/* Quick stats pills */}
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Pill tone="dark">{totals.totalDesa} desa</Pill>
             <Pill tone="warn">
@@ -149,7 +210,7 @@ export default function DokumentasiAtensiDesaPage() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* ================= TABLE ================= */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
           {filtered.length === 0 ? (
@@ -157,13 +218,15 @@ export default function DokumentasiAtensiDesaPage() {
           ) : (
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-slate-900 text-white">
+                <thead className={`sticky top-0 ${activeTheme.tableHeader} ${activeTheme.text} shadow-sm`}>
                   <tr>
                     <th className="text-left px-4 py-3 font-semibold">Kode Desa</th>
                     <th className="text-left px-4 py-3 font-semibold">Nama Desa</th>
-                    <th className="text-right px-4 py-3 font-semibold">Redflags</th>
-                    <th className="text-right px-4 py-3 font-semibold">TL</th>
-                    <th className="text-left px-4 py-3 font-semibold">Aksi</th>
+                    <th className="text-center px-4 py-3 font-semibold">Redflags</th>
+                    <th className="text-center px-4 py-3 font-semibold">Tindak Lanjut</th>
+                    <th className="text-center px-4 py-3 font-semibold  ">
+                      Aksi
+                    </th>
                   </tr>
                 </thead>
 
@@ -171,14 +234,45 @@ export default function DokumentasiAtensiDesaPage() {
                   {filtered.map((r, idx) => {
                     const zebra = idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'
                     const rf = r.Jlh_RF ?? 0
+
+                    // 🔥 Pecah singkatanString menjadi badge terpisah
+                    const badges =
+                      r.singkatanString
+                        ?.split(', ')
+                        .map((item) => {
+                          const match = item.match(/^(.+?)\s*\((\d+)\)$/)
+                          if (!match) return null
+                          return { label: match[1], count: match[2] }
+                        })
+                        .filter(Boolean) || []
+
                     return (
                       <tr key={r.id} className={`${zebra} hover:bg-slate-100/60`}>
-                        <td className="px-4 py-3 font-medium text-slate-900">{r.Kd_Desa}</td>
+                        <td className="px-4 py-3 font-medium text-slate-900">
+                          {r.Kd_Desa}
+                        </td>
+
                         <td className="px-4 py-3 text-slate-800">
                           <div className="font-medium">{r.Nm_Desa || '-'}</div>
-                          <div className="text-xs text-slate-500">ID: {r.id}</div>
+
+                          {/* 🔥 Badge ditaruh dibawah nama desa */}
+                          {badges.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                             {badges.map((b, i) =>
+                                b ? (
+                                  <BadgeJenis
+                                    key={i}
+                                    label={b.label}
+                                    count={b.count}
+                                    index={i}
+                                  />
+                                ) : null
+                              )}
+                            </div>
+                          )}
                         </td>
-                        <td className="px-4 py-3 text-right">
+
+                        <td className="px-4 py-3 text-center">
                           {rf > 0 ? (
                             <span className="inline-flex items-center rounded-full bg-amber-100 text-amber-900 px-2 py-0.5 text-xs font-semibold">
                               <AlertTriangle className="mr-1 h-3.5 w-3.5" />
@@ -188,17 +282,30 @@ export default function DokumentasiAtensiDesaPage() {
                             <span className="text-slate-500">0</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-right font-semibold text-slate-900">
-                          {r.Jlh_TL ?? 0}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Link href={`/redflags/dokumentasi/${id}/desa/${r.id}`}>
-                            <Button className="bg-slate-900 text-white hover:bg-slate-800">
-                              <Eye className="mr-2 h-4 w-4" />
-                              Detail
-                            </Button>
-                          </Link>
-                        </td>
+
+                        <td className="px-4 py-3 text-center">
+                            {(r.Jlh_TL ?? 0) > 0 ? (
+                              <span className="font-semibold text-slate-900">
+                                {r.Jlh_TL}
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center rounded-full bg-red-100 text-red-700 px-2 py-0.5 text-xs font-semibold">
+                                Belum ada
+                              </span>
+                            )}
+                          </td>
+
+                          <td className="px-3 py-3 text-right whitespace-nowrap w-[1%]">
+                            <Link href={`/redflags/dokumentasi/${id}/desa/${r.id}`}>
+                              <Button variant="default"
+                                size="sm"
+                                className="  text-white hover:bg-slate-800 "
+                              >
+                                <Menu className="mr-2 h-4 w-4" />
+                                Detail
+                              </Button>
+                            </Link>
+                          </td>
                       </tr>
                     )
                   })}
@@ -209,9 +316,13 @@ export default function DokumentasiAtensiDesaPage() {
                     <td className="px-4 py-3 font-semibold text-slate-900" colSpan={2}>
                       Total ({totals.totalDesa} desa)
                     </td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-900">{totals.totalRF}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-slate-900">{totals.totalTL}</td>
-                    <td className="px-4 py-3" />
+                    <td className="px-4 py-3 text-right font-semibold text-slate-900">
+                      {totals.totalRF}
+                    </td>
+                    <td className="px-4 py-3 text-right font-semibold text-slate-900">
+                      {totals.totalTL}
+                    </td>
+                    <td />
                   </tr>
                 </tfoot>
               </table>
