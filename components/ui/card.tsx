@@ -1,60 +1,34 @@
-'use client'
-
-import { HTMLAttributes, forwardRef } from 'react'
+// components/ui/card.tsx
+import * as React from 'react'
 import { cn } from '@/lib/utils'
-import { motion } from 'framer-motion'
+import { motion, type HTMLMotionProps, type Variants } from 'framer-motion'
 
-/* =========================================
-   Variants untuk mendukung stagger parent
-========================================= */
-
-export const cardVariants = {
-  hidden: {
-    opacity: 0,
-    y: 25,
-  },
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
   show: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.35,
-      ease: 'easeOut',
-    },
+    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
   },
 }
 
-const MotionDiv = motion.div
-
-/* =========================================
-   Card Component
-========================================= */
-
-const Card = forwardRef<
-  HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <MotionDiv
-    ref={ref}
-    variants={cardVariants}
-    initial="hidden"
-    animate="show"
-    className={cn(
-      'rounded-lg  border border-blue-200 bg-white shadow-lg',
-      className
-    )}
-    {...props}
-  />
-))
-
+export const Card = React.forwardRef<HTMLDivElement, HTMLMotionProps<'div'>>(
+  ({ className, ...props }, ref) => (
+    <motion.div
+      ref={ref}
+      variants={cardVariants}
+      initial="hidden"
+      animate="show"
+      className={cn('rounded-lg border border-blue-200 bg-white shadow-lg', className)}
+      {...props}
+    />
+  )
+)
 Card.displayName = 'Card'
 
-/* =========================================
-   Sub Components (tanpa animasi)
-========================================= */
-
-const CardHeader = forwardRef<
+export const CardHeader = React.forwardRef<
   HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
@@ -62,54 +36,43 @@ const CardHeader = forwardRef<
     {...props}
   />
 ))
-
 CardHeader.displayName = 'CardHeader'
 
-const CardTitle = forwardRef<
-  HTMLHeadingElement,
-  HTMLAttributes<HTMLHeadingElement>
+export const CardTitle = React.forwardRef<
+  HTMLParagraphElement,
+  React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn(
-      'text-lg font-semibold text-gray-900 leading-none tracking-tight',
-      className
-    )}
+    className={cn('text-lg font-semibold leading-none tracking-tight', className)}
     {...props}
   />
 ))
-
 CardTitle.displayName = 'CardTitle'
 
-const CardDescription = forwardRef<
+export const CardDescription = React.forwardRef<
   HTMLParagraphElement,
-  HTMLAttributes<HTMLParagraphElement>
+  React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn('text-sm text-gray-600', className)}
+    className={cn('text-sm text-muted-foreground', className)}
     {...props}
   />
 ))
-
 CardDescription.displayName = 'CardDescription'
 
-const CardContent = forwardRef<
+export const CardContent = React.forwardRef<
   HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn('p-6 pt-0', className)}
-    {...props}
-  />
+  <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
 ))
-
 CardContent.displayName = 'CardContent'
 
-const CardFooter = forwardRef<
+export const CardFooter = React.forwardRef<
   HTMLDivElement,
-  HTMLAttributes<HTMLDivElement>
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
@@ -117,14 +80,4 @@ const CardFooter = forwardRef<
     {...props}
   />
 ))
-
 CardFooter.displayName = 'CardFooter'
-
-export {
-  Card,
-  CardHeader,
-  CardFooter,
-  CardTitle,
-  CardDescription,
-  CardContent,
-}

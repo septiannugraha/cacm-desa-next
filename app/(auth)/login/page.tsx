@@ -10,7 +10,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { motion } from 'framer-motion'
-
+import type { Variants } from 'framer-motion'
 
 // ✅ Skema validasi dengan fiscalYear sebagai number
 const loginSchema = z.object({
@@ -29,20 +29,17 @@ const formContainerVariants = {
   }
 }
 
-const fieldVariants = {
-  hidden: {
-    opacity: 0,
-    y: 20
-  },
+const fieldVariants: Variants = {
+  hidden: { opacity: 0, y: 12 },
   show: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.35,
-      ease: "easeOut"
-    }
-  }
+    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] }, // smooth
+  },
 }
+
+
+
 export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)

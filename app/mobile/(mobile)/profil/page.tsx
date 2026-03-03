@@ -1,8 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 
 const tabs = ['Data Umum', 'APBDes', 'Potensi'] as const
 type Tab = (typeof tabs)[number]
@@ -12,25 +10,31 @@ export default function MobileProfilPage() {
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
+      {/* Tabs */}
+      <div className="grid grid-cols-3 gap-2">
         {tabs.map((t) => (
-          <Button
+          <button
             key={t}
-            variant={tab === t ? 'default' : 'outline'}
-            className="rounded-xl"
             onClick={() => setTab(t)}
+            className={`px-4 py-2 text-sm font-medium rounded-xl transition-all
+              ${
+                tab === t
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white border border-slate-300 text-slate-600'
+              }`}
           >
             {t}
-          </Button>
+          </button>
         ))}
       </div>
 
-      <Card className="rounded-2xl shadow-sm">
-        <CardContent className="p-4">
-          <div className="text-sm font-semibold">{tab}</div>
-          <div className="text-xs text-slate-500 mt-1">Konten sementara dikosongkan.</div>
-        </CardContent>
-      </Card>
+      {/* Card */}
+      <div className="rounded-2xl shadow-sm border border-slate-200 bg-white p-4">
+        <div className="text-sm font-semibold">{tab}</div>
+        <div className="text-xs text-slate-500 mt-1">
+          Konten sementara dikosongkan.
+        </div>
+      </div>
     </div>
   )
 }

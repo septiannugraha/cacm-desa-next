@@ -3,10 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { requireMobileAuth } from '@/lib/get-mobile-session'
 
 export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
+
     const auth = await requireMobileAuth()
     if (!auth.ok) return auth.response
 
@@ -14,8 +16,6 @@ export async function GET(
     const kdDesa = session?.mobile?.kd_desa
     const fiscalYear =
       (session?.mobile?.tahun || new Date().getFullYear()).toString()
-
-    const { id } = params
 
     if (!kdDesa) {
       return NextResponse.json(
