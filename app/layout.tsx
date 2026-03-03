@@ -4,6 +4,8 @@ import { Providers } from './providers'
 import './globals.css'
 import PageTransition from '@/components/PageTransition'
 
+
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {

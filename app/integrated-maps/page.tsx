@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import Header from './components/header';
 import Breadcrumb from './components/Breadcrumb';
 import MetricSelector from './components/MetricSelector';
 import MapLegend from './components/MapLegend';
@@ -10,6 +9,8 @@ import StatisticsPanel from './components/StatisticsPanel';
 import type { MapLevel, MapMetric, BreadcrumbItem, RegionGeoJSON } from '@/types/map';
 import { NEXT_LEVEL } from '@/types/map';
 import { Loader2, AlertCircle } from 'lucide-react';
+ 
+
 
 const InteractiveMap = dynamic(
   () => import('./components/InteractiveMap'),
@@ -20,14 +21,13 @@ function MapLoadingState() {
   return (
     <div className="w-full h-full bg-gray-100 flex items-center justify-center">
       <div className="text-center">
-        <Loader2 className="w-6 h-6 md:w-8 md:h-8 text-blue-600 animate-spin mx-auto mb-2 md:mb-3" />
-        <p className="text-sm md:text-base text-gray-600">Memuat peta...</p>
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
+        <p className="text-gray-600">Memuat peta...</p>
       </div>
     </div>
   );
 }
 
-// 3521 -> 35.21
 function toDotCode(kd: string) {
   const raw = (kd || '').trim();
   if (/^\d{4}$/.test(raw)) return `${raw.slice(0, 2)}.${raw.slice(2, 4)}`;
@@ -47,11 +47,11 @@ function YearSelector({
 
   return (
     <div className="flex items-center space-x-2">
-      <label className="text-xs md:text-sm text-gray-700">Tahun:</label>
+      <label className="text-sm text-gray-700">Tahun:</label>
       <select
         value={selectedYear}
         onChange={(e) => onYearChange(Number(e.target.value))}
-        className="border rounded px-1.5 py-0.5 md:px-2 md:py-1 text-xs md:text-sm"
+        className="border rounded px-2 py-1 text-sm"
       >
         {years.map((y) => (
           <option key={y} value={y}>{y}</option>
@@ -63,9 +63,6 @@ function YearSelector({
 
 export default function MapDashboardPage() {
 
-  /**
-   * ✅ Ambil ENV
-   */
   const pemdaRaw = (process.env.NEXT_PUBLIC_PEMDA_CODE || '').trim();
   const pemdaNameEnv = (process.env.NEXT_PUBLIC_PEMDA_NAME || '').trim();
   const defaultLevelEnv =
@@ -86,18 +83,14 @@ export default function MapDashboardPage() {
   const [selectedRegion, setSelectedRegion] = useState<{ code: string; name: string } | null>(null);
   const [geojson, setGeojson] = useState<RegionGeoJSON | null>(null);
 
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [mapData, setMapData] = useState<any[]>([]);
   const [gradationData, setGradationData] = useState<any[]>([]);
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /**
-   * ✅ Reset state jika ENV berubah
-   */
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+
   useEffect(() => {
     if (defaultLevelEnv === 'provinsi') {
       setCurrentLevel('provinsi');
@@ -115,18 +108,13 @@ export default function MapDashboardPage() {
         },
       ]);
     }
-
     setSelectedRegion(null);
   }, [defaultLevelEnv, pemdaDot, pemdaRaw, pemdaNameEnv]);
 
-  /**
-   * Fetch GeoJSON
-   */
   useEffect(() => {
     const fetchGeoJSON = async () => {
       setLoading(true);
       setError(null);
-
       try {
         const filename = currentCode || 'indonesia';
         const res = await fetch(`/data/${currentLevel}/${filename}.json`);
@@ -134,20 +122,15 @@ export default function MapDashboardPage() {
         const geodata = await res.json();
         setGeojson(geodata);
       } catch (err) {
-        console.error(err);
         setError(`GeoJSON belum tersedia untuk ${currentLevel}/${currentCode || 'indonesia'}.json`);
         setGeojson(null);
       } finally {
         setLoading(false);
       }
     };
-
     fetchGeoJSON();
   }, [currentLevel, currentCode, selectedYear]);
 
-  /**
-   * Fetch Gradation API
-   */
   useEffect(() => {
     const fetchGradation = async () => {
       try {
@@ -162,12 +145,12 @@ export default function MapDashboardPage() {
         console.error(err);
       }
     };
-
     fetchGradation();
   }, [currentLevel, currentCode, selectedYear]);
 
   const handleRegionClick = (code: string, name: string) => {
     setSelectedRegion({ code, name });
+    setIsPanelOpen(true);
   };
 
   const handleRegionDoubleClick = (code: string, name: string) => {
@@ -188,65 +171,106 @@ export default function MapDashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="relative w-screen h-screen overflow-hidden bg-gray-100">
 
-      <div className="p-2 md:p-4 space-y-2 md:space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+      {/* HEADER */}
+      <div className="absolute top-2 left-2 right-2 z-40 
+                      h-16 backdrop-blur-md bg-blue-100/50
+                      flex items-center px-6 rounded-xl shadow-lg">
+
+        <img src="/cacm_logo.png" alt="logo" className="h-8 w-auto" />
+
+        <div className="ml-6 flex-1">
           <Breadcrumb items={breadcrumb} onNavigate={handleBreadcrumbNavigate} />
-          <div className="flex items-center justify-end space-x-2 md:space-x-4">
-            <MetricSelector selectedMetric={selectedMetric} onMetricChange={setSelectedMetric} />
-            <div className="flex items-center gap-2 md:gap-3 bg-white px-2 py-1.5 md:px-5 md:py-3 rounded-lg shadow-sm border border-gray-200">
-              <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
-            </div>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 md:gap-4">
-          <div className="lg:col-span-2 relative bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden h-[40vh] md:h-[calc(100vh-250px)]">
-            {loading && <MapLoadingState />}
-            {error && (
-              <div className="w-full h-full flex items-center justify-center p-3 md:p-6">
-                <div className="text-center max-w-md">
-                  <AlertCircle className="w-8 h-8 md:w-12 md:h-12 text-orange-500 mx-auto mb-2 md:mb-3" />
-                  <p className="text-sm md:text-base text-gray-900 font-medium mb-1 md:mb-2">Data Peta Belum Tersedia</p>
-                  <p className="text-xs md:text-sm text-gray-600">{error}</p>
-                </div>
-              </div>
-            )}
+        <div className="mr-4">
+          <MetricSelector
+            selectedMetric={selectedMetric}
+            onMetricChange={setSelectedMetric}
+          />
+        </div>
 
-            {!loading && !error && geojson && (
-              <>
-                <InteractiveMap
-                  geojson={geojson}
-                  map_data={mapData}
-                  gradation_data={gradationData}
-                  level={currentLevel}
-                  metric={selectedMetric}
-                  tahun={selectedYear.toString()}
-                  onRegionDoubleClick={handleRegionDoubleClick}
-                  onRegionSingleClick={handleRegionClick}
-                />
-                <div className="flex justify-between items-center px-2 py-1 md:px-4 md:py-2">
-                  <MapLegend metric={selectedMetric} breaks={null} />
-                  <div className="hidden md:block">
-                    <YearSelector selectedYear={selectedYear} onYearChange={setSelectedYear} />
-                  </div>
-                </div>
-              </>
-            )}
+        <div className="mr-4">
+          <YearSelector
+            selectedYear={selectedYear}
+            onYearChange={setSelectedYear}
+          />
+        </div>
+
+        <button
+          onClick={() => setIsPanelOpen(prev => !prev)}
+          className="p-2 rounded-md hover:bg-gray-200 transition"
+        >
+          ☰
+        </button>
+      </div>
+
+      {/* MAP */}
+      <div
+      className={`absolute inset-0 z-10 transition-all duration-300 ${
+        isPanelOpen ? 'pr-[500px]' : 'pr-0'
+      }`}
+>
+
+        {loading && <MapLoadingState />}
+
+        {error && (
+          <div className="w-full h-full flex items-center justify-center bg-white">
+            <div className="text-center max-w-md">
+              <AlertCircle className="w-10 h-10 text-orange-500 mx-auto mb-3" />
+              <p className="font-medium">Data Peta Belum Tersedia</p>
+              <p className="text-sm text-gray-600 mt-2">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {!loading && !error && geojson && (
+          <>
+            <InteractiveMap
+              geojson={geojson}
+              map_data={mapData}
+              gradation_data={gradationData}
+              level={currentLevel}
+              metric={selectedMetric}
+              tahun={selectedYear.toString()}
+              onRegionDoubleClick={handleRegionDoubleClick}
+              onRegionSingleClick={handleRegionClick}
+              isPanelOpen={isPanelOpen}
+            />
+
+            <div className="absolute bottom-6 right-6 bg-white shadow-lg rounded-lg p-3 z-30">
+              <MapLegend metric={selectedMetric} breaks={null} />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* RIGHT PANEL FULL HEIGHT */}
+      {isPanelOpen && (
+        <div className="absolute top-10 bottom-0 right-0 z-50 
+                        w-140 bg-transparent   flex flex-col">
+
+          <div className="p-4   font-semibold text-gray-700 flex justify-between items-center">
+            <span>  </span>
+ 
           </div>
 
-          <div className="lg:col-span-1 h-[50vh] md:h-[calc(100vh-250px)]">
+          <div className="flex-1 overflow-y-auto p-2">
             <StatisticsPanel
               level={currentLevel}
               code={selectedRegion?.code || currentCode || null}
-              regionName={selectedRegion?.name || pemdaNameEnv || `Pemda ${pemdaDot}`}
+              regionName={
+                selectedRegion?.name ||
+                pemdaNameEnv ||
+                `Pemda ${pemdaDot}`
+              }
               tahun={selectedYear.toString()}
             />
           </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 }

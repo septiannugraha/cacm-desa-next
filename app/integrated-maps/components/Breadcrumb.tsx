@@ -10,7 +10,7 @@ interface BreadcrumbProps {
 
 export default function Breadcrumb({ items, onNavigate }: BreadcrumbProps) {
   return (
-    <nav className="flex items-center gap-2 bg-white px-6 py-3 rounded-lg shadow-sm border border-gray-200">
+    <nav className="flex items-center gap-2  px-6 py-3  ">
       {/* Home icon for Indonesia */}
       <button
         onClick={() => onNavigate(0)}

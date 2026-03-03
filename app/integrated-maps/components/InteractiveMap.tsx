@@ -1,9 +1,9 @@
 'use client';
 
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+ 
 import type { RegionGeoJSON } from '@/types/map';
 
 const gradColors: Record<number, string> = {
@@ -13,6 +13,15 @@ const gradColors: Record<number, string> = {
   4: '#b91c1c', // merah tua
   5: '#7f1d1d', // merah pekat / maroon
 };
+
+
+const gradColors2: Record<number, string> = {
+  1: '#bfdbfe', // biru sangat muda (light blue)
+  2: '#60a5fa', // biru sedang (medium blue)
+  3: '#3b82f6', // biru intens (primary blue)
+  4: '#1d4ed8', // biru tua (dark blue)
+  5: '#1e3a8a', // biru pekat / navy
+}
 
 
 // Komponen untuk auto-fit bounds
@@ -27,6 +36,18 @@ function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
       }
     }
   }, [geojson, map]);
+  return null;
+}
+
+function MapResizer({ trigger }: { trigger: any }) {
+  const map = useMap();
+
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 300); // sesuai durasi animasi
+  }, [trigger, map]);
+
   return null;
 }
 
@@ -46,7 +67,7 @@ function GeoJSONLayer({
   gradation_data?: any[];
   onRegionSingleClick?: (code: string, name: string) => void;
   onRegionDoubleClick?: (code: string, name: string) => void;
-
+ isPanelOpen?: boolean;
 }) {
   const map = useMap();
   const layerRef = useRef<L.GeoJSON | null>(null);
@@ -55,15 +76,7 @@ function GeoJSONLayer({
     if (layerRef.current) {
       map.removeLayer(layerRef.current);
     }
-   // if (!geojson || !map_data) return;
-
-    // gabungkan data map_data ke geojson
-// Buat map dari data statistik: key = kode wilayah, value = objek data
-
-//console.log(Object.keys(map_data[0]));
-
-//console.log(map_data.map(s => s.Kode));
-//console.log(geojson.features.map(f => f.properties.code));
+ 
 
 const statsMap = new Map(map_data.map((s) => [s.Kode, s]));
  
@@ -93,16 +106,30 @@ geojson.features.forEach((f) => {
 });
 
 
+
+
+
     const layer = L.geoJSON(geojson, {
       style: (feature) => {
         const grad = feature?.properties?.grad_value;
-        const color = grad ? gradColors[grad] : '#ccc';
+      
+        if (!grad) {
+          // Jika belum ada nilai grad → transparan
+          return {
+            fillColor: 'transparent',
+            weight: 1.5,
+            color: '#1e3a8a',   // border biru gelap
+            fillOpacity: 0.8,
+          };
+        }
+      
         return {
-          fillColor: color,
-          weight: 1,
-          color: '#666',
-          fillOpacity: 0.9,
+          fillColor: gradColors2[grad], // pakai grad color
+          weight: 1.5,
+          color: '#1e3a8a',
+          fillOpacity: 0.8,
         };
+     
       },
       onEachFeature: (feature, layer) => {
         const kode = feature.properties.code;
@@ -123,21 +150,33 @@ geojson.features.forEach((f) => {
         // Hover → biru
         layer.on('mouseover', () => {
           pathLayer.setStyle({
-            fillColor: 'green',
+            fillColor: '#3b82f6',
             weight: 2,
-            color: '#000',
-            fillOpacity: 0.7,
+            color: '#1e40af',
+            fillOpacity: 0.5,
           });
         });
+
         layer.on('mouseout', () => {
           const grad = feature?.properties?.grad_value;
-          const color = grad ? gradColors[grad] : '#ccc';
-          pathLayer.setStyle({
-            fillColor: color,
-            weight: 1,
-            color: '#666',
-            fillOpacity: 0.7,
-          });
+        
+          if (!grad) {
+            // jika belum ada warna grad → kembali transparan
+            pathLayer.setStyle({
+              fillColor: 'transparent',
+              weight: 1.5,
+              color: '#1e3a8a',     // biru gelap
+              fillOpacity: 0,
+            });
+          } else {
+            // jika ada grad → kembali ke warna gradasi
+            pathLayer.setStyle({
+              fillColor: gradColors2[grad],
+              weight: 1.5,
+              color: '#1e3a8a',
+              fillOpacity: 0.8,
+            });
+          }
         });
 
         let clickTimeout: any = null;
@@ -173,10 +212,14 @@ geojson.features.forEach((f) => {
         map.removeLayer(layerRef.current);
       }
     };
-  }, [geojson, map_data, map, onRegionDoubleClick]);
+  }, [geojson, map_data, map, onRegionDoubleClick,   onRegionSingleClick]);
 
   return null;
 }
+
+
+ 
+
 
 // Legend menggunakan gradation_data
 function MapLegend({ gradation_data }: { gradation_data: any[] }) {
@@ -184,11 +227,11 @@ function MapLegend({ gradation_data }: { gradation_data: any[] }) {
     <div className="absolute bottom-2 left-2 bg-white p-3 rounded shadow text-sm" style={{ zIndex: 1000 }}>
       <strong>Legenda</strong>
       <ul className="mt-2 space-y-1">
-        {gradation_data.map((item, idx) => (
+        {gradation_data?.map((item, idx) => (
           <li key={idx} className="flex items-center space-x-2">
             <span
               className="inline-block w-4 h-4 rounded"
-              style={{ backgroundColor: gradColors[item.Skor] }}
+              style={{ backgroundColor: gradColors2[item.Skor] }}
             ></span>
             <span>{item.Range_Anggaran}</span>
           </li>
@@ -203,6 +246,7 @@ export default function InteractiveMap({
   map_data,
   tahun,
   gradation_data,
+  isPanelOpen,
   level,
   metric,
   onRegionDoubleClick,   // ✅ tambahkan prop di komponen utama
@@ -216,31 +260,46 @@ export default function InteractiveMap({
   metric?: 'budget' | 'idm' | 'audit';
   onRegionDoubleClick?: (code: string, name: string) => void;
   onRegionSingleClick?: (code: string, name: string) => void;
+  isPanelOpen: boolean;
 }) {
-  return (
-    <div className="relative w-full h-full">
-      <MapContainer
-        center={[-2.5, 118]}
-        zoom={5}
-        style={{ height: '100%', width: '100%' }}
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap contributors'
-        />
-        <MapBoundsFitter geojson={geojson} />
-        <GeoJSONLayer
-          geojson={geojson}
-          map_data={map_data}
-          tahun={tahun}
-          gradation_data={gradation_data}
-          onRegionDoubleClick={onRegionDoubleClick}   // ✅ pass prop ke layer
-          onRegionSingleClick={onRegionSingleClick}
-        />
-      </MapContainer>
 
-      {/* Legend */}
+  
+const [isMounted, setIsMounted] = useState(false);
+
+
+useEffect(() => {
+  setIsMounted(true);
+}, []);
+
+  return (
+    
+    <div className="relative w-full h-full">
+      {isMounted && (
+        <MapContainer
+            center={[-2.5, 118]}
+            zoom={5}
+            scrollWheelZoom
+            style={{ height: '100%', width: '100%', backgroundColor: '#98fb98' }} // putih
+          >
+
+            <TileLayer
+              url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+              attribution="&copy; OpenStreetMap &copy; CARTO"
+            /> 
+
+          <MapBoundsFitter geojson={geojson} />
+          <MapResizer trigger={!!isPanelOpen} />
+          <GeoJSONLayer
+            geojson={geojson}
+            map_data={map_data}
+            tahun={tahun}
+            gradation_data={gradation_data}
+            onRegionDoubleClick={onRegionDoubleClick}
+            onRegionSingleClick={onRegionSingleClick}
+          />
+        </MapContainer>
+      )}
+  
       <MapLegend gradation_data={gradation_data} />
     </div>
   );
