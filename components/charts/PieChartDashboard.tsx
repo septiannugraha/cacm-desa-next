@@ -134,10 +134,22 @@ export default function PieChartDashboard({
               borderRadius: '0.5rem',
               padding: '0.75rem',
             }}
-            formatter={(value: number, name: string) => [
-              formatCurrency(value),
-              `${name} (${((value / total) * 100).toFixed(1)}%)`,
-            ]}
+                formatter={(value, name) => {
+                  const numericValue =
+                    typeof value === 'number'
+                      ? value
+                      : Number(value ?? 0)
+
+                  const percentage =
+                    total > 0
+                      ? ((numericValue / total) * 100).toFixed(1)
+                      : '0.0'
+
+                  return [
+                    formatCurrency(numericValue),
+                    `${String(name)} (${percentage}%)`,
+                  ]
+                }}
           />
           <Legend
             layout="horizontal"

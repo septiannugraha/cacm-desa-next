@@ -111,7 +111,7 @@ export default function LineChartDashboard({
               borderRadius: '0.5rem',
               padding: '0.75rem',
             }}
-            formatter={(value: number) => formatCurrency(value)}
+            formatter={(value) => formatCurrency(typeof value === 'number' ? value : Number(value ?? 0))}
           />
           <Legend wrapperStyle={{ paddingTop: '1rem' }} />
           <Line
