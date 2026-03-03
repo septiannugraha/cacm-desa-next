@@ -10,6 +10,8 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts'
+import type { TooltipProps } from 'recharts'
+import type { NameType, ValueType } from 'recharts/types/component/DefaultTooltipContent'
 
 interface ChartData {
   Kategori1: string
@@ -40,31 +42,39 @@ export default function AreaChartDashboard({
   nilai2Color = '#10b981',
   stacked = false,
 }: AreaChartDashboardProps) {
-  // Format currency for Indonesia
-  const formatCurrency = (value: number) => {
+  // Format currency (aman untuk undefined)
+  const formatCurrency = (value?: number) => {
+    const safeValue = typeof value === 'number' ? value : 0
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value)
+    }).format(safeValue)
   }
 
-  // Format large numbers
-  const formatNumber = (value: number) => {
-    if (value >= 1000000000) {
-      return `${(value / 1000000000).toFixed(1)}M`
-    } else if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(1)}Jt`
-    } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(1)}Rb`
+  // Format angka besar (aman untuk undefined)
+  const formatNumber = (value?: number) => {
+    const safeValue = typeof value === 'number' ? value : 0
+
+    if (safeValue >= 1000000000) {
+      return `${(safeValue / 1000000000).toFixed(1)}M`
+    } else if (safeValue >= 1000000) {
+      return `${(safeValue / 1000000).toFixed(1)}Jt`
+    } else if (safeValue >= 1000) {
+      return `${(safeValue / 1000).toFixed(1)}Rb`
     }
-    return value.toString()
+    return safeValue.toString()
   }
 
   return (
     <div className="w-full">
-      {title && <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>}
+      {title && (
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          {title}
+        </h3>
+      )}
+
       <ResponsiveContainer width="100%" height={400}>
         <AreaChart
           data={data}
@@ -76,16 +86,21 @@ export default function AreaChartDashboard({
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
+
           <XAxis
             dataKey={xAxisKey}
             tick={{ fill: '#6b7280', fontSize: 12 }}
             tickLine={{ stroke: '#9ca3af' }}
           />
+
           <YAxis
             tick={{ fill: '#6b7280', fontSize: 12 }}
             tickLine={{ stroke: '#9ca3af' }}
-            tickFormatter={formatNumber}
+            tickFormatter={(value) =>
+              formatNumber(typeof value === 'number' ? value : Number(value))
+            }
           />
+
           <Tooltip
             contentStyle={{
               backgroundColor: '#fff',
@@ -93,23 +108,33 @@ export default function AreaChartDashboard({
               borderRadius: '0.5rem',
               padding: '0.75rem',
             }}
-            formatter={(value: number) => formatCurrency(value)}
-          />
+              formatter={(value) =>
+                formatCurrency(
+                  typeof value === 'number'
+                    ? value
+                    : Number(value ?? 0)
+                )
+              }
+            />
+
           <Legend
             wrapperStyle={{
               paddingTop: '1rem',
             }}
           />
+
           <defs>
             <linearGradient id="colorNilai1" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={nilai1Color} stopOpacity={0.8} />
               <stop offset="95%" stopColor={nilai1Color} stopOpacity={0.1} />
             </linearGradient>
+
             <linearGradient id="colorNilai2" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={nilai2Color} stopOpacity={0.8} />
               <stop offset="95%" stopColor={nilai2Color} stopOpacity={0.1} />
             </linearGradient>
           </defs>
+
           <Area
             type="monotone"
             dataKey="Nilai1"
@@ -120,6 +145,7 @@ export default function AreaChartDashboard({
             fill="url(#colorNilai1)"
             stackId={stacked ? '1' : undefined}
           />
+
           <Area
             type="monotone"
             dataKey="Nilai2"
