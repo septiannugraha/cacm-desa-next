@@ -1,25 +1,11 @@
-import dynamic from "next/dynamic"
+import MapVector from "./MapVector"
 
-const MapEngine = dynamic(
-  () => import("@/components/MapEngine"),
-  { ssr: false }
-)
-
-export default function MapPage(){
+export default function Page(){
 
   return (
-
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh"
-      }}
-    >
-
-      <MapEngine />
-
+    <div style={{width:"100%",height:"100vh"}}>
+      <MapVector/>
     </div>
-
   )
 
 }
