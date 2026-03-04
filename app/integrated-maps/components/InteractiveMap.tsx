@@ -1,306 +1,432 @@
-'use client';
+'use client'
 
-import { MapContainer, TileLayer, useMap } from 'react-leaflet';
-import { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
- 
-import type { RegionGeoJSON } from '@/types/map';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet'
+import { useEffect, useRef, useState } from 'react'
+import L from 'leaflet'
+import { Settings } from 'lucide-react'
+import type { RegionGeoJSON } from '@/types/map'
+import type { MapLevel, MapMetric } from '@/types/map'
 
 const gradColors: Record<number, string> = {
-  1: '#fecaca', // merah muda agak gelap (darkened light red)
-  2: '#f87171', // merah terang lebih gelap (darkened medium red)
-  3: '#ef4444', // merah intens
-  4: '#b91c1c', // merah tua
-  5: '#7f1d1d', // merah pekat / maroon
-};
-
-
-const gradColors2: Record<number, string> = {
-  1: '#bfdbfe', // biru sangat muda (light blue)
-  2: '#60a5fa', // biru sedang (medium blue)
-  3: '#3b82f6', // biru intens (primary blue)
-  4: '#1d4ed8', // biru tua (dark blue)
-  5: '#1e3a8a', // biru pekat / navy
+ 1:'#bfdbfe',
+ 2:'#60a5fa',
+ 3:'#3b82f6',
+ 4:'#1d4ed8',
+ 5:'#1e3a8a'
 }
 
+function MapBoundsFitter({geojson}:{geojson:RegionGeoJSON}){
 
-// Komponen untuk auto-fit bounds
-function MapBoundsFitter({ geojson }: { geojson: RegionGeoJSON }) {
-  const map = useMap();
-  useEffect(() => {
-    if (geojson && geojson.features.length > 0) {
-      const geoJsonLayer = L.geoJSON(geojson);
-      const bounds = geoJsonLayer.getBounds();
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { padding: [50, 50] });
-      }
-    }
-  }, [geojson, map]);
-  return null;
-}
+ const map = useMap()
 
-function MapResizer({ trigger }: { trigger: any }) {
-  const map = useMap();
+ useEffect(()=>{
 
-  useEffect(() => {
-    setTimeout(() => {
-      map.invalidateSize();
-    }, 300); // sesuai durasi animasi
-  }, [trigger, map]);
+  if(!geojson?.features?.length) return
 
-  return null;
-}
+  const layer = L.geoJSON(geojson)
+  const bounds = layer.getBounds()
 
-// Layer GeoJSON dengan pewarnaan grad_value + hover biru + double click
-function GeoJSONLayer({
-  geojson,
-  map_data,
-  tahun,
-  gradation_data,
-  onRegionSingleClick,
-  onRegionDoubleClick,   // ✅ tambahkan prop
-
-}: {
-  geojson: RegionGeoJSON;
-  map_data: any[];
-  tahun?: string;
-  gradation_data?: any[];
-  onRegionSingleClick?: (code: string, name: string) => void;
-  onRegionDoubleClick?: (code: string, name: string) => void;
- isPanelOpen?: boolean;
-}) {
-  const map = useMap();
-  const layerRef = useRef<L.GeoJSON | null>(null);
-
-  useEffect(() => {
-    if (layerRef.current) {
-      map.removeLayer(layerRef.current);
-    }
- 
-
-const statsMap = new Map(map_data.map((s) => [s.Kode, s]));
- 
-// Loop setiap feature di geojson
-geojson.features.forEach((f) => {
-  const kode = f.properties.code; 
-  const data = statsMap.get(kode);       // cari data berdasarkan kode
- 
-  
-
-  if (!data) {
-    // Kalau tidak ada match, log warning
-  //  console.log(`⚠️ Tidak ada data untuk kode: ${kode}`);
-  } else {
-    // Kalau ada match, log detail
-    console.log(`✅ Match ditemukan untuk kode: ${kode}`, data);
-
-
-    // Tambahkan properti baru ke feature
-    f.properties.kode = data.Kode;
-    f.properties.grad_value = data.Skor;
-    f.properties.nama = data.Nama;
-    f.properties.anggaran = data.Anggaran != null ? parseFloat(data.Anggaran.toString()) : 0;
-    f.properties.realisasi = data.Realisasi != null ? parseFloat(data.Realisasi.toString()) : 0;
-  //  console.log('cek anggaran:', kode, data.anggaran, typeof data.anggaran);
+  if(bounds.isValid()){
+   map.fitBounds(bounds,{padding:[40,40]})
   }
-});
+
+ },[geojson,map])
+
+ return null
+}
+
+function MapResizer({trigger}:{trigger:any}){
+
+ const map = useMap()
+
+ useEffect(()=>{
+  setTimeout(()=>map.invalidateSize(),300)
+ },[trigger,map])
+
+ return null
+}
+
+function GeoJSONLayer({
+ geojson,
+ map_data,
+ showLabels,
+ onRegionSingleClick,
+ onRegionDoubleClick
+}:{
+ geojson:RegionGeoJSON
+ map_data:any[]
+ showLabels:boolean
+ onRegionSingleClick?:(code:string,name:string)=>void
+ onRegionDoubleClick?:(code:string,name:string)=>void
+}){
+
+ const map = useMap()
+
+ const geoLayerRef = useRef<L.GeoJSON|null>(null)
+ const labelLayerRef = useRef<L.LayerGroup|null>(null)
+
+ const renderer = useRef(L.canvas())
 
 
+ useEffect(()=>{
+
+  if(geoLayerRef.current) map.removeLayer(geoLayerRef.current)
+  if(labelLayerRef.current) map.removeLayer(labelLayerRef.current)
+
+  const statsMap = new Map(map_data.map((s)=>[s.Kode,s]))
+
+  geojson.features.forEach((f)=>{
+
+   const kode = f.properties.code
+   const data = statsMap.get(kode)
+
+   if(data){
+    f.properties.grad_value = data.Skor
+    f.properties.anggaran = Number(data.Anggaran||0)
+    f.properties.realisasi = Number(data.Realisasi||0)
+   }
+
+  })
 
 
+  const geoLayer = L.geoJSON(geojson,{
 
-    const layer = L.geoJSON(geojson, {
-      style: (feature) => {
-        const grad = feature?.properties?.grad_value;
-      
-        if (!grad) {
-          // Jika belum ada nilai grad → transparan
-          return {
-            fillColor: 'transparent',
-            weight: 1.5,
-            color: '#1e3a8a',   // border biru gelap
-            fillOpacity: 0.8,
-          };
-        }
-      
-        return {
-          fillColor: gradColors2[grad], // pakai grad color
-          weight: 1.5,
-          color: '#1e3a8a',
-          fillOpacity: 0.8,
-        };
-     
-      },
-      onEachFeature: (feature, layer) => {
-        const kode = feature.properties.code;
-        const nama = feature.properties.name;
-        const anggaran = feature.properties.anggaran;
-        const realisasi = feature.properties.realisasi;
-        const pathLayer = layer as L.Path;
+   style:(feature)=>{
 
-        // Tooltip saat hover
-        layer.bindTooltip(
-          `<strong>${nama}</strong><br/>
-           Kode: ${kode}<br/>
-           Anggaran: Rp ${anggaran?.toLocaleString('id-ID') ?? '-'}<br/>
-           Realisasi: Rp ${realisasi?.toLocaleString('id-ID') ?? '-'}`,
-          { sticky: true }
-        );
+    const grad = feature?.properties?.grad_value
 
-        // Hover → biru
-        layer.on('mouseover', () => {
-          pathLayer.setStyle({
-            fillColor: '#3b82f6',
-            weight: 2,
-            color: '#1e40af',
-            fillOpacity: 0.5,
-          });
-        });
+    if(!grad){
+     return{
+      renderer:renderer.current,
+      fillColor:'transparent',
+      weight:1.5,
+      color:'#1e3a8a',
+      fillOpacity:0.2
+     }
+    }
 
-        layer.on('mouseout', () => {
-          const grad = feature?.properties?.grad_value;
-        
-          if (!grad) {
-            // jika belum ada warna grad → kembali transparan
-            pathLayer.setStyle({
-              fillColor: 'transparent',
-              weight: 1.5,
-              color: '#1e3a8a',     // biru gelap
-              fillOpacity: 0,
-            });
-          } else {
-            // jika ada grad → kembali ke warna gradasi
-            pathLayer.setStyle({
-              fillColor: gradColors2[grad],
-              weight: 1.5,
-              color: '#1e3a8a',
-              fillOpacity: 0.8,
-            });
-          }
-        });
+    return{
+     renderer:renderer.current,
+     fillColor:gradColors[grad],
+     weight:1.5,
+     color:'#1e3a8a',
+     fillOpacity:0.55
+    }
 
-        let clickTimeout: any = null;
+   },
 
-        layer.on('click', () => {
-          if (clickTimeout) {
-            // ada klik kedua dalam waktu singkat → anggap double click
-            clearTimeout(clickTimeout);
-            clickTimeout = null;
-            if (onRegionDoubleClick) {
-              onRegionDoubleClick(kode, nama);
-            }
-          } else {
-            // klik pertama → tunggu sebentar, kalau tidak ada klik kedua → anggap single click
-            clickTimeout = setTimeout(() => {
-              if (onRegionSingleClick) {
-                onRegionSingleClick(kode, nama);
-              }
-              clickTimeout = null;
-            }, 250); // 250ms threshold
-          }
-        });
+   onEachFeature:(feature,layer)=>{
+
+    const kode = feature.properties.code
+    const nama = feature.properties.name
+
+    const anggaran = feature.properties.anggaran
+    const realisasi = feature.properties.realisasi
+
+    const path = layer as L.Path
+
+    layer.bindTooltip(
+     `<strong>${nama}</strong><br/>
+     Anggaran: Rp ${anggaran?.toLocaleString('id-ID')??'-'}<br/>
+     Realisasi: Rp ${realisasi?.toLocaleString('id-ID')??'-'}`,
+     {sticky:true}
+    )
+
+    layer.on('mouseover',()=>{
+
+     path.setStyle({
+      fillColor:'#3b82f6',
+      weight:2,
+      color:'#1e40af',
+      fillOpacity:0.6
+     })
+
+    })
+
+    layer.on('mouseout',()=>{
+
+     const grad = feature?.properties?.grad_value
+
+     if(!grad){
+      path.setStyle({
+       fillColor:'transparent',
+       weight:1.5,
+       color:'#1e3a8a',
+       fillOpacity:0
+      })
+     }else{
+      path.setStyle({
+       fillColor:gradColors[grad],
+       weight:1.5,
+       color:'#1e3a8a',
+       fillOpacity:0.55
+      })
+     }
+
+    })
+
+    let clickTimeout:any=null
+
+    layer.on('click',()=>{
+
+     if(clickTimeout){
+      clearTimeout(clickTimeout)
+      clickTimeout=null
+      onRegionDoubleClick?.(kode,nama)
+     }else{
+
+      clickTimeout=setTimeout(()=>{
+       onRegionSingleClick?.(kode,nama)
+       clickTimeout=null
+      },250)
+
+     }
+
+    })
+
+   }
+
+  })
+
+  geoLayer.addTo(map)
+  geoLayerRef.current = geoLayer
 
 
-      },
-    });
+  const labelLayer = L.layerGroup()
 
-    layerRef.current = layer;
-    layer.addTo(map);
+  geojson.features.forEach((f)=>{
 
-    return () => {
-      if (layerRef.current) {
-        map.removeLayer(layerRef.current);
-      }
-    };
-  }, [geojson, map_data, map, onRegionDoubleClick,   onRegionSingleClick]);
+   const name = f.properties.nama
+   const g = L.geoJSON(f)
+   const center = g.getBounds().getCenter()
 
-  return null;
+   const marker = L.marker(center,{
+    interactive:false,
+    icon:L.divIcon({
+     className:'map-label',
+     html:`<span>${name}</span>`
+    })
+   })
+
+   labelLayer.addLayer(marker)
+
+  })
+
+  labelLayer.addTo(map)
+  labelLayerRef.current = labelLayer
+
+
+  const updateLabels = ()=>{
+
+   const zoom = map.getZoom()
+
+   labelLayer.eachLayer((layer:any)=>{
+
+    const el = layer.getElement?.()
+
+    if(!el) return
+
+    if(!showLabels){
+     el.style.display='none'
+     return
+    }
+
+    if(zoom<6){
+     el.style.display='none'
+    }else{
+     el.style.display='block'
+    }
+
+   })
+
+  }
+
+  map.on('zoomend',updateLabels)
+  updateLabels()
+
+  return ()=>{
+
+   map.off('zoomend',updateLabels)
+
+   if(geoLayerRef.current) map.removeLayer(geoLayerRef.current)
+   if(labelLayerRef.current) map.removeLayer(labelLayerRef.current)
+
+  }
+
+ },[geojson,map_data,map,showLabels])
+
+ return null
+}
+
+function MapLegend({gradation_data}:{gradation_data:any[]}){
+
+ return(
+
+  <div className="absolute bottom-3 left-3 bg-white shadow rounded p-3 text-sm z-[1000]">
+
+   <strong>Legenda</strong>
+
+   <ul className="mt-2 space-y-1">
+
+    {gradation_data?.map((item,idx)=>(
+     <li key={idx} className="flex items-center gap-2">
+
+      <span
+       className="w-4 h-4 rounded"
+       style={{backgroundColor:gradColors[item.Skor]}}
+      />
+
+      {item.Range_Anggaran}
+
+     </li>
+    ))}
+
+   </ul>
+
+  </div>
+
+ )
+
 }
 
 
- 
-
-
-// Legend menggunakan gradation_data
-function MapLegend({ gradation_data }: { gradation_data: any[] }) {
-  return (
-    <div className="absolute bottom-2 left-2 bg-white p-3 rounded shadow text-sm" style={{ zIndex: 1000 }}>
-      <strong>Legenda</strong>
-      <ul className="mt-2 space-y-1">
-        {gradation_data?.map((item, idx) => (
-          <li key={idx} className="flex items-center space-x-2">
-            <span
-              className="inline-block w-4 h-4 rounded"
-              style={{ backgroundColor: gradColors2[item.Skor] }}
-            ></span>
-            <span>{item.Range_Anggaran}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 export default function InteractiveMap({
   geojson,
   map_data,
-  tahun,
   gradation_data,
-  isPanelOpen,
   level,
   metric,
-  onRegionDoubleClick,   // ✅ tambahkan prop di komponen utama
+  tahun,
+  isPanelOpen,
+  onRegionDoubleClick,
   onRegionSingleClick,
-}: {
-  geojson: RegionGeoJSON;
-  map_data: any[];
-  tahun : string;
-  gradation_data: any[];
-  level?: 'provinsi' | 'pemda' | 'kecamatan' | 'desa';
-  metric?: 'budget' | 'idm' | 'audit';
-  onRegionDoubleClick?: (code: string, name: string) => void;
-  onRegionSingleClick?: (code: string, name: string) => void;
-  isPanelOpen: boolean;
-}) {
-
-  
-const [isMounted, setIsMounted] = useState(false);
+ }:{
+  geojson:RegionGeoJSON
+  map_data:any[]
+  gradation_data:any[]
+  level: MapLevel
+  metric: MapMetric
+  tahun: string
+  isPanelOpen:boolean
+  onRegionDoubleClick?:(code:string,name:string)=>void
+  onRegionSingleClick?:(code:string,name:string)=>void
+ })
 
 
-useEffect(() => {
-  setIsMounted(true);
-}, []);
 
-  return (
-    
-    <div className="relative w-full h-full">
-      {isMounted && (
-        <MapContainer
-            center={[-2.5, 118]}
-            zoom={5}
-            scrollWheelZoom
-            style={{ height: '100%', width: '100%', backgroundColor: '#98fb98' }} // putih
-          >
+{
 
-            <TileLayer
-              url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
-              attribution="&copy; OpenStreetMap &copy; CARTO"
-            /> 
+ const [mounted,setMounted]=useState(false)
 
-          <MapBoundsFitter geojson={geojson} />
-          <MapResizer trigger={!!isPanelOpen} />
-          <GeoJSONLayer
-            geojson={geojson}
-            map_data={map_data}
-            tahun={tahun}
-            gradation_data={gradation_data}
-            onRegionDoubleClick={onRegionDoubleClick}
-            onRegionSingleClick={onRegionSingleClick}
-          />
-        </MapContainer>
-      )}
-  
-      <MapLegend gradation_data={gradation_data} />
-    </div>
-  );
+ const [showSettings,setShowSettings]=useState(false)
+ const [showBasemap,setShowBasemap]=useState(true)
+
+ const [viewMode,setViewMode]=useState<'hierarchy'|'pemda'>('hierarchy')
+
+ useEffect(()=>setMounted(true),[])
+
+ return(
+
+  <div className="relative w-full h-full">
+
+   <div className="absolute left-2 top-20 z-[1200]">
+
+    <button
+     onClick={()=>setShowSettings(!showSettings)}
+     className="bg-white rounded-xl shadow p-2"
+    >
+     <Settings size={18}/>
+    </button>
+
+    {showSettings && (
+
+     <div className="mt-2 w-56 bg-white rounded-xl shadow-xl p-4 text-sm">
+
+      <div className="font-semibold mb-2">Tampilan</div>
+
+      <label className="flex gap-2 items-center mb-1">
+       <input
+        type="radio"
+        checked={viewMode==='hierarchy'}
+        onChange={()=>setViewMode('hierarchy')}
+       />
+       Berjenjang
+      </label>
+
+      <label className="flex gap-2 items-center mb-3">
+       <input
+        type="radio"
+        checked={viewMode==='pemda'}
+        onChange={()=>setViewMode('pemda')}
+       />
+       Pemda &gt; Desa
+      </label>
+
+      <div className="flex justify-between items-center">
+
+       <span>Peta Lengkap</span>
+
+       <button
+        onClick={()=>setShowBasemap(!showBasemap)}
+        className={`w-10 h-5 rounded-full transition ${showBasemap?'bg-blue-500':'bg-gray-300'}`}
+       >
+        <div
+         className={`w-4 h-4 bg-white rounded-full transform transition ${
+          showBasemap?'translate-x-5':'translate-x-1'
+         }`}
+        />
+       </button>
+
+      </div>
+
+     </div>
+
+    )}
+
+   </div>
+
+   {mounted && (
+
+    <MapContainer
+     center={[-2.5,118]}
+     zoom={5}
+     scrollWheelZoom
+     style={{height:'100%',width:'100%'}}
+    >
+
+     {showBasemap && (
+
+      <TileLayer
+       url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+       attribution="© OpenStreetMap contributors"
+      />
+
+     )}
+
+     <MapBoundsFitter geojson={geojson}/>
+     <MapResizer trigger={!!isPanelOpen}/>
+
+     <GeoJSONLayer
+      geojson={geojson}
+      map_data={map_data}
+      showLabels={!isPanelOpen}
+      onRegionDoubleClick={onRegionDoubleClick}
+      onRegionSingleClick={onRegionSingleClick}
+     />
+
+     <TileLayer
+      url="https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}.png"
+      pane="overlayPane"
+     />
+
+    </MapContainer>
+
+   )}
+
+   <MapLegend gradation_data={gradation_data}/>
+
+  </div>
+
+ )
 }

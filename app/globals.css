@@ -47,3 +47,18 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;  /* Chrome, Safari and Opera */
 }
+
+.map-label{
+  font-size:11px;
+  font-weight:600;
+  color:#1e3a8a;
+  text-shadow:0 0 4px white;
+  white-space:nowrap;
+  pointer-events:none;
+ }
+ 
+ .map-label span{
+  background:rgba(255,255,255,0.7);
+  padding:1px 4px;
+  border-radius:4px;
+ }
