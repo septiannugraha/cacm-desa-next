@@ -110,6 +110,6 @@ Siswaskeudes_Baru
 /public/data/pemda/
 /public/data/provinsi/
 
-data/desa.mbtiles
-map-desa/desa_clean.geojson
+/data/desa.mbtiles
+/map-desa/desa_clean.geojson
 
