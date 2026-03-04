@@ -1,10 +1,15 @@
-import MapVector from "./MapVector"
+import dynamic from "next/dynamic"
 
-export default function Page(){
+const MapVector = dynamic(
+  () => import("./MapVector"),
+  { ssr: false }
+)
+
+export default function Page() {
 
   return (
-    <div style={{width:"100%",height:"100vh"}}>
-      <MapVector/>
+    <div style={{ width: "100%", height: "100vh" }}>
+      <MapVector />
     </div>
   )
 
