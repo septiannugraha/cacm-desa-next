@@ -111,9 +111,9 @@ Siswaskeudes_Baru
 /public/data/provinsi/
 
 /data/desa.mbtiles
-/map-desa/desa_clean.geojson
+/map-data/desa_clean.geojson
 
 data/
-map-desa/
+map-data/
 
 public/tiles/
