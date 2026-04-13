@@ -25,6 +25,7 @@
     "@hookform/resolvers": "^5.2.2",
     "@prisma/client": "^6.17.1",
     "@tanstack/react-query": "^5.90.1",
+    "@turf/bbox": "^7.3.4",
     "@types/leaflet": "^1.9.21",
     "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
