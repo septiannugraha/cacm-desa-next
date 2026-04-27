@@ -215,23 +215,28 @@ const backHref = useMemo(() => {
           <div className="flex flex-col items-center justify-center px-6 py-6" style={{ backgroundColor: '#003554', borderBottom: '8px solid white' }}>
            
            
-          <div className="flex items-center justify-center mb-2 p-2">
-          <Link href="/" passHref>
-          <Image 
-            src="/logo.png" 
-            alt="CACM Logo" 
-            width={80} 
-            height={80} 
-            className="object-contain"
-            style={{ 
-              filter: 'drop-shadow(0 0 5px rgba(255,255,255,1))' 
-            }}
-          />
-        </Link>
-
-        </div>
+          <div className="flex items-center justify-center mb-2 p-2 focus:outline-none">
+            <button
+              onClick={() => {
+                if (session) router.push('/')
+                else router.push('/login')
+              }}
+              className="hover:scale-105 transition-transform duration-300"
+            >
+              <Image 
+                src="/cacm_logo.png" 
+                alt="CACM Logo" 
+                width={80} 
+                height={80} 
+                className="object-contain"
+                style={{ 
+                  filter: 'drop-shadow(0 0 5px rgba(255,255,255,1))' 
+                }}
+              />
+            </button>
+          </div>
             <span className="text-white font-bold text-center text-md">
-              {session?.user?.pemdaName || 'Kabupaten/Kota'}
+              {session?.user?.pemdaName || process.env.NEXT_PUBLIC_PEMDA_NAME || 'Seluruh Indonesia'}
             </span>
           </div>
 
@@ -344,14 +349,14 @@ const backHref = useMemo(() => {
                 
                
                 }} />
-              <div className="hidden lg:flex items-center gap-6 text-white">
-                <div className="text-sm font-medium">
-                  {session?.user?.pemdaName || 'Kabupaten/Kota'}
+                <div className="hidden lg:flex items-center gap-6 text-white">
+                  <div className="text-sm font-medium">
+                    {session?.user?.pemdaName || process.env.NEXT_PUBLIC_PEMDA_NAME || 'Seluruh Indonesia'}
+                  </div>
+                  <div className="text-sm">
+                    Tahun <span className="font-semibold">{session?.fiscalYear || new Date().getFullYear()}</span>
+                  </div>
                 </div>
-                <div className="text-sm">
-                  Tahun <span className="font-semibold">{session?.fiscalYear}</span>
-                </div>
-              </div>
             </div>
 
             <div className="flex items-center gap-4 ml-auto">
@@ -370,47 +375,62 @@ const backHref = useMemo(() => {
 
                 {userMenuOpen && (
                   <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                    <div className="px-4 py-2 border-b border-gray-200">
-                      <p className="text-sm font-medium text-gray-900">{session?.user?.name}</p>
-                      <p className="text-xs text-gray-500">{session?.user?.role}</p>
-                    </div>
-
-                    <button
-                      onClick={async () => {
-                        setUserMenuOpen(false)
-                        try {
-                          // Call logout API first
-                          await fetch('/api/auth/logout', { method: 'POST' })
-                          // Then sign out with NextAuth
-                          await signOut({ callbackUrl: '/login', redirect: true })
-                        } catch (error) {
-                          console.error('Logout error:', error)
-                          // Force redirect even on error
-                          window.location.href = '/login'
-                        }
-                      }}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors text-left"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Log Out
-                    </button>
-                    <hr className="my-1" />
-                    <Link
-                      href="/profile"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <User className="h-4 w-4 text-blue-600" />
-                      Update Profil
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setUserMenuOpen(false)}
-                    >
-                      <Key className="h-4 w-4 text-yellow-600" />
-                      Ganti Password
-                    </Link>
+                    {session ? (
+                      <>
+                        <div className="px-4 py-2 border-b border-gray-200">
+                          <p className="text-sm font-medium text-gray-900">{session.user?.name}</p>
+                          <p className="text-xs text-gray-500">{session.user?.role}</p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            setUserMenuOpen(false)
+                            try {
+                              await fetch('/api/auth/logout', { method: 'POST' })
+                              await signOut({ callbackUrl: '/login', redirect: true })
+                            } catch (error) {
+                              console.error('Logout error:', error)
+                              window.location.href = '/login'
+                            }
+                          }}
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-600 hover:bg-gray-100 transition-colors text-left"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Log Out
+                        </button>
+                        <hr className="my-1" />
+                        <Link
+                          href="/profile"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <User className="h-4 w-4 text-blue-600" />
+                          Update Profil
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Key className="h-4 w-4 text-yellow-600" />
+                          Ganti Password
+                        </Link>
+                      </>
+                    ) : (
+                      <>
+                        <div className="px-4 py-2 border-b border-gray-200">
+                          <p className="text-sm font-medium text-gray-900">Tamu (Public)</p>
+                          <p className="text-xs text-gray-500">Silakan login untuk akses fitur penuh</p>
+                        </div>
+                        <Link
+                          href="/login"
+                          className="flex items-center gap-2 w-full px-4 py-2 text-sm text-blue-600 hover:bg-gray-100 transition-colors text-left"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <Key className="h-4 w-4" />
+                          Masuk / Login
+                        </Link>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -496,10 +516,15 @@ const backHref = useMemo(() => {
 
     {/* LEFT SIDE - BREADCRUMB */}
     <div className="flex items-center gap-2 text-sm text-gray-600">
-
-      <Link href="/" passHref>
-        <Home className="h-4 w-4 text-gray-500 cursor-pointer hover:text-gray-700" />
-      </Link>
+      <button
+        onClick={() => {
+          if (session) router.push('/')
+          else router.push('/login')
+        }}
+        className="flex items-center gap-2 hover:text-gray-700 transition"
+      >
+        <Home className="h-4 w-4 text-gray-500 cursor-pointer" />
+      </button>
 
       {breadcrumb.map((item, index) => (
         <div key={index} className="flex items-center gap-2">

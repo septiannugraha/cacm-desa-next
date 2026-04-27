@@ -2,12 +2,16 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import dynamic from 'next/dynamic'
+import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Breadcrumb from './components/Breadcrumb'
 import MetricSelector from './components/MetricSelector'
 import MapLegend from './components/MapLegend'
 import StatisticsPanel from './components/StatisticsPanel'
 import type { MapLevel, MapMetric, BreadcrumbItem, RegionGeoJSON } from '@/types/map'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { Loader2, AlertCircle, TrendingUp, Home } from 'lucide-react'
+import { FiMenu } from 'react-icons/fi'
+import FilterModal from '@/components/dashboard/FilterModal'
 
 const InteractiveMap = dynamic(
  () => import('./components/InteractiveMap'),
@@ -77,7 +81,7 @@ function YearSelector({
    <select
     value={selectedYear}
     onChange={(e)=>onYearChange(Number(e.target.value))}
-    className="border rounded px-2 py-1 text-sm"
+    className="border rounded px-2 py-1 text-sm bg-white"
    >
     {years.map(y=>(
      <option key={y} value={y}>{y}</option>
@@ -120,6 +124,34 @@ export default function MapDashboardPage(){
  const [error,setError] = useState<string|null>(null)
 
  const [isPanelOpen,setIsPanelOpen] = useState(false)
+ const [showFilterModal, setShowFilterModal] = useState(false)
+
+ // Filter selection state
+ const [selectedProvinsi, setSelectedProvinsi] = useState<string>('')
+ const [selectedPemda, setSelectedPemda] = useState<string>('')
+ const [selectedKecamatan, setSelectedKecamatan] = useState<string>('')
+ const [selectedDesa, setSelectedDesa] = useState<string>('')
+ const [selectedSumberDana, setSelectedSumberDana] = useState<string>('')
+
+ const [filterData, setFilterData] = useState({
+   provinsi: [],
+   pemda: [],
+   kecamatan: [],
+   desa: [],
+   sumberdana: []
+ })
+
+ /* ===============================
+    LAZY LOADERS for FilterModal
+ ================================= */
+ const loadFilterOptions = async (type: string, params: any = {}) => {
+   const qs = new URLSearchParams(params).toString()
+   const res = await fetch(`/api/dashboard/filters?type=${type}&${qs}`, { cache: 'no-store' })
+   if (res.ok) {
+     const { data } = await res.json()
+     setFilterData(prev => ({ ...prev, [type]: data || [] }))
+   }
+ }
 
  /* ===============================
     GEOJSON LOAD
@@ -162,7 +194,7 @@ export default function MapDashboardPage(){
  },[currentLevel,currentCode])
 
  /* ===============================
-    MAP DATA
+    MAP DATA (GRADASI)
  ================================= */
 
  useEffect(()=>{
@@ -234,6 +266,11 @@ export default function MapDashboardPage(){
 
  }
 
+ const handleHomeClick = () => {
+    if (session) router.push('/')
+    else router.push('/login')
+  }
+
  /* ===============================
     UI
  ================================= */
@@ -243,45 +280,62 @@ export default function MapDashboardPage(){
   <div className="relative w-screen h-screen overflow-hidden bg-gray-100">
 
    {/* HEADER */}
+   <div className="absolute top-0 left-0 right-0 z-40 
+                   h-16 backdrop-blur-md bg-white/80 border-b border-gray-200
+                   flex items-center px-6 shadow-sm">
 
-   <div className="absolute top-2 left-2 right-2 z-40 
-                   h-16 backdrop-blur-md bg-blue-100/50
-                   flex items-center px-6 rounded-xl shadow-lg">
+    <button onClick={handleHomeClick} className="hover:scale-105 transition-transform duration-300 mr-2">
+      <img src="/cacm_logo.png" alt="logo" className="h-8"/>
+    </button>
 
-    <img src="/cacm_logo.png" alt="logo" className="h-8"/>
+    <button 
+      onClick={handleHomeClick}
+      className="p-2 mr-4 hover:bg-gray-100 rounded-lg transition-colors text-gray-600 hover:text-blue-600"
+      title="Ke Halaman Utama"
+    >
+      <Home className="w-5 h-5" />
+    </button>
 
-    <div className="ml-6 flex-1">
+    <div className="flex-1">
      <Breadcrumb items={breadcrumb} onNavigate={handleBreadcrumbNavigate}/>
     </div>
 
-    <div className="mr-4">
-     <MetricSelector
-      selectedMetric={selectedMetric}
-      onMetricChange={setSelectedMetric}
-     />
-    </div>
+    <div className="flex items-center gap-4">
+      <MetricSelector
+       selectedMetric={selectedMetric}
+       onMetricChange={setSelectedMetric}
+      />
 
-    <div className="mr-4">
-     <YearSelector
-      selectedYear={selectedYear}
-      onYearChange={setSelectedYear}
-     />
-    </div>
+      <YearSelector
+       selectedYear={selectedYear}
+       onYearChange={setSelectedYear}
+      />
 
-    <button
-     onClick={()=>setIsPanelOpen(prev=>!prev)}
-     className="p-2 rounded-md hover:bg-gray-200"
-    >
-     ☰
-    </button>
+      <div className="h-8 w-px bg-gray-200 mx-2" />
+
+      <button
+        onClick={() => setShowFilterModal(true)}
+        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white shadow hover:bg-slate-800 transition"
+      >
+        <FiMenu className="w-4 h-4" />
+        <span className="font-semibold text-sm">Filter</span>
+      </button>
+
+      <button
+        onClick={() => setIsPanelOpen(prev => !prev)}
+        className={`p-2.5 rounded-xl border transition ${isPanelOpen ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+        title="Toggle Panel Statistik"
+      >
+        <TrendingUp className="w-5 h-5" />
+      </button>
+    </div>
 
    </div>
 
    {/* MAP */}
-
    <div
-    className={`absolute inset-0 z-10 transition-all duration-300 ${
-     isPanelOpen ? 'pr-[500px]' : ''
+    className={`absolute inset-0 z-10 transition-all duration-300 pt-16 ${
+     isPanelOpen ? 'pr-[360px]' : ''
     }`}
    >
 
@@ -330,13 +384,8 @@ export default function MapDashboardPage(){
    </div>
 
    {/* PANEL */}
-
    {isPanelOpen && (
-
-    <div className="absolute top-10 bottom-0 right-0 z-50 w-[500px] flex flex-col">
-
-     <div className="flex-1 overflow-y-auto p-2">
-
+    <div className="absolute top-16 bottom-0 right-0 z-50 w-[360px] bg-white border-l border-gray-200 shadow-xl overflow-hidden">
       <StatisticsPanel
        level={currentLevel}
        code={selectedRegion?.code || currentCode || null}
@@ -347,12 +396,57 @@ export default function MapDashboardPage(){
        }
        tahun={selectedYear.toString()}
       />
-
-     </div>
-
     </div>
-
    )}
+
+   <FilterModal
+     show={showFilterModal}
+     onClose={() => setShowFilterModal(false)}
+     filterData={filterData}
+     selected={{
+       provinsi: selectedProvinsi,
+       pemda: selectedPemda,
+       kecamatan: selectedKecamatan,
+       desa: selectedDesa,
+       sumberdana: selectedSumberDana
+     }}
+     setSelected={(next) => {
+       setSelectedProvinsi(next.provinsi)
+       setSelectedPemda(next.pemda)
+       setSelectedKecamatan(next.kecamatan)
+       setSelectedDesa(next.desa)
+       setSelectedSumberDana(next.sumberdana)
+     }}
+     onApply={() => {
+       if (selectedDesa) {
+         setCurrentLevel('desa'); setCurrentCode(selectedDesa);
+       } else if (selectedKecamatan) {
+         setCurrentLevel('kecamatan'); setCurrentCode(selectedKecamatan);
+       } else if (selectedPemda) {
+         setCurrentLevel('pemda'); setCurrentCode(selectedPemda);
+       } else if (selectedProvinsi) {
+         setCurrentLevel('provinsi'); setCurrentCode(selectedProvinsi);
+       }
+       setShowFilterModal(false)
+     }}
+     onClear={() => {
+       setSelectedProvinsi('')
+       setSelectedPemda('')
+       setSelectedKecamatan('')
+       setSelectedDesa('')
+       setSelectedSumberDana('')
+       setCurrentLevel('provinsi')
+       setCurrentCode('')
+       setBreadcrumb([{name:'Indonesia', level:'provinsi', code:''}])
+     }}
+     loaders={{
+       provinsi: () => loadFilterOptions('provinsi'),
+       pemda: () => loadFilterOptions('pemda', { kdProv: selectedProvinsi }),
+       kecamatan: () => loadFilterOptions('kecamatan', { kdPemda: selectedPemda }),
+       desa: () => loadFilterOptions('desa', { kdKec: selectedKecamatan }),
+       sumberdana: () => loadFilterOptions('sumberdana'),
+     }}
+   />
 
   </div>
 

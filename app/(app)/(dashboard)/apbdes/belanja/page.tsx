@@ -109,7 +109,7 @@ export default function DashboardBelanjaPage() {
 
   // ===== INITIAL: preselect dari session + seed label provinsi + seed 1 item pemda user
   useEffect(() => {
-    if (status !== 'authenticated') return
+    // Allow public access
     ;(async () => {
       try {
         const res = await fetch('/api/dashboard/filters?mode=initial', { cache: 'no-store' })
@@ -154,7 +154,7 @@ export default function DashboardBelanjaPage() {
         console.error('[initial filters] error', e)
       }
     })()
-  }, [status])
+  }, [status, session])
 
   // ===== LOAD CHARTS
   const filterQueryString = useMemo(() => {
@@ -184,9 +184,9 @@ export default function DashboardBelanjaPage() {
   }
 
   useEffect(() => {
-    if (status === 'authenticated') fetchChartData()
+    fetchChartData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  }, [status, session])
 
   // ===== Lazy loaders (dipanggil saat combobox dibuka / user mengetik)
   const loadProvinsi = async () => {
@@ -303,9 +303,7 @@ export default function DashboardBelanjaPage() {
       </div>
     )
   }
-  if (status === 'unauthenticated') {
-    redirect('/login')
-  }
+  // Public access allowed, remove unauthenticated redirect
 
   // Mock header cards
   const formatCurrency = (value: number) =>

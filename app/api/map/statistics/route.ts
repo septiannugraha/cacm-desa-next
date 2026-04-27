@@ -1,66 +1,39 @@
-import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { authOptions } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const tahun = searchParams.get('tahun');
-  const level = searchParams.get('level');
-  const kode = searchParams.get('kode') || '';
-
-
-  function normalizeBigInt(obj: any) {
-    return JSON.parse(
-      JSON.stringify(obj, (_, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-      )
-    );
-  }
-
-  
-  if (!tahun || !level) {
-    return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
-  }
-
   try {
+    const session = await getServerSession(authOptions)
 
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-    const belanja_persumberdana_raw = await prisma.$queryRawUnsafe<any[]>(`
-      EXEC sp_cacm_publicdashboard 
-        @nmdashboard = 'belanja_persumberdana',
-        @tahun = '${tahun}',
-        @level = '${level}',
-        @kode = '${kode}'
-    `);
-    const belanja_persumberdana = normalizeBigInt(belanja_persumberdana_raw);
+    const { searchParams } = new URL(request.url)
+    const goApiBaseUrl = process.env.GO_API_URL || 'http://localhost:8085/api/v1'
     
-
-
-
-    const belanja_perbidang_raw = await prisma.$queryRawUnsafe<any[]>(`
-      EXEC sp_cacm_publicdashboard 
-        @nmdashboard = 'belanja_perbidang',
-        @tahun = '${tahun}',
-        @level = '${level}',
-        @kode = '${kode}'
-    `);
-    const belanja_perbidang = normalizeBigInt(belanja_perbidang_raw);
-  
-
-
-
-    const trend_belanja_bulanan_raw = await prisma.$queryRawUnsafe<any[]>(`
-        EXEC sp_cacm_publicdashboard 
-          @nmdashboard = 'trend_belanja_bulanan',
-          @tahun = '${tahun}',
-          @level = '${level}',
-          @kode = '${kode}'
-      `);
-      const trend_belanja_bulanan = normalizeBigInt(trend_belanja_bulanan_raw);
+    const params = new URLSearchParams(searchParams)
+    params.set('jenis', 'map_statistics')
     
-      console.log(NextResponse.json({ belanja_perbidang, belanja_persumberdana, trend_belanja_bulanan }));
-    return NextResponse.json({ belanja_perbidang, belanja_persumberdana, trend_belanja_bulanan });
+    const response = await fetch(`${goApiBaseUrl}/dashboard/chart-data?${params.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    })
+
+    if (!response.ok) {
+      throw new Error(`Go API responded with status ${response.status}`)
+    }
+
+    const result = await response.json()
+    return NextResponse.json(result.data)
+
   } catch (error) {
-    console.error('Dashboard gradation error:', error);
-    return NextResponse.json({ error: 'Failed to fetch gradation data' }, { status: 500 });
+    console.error('Map statistics proxy error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch map statistics from backend' },
+      { status: 500 }
+    )
   }
 }

@@ -95,7 +95,7 @@ export default function DashboardBelanjaPage() {
 
   // ===== INITIAL: preselect dari session + seed label provinsi + seed 1 item pemda user
   useEffect(() => {
-    if (status !== 'authenticated') return
+    // Allow public access
     ;(async () => {
       try {
         const res = await fetch('/api/dashboard/filters?mode=initial', { cache: 'no-store' })
@@ -140,7 +140,7 @@ export default function DashboardBelanjaPage() {
         console.error('[initial filters] error', e)
       }
     })()
-  }, [status])
+  }, [status, session])
 
   // ===== LOAD CHARTS
   const filterQueryString = useMemo(() => {
@@ -192,9 +192,9 @@ export default function DashboardBelanjaPage() {
   }
 
   useEffect(() => {
-    if (status === 'authenticated') fetchChartData()
+    fetchChartData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status])
+  }, [status, session])
 
   // ===== Lazy loaders (dipanggil saat combobox dibuka / user mengetik)
   const loadProvinsi = async () => {
@@ -311,9 +311,7 @@ export default function DashboardBelanjaPage() {
       </div>
     )
   }
-  if (status === 'unauthenticated') {
-    redirect('/login')
-  }
+  // Public access allowed, remove unauthenticated redirect
 
   // Mock header cards
   const formatCurrency = (value: number) =>
@@ -331,20 +329,23 @@ export default function DashboardBelanjaPage() {
       {/* ================= HEADER ================= */}
       <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900 tracking-tight">
+          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
             Dashboard Belanja Desa
           </h1>
-          <p className="text-slate-500 mt-2 text-sm max-w-2xl">
+          <p className="text-slate-500 mt-2 text-sm font-medium">
             {subtitle}
           </p>
         </div>
   
-        <button
-          onClick={() => setShowFilterModal(true)}
-          className="px-5 py-2.5 rounded-xl bg-slate-900 text-white shadow hover:bg-slate-700 transition"
-        >
-          Filter Data
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowFilterModal(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <FiMenu className="w-4 h-4" />
+            <span className="font-semibold text-sm">Filter Data</span>
+          </button>
+        </div>
       </div>
   
   

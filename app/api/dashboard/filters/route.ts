@@ -6,8 +6,7 @@ import { NextResponse } from 'next/server'
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
+    
     const { searchParams } = new URL(req.url)
     const mode = searchParams.get('mode') // 'initial'
     const type = (searchParams.get('type') || '').toLowerCase()
@@ -15,8 +14,8 @@ export async function GET(req: Request) {
     const kdPemda = (searchParams.get('kdPemda') || '').trim()
     const kdKec = (searchParams.get('kdKec') || '').trim()
 
-    // ===== ambil kd pemda dari session =====
-    const pemdakdRaw = String((session.user as any)?.pemdakd || '').trim() // contoh: "3521"
+    // ===== ambil kd pemda dari session atau env =====
+    const pemdakdRaw = String((session?.user as any)?.pemdakd || process.env.NEXT_PUBLIC_PEMDA_CODE || '3521').trim()
     const userKdProv = pemdakdRaw.length >= 2 ? pemdakdRaw.substring(0, 2) : ''
     const userKdPemda = pemdakdRaw.length >= 4 ? pemdakdRaw.substring(0, 4) : ''
 

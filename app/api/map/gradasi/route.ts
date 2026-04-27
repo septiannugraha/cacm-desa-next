@@ -1,51 +1,39 @@
-import { prisma } from '@/lib/prisma';
-import { NextResponse } from 'next/server';
+import { authOptions } from '@/lib/auth'
+import { getServerSession } from 'next-auth'
+import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const tahun = searchParams.get('tahun');
-  const level = searchParams.get('level');
-  const kode = searchParams.get('kode') || '';
-
-
-  function normalizeBigInt(obj: any) {
-    return JSON.parse(
-      JSON.stringify(obj, (_, value) =>
-        typeof value === 'bigint' ? value.toString() : value
-      )
-    );
-  }
-
-  
-  if (!tahun || !level) {
-    return NextResponse.json({ error: 'Missing parameters' }, { status: 400 });
-  }
-
   try {
-    const map_data_raw = await prisma.$queryRawUnsafe<any[]>(`
-      EXEC sp_cacm_publicdashboard 
-        @nmdashboard = 'sebaran_anggaran',
-        @tahun = '${tahun}',
-        @level = '${level}',
-        @kode = '${kode}'
-    `);
-    const map_data = normalizeBigInt(map_data_raw);
-    
-    const gradation_data_raw = await prisma.$queryRawUnsafe<any[]>(`
-      EXEC sp_cacm_publicdashboard 
-        @nmdashboard = 'range_sebaran_anggaran',
-        @tahun = '${tahun}',
-        @level = '${level}',
-        @kode = '${kode}'
-    `);
-    const gradation_data = normalizeBigInt(gradation_data_raw);
-  
-    console.log('map_data:', map_data);
-    console.log('gradation_data:', gradation_data);
+    const session = await getServerSession(authOptions)
 
-    return NextResponse.json({ map_data, gradation_data });
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const goApiBaseUrl = process.env.GO_API_URL || 'http://localhost:8085/api/v1'
+    
+    const params = new URLSearchParams(searchParams)
+    params.set('jenis', 'map_gradation')
+    
+    const response = await fetch(`${goApiBaseUrl}/dashboard/chart-data?${params.toString()}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store'
+    })
+
+    if (!response.ok) {
+      throw new Error(`Go API responded with status ${response.status}`)
+    }
+
+    const result = await response.json()
+    return NextResponse.json(result.data)
+
   } catch (error) {
-    console.error('Dashboard gradation error:', error);
-    return NextResponse.json({ error: 'Failed to fetch gradation data' }, { status: 500 });
+    console.error('Map gradasi proxy error:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch map data from backend' },
+      { status: 500 }
+    )
   }
 }
